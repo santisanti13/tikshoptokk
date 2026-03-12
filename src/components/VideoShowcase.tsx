@@ -1,27 +1,11 @@
 import { motion } from "framer-motion";
-import { Play } from "lucide-react";
 
-const videos = [
-  {
-    title: "Producto viral: +500K ventas",
-    description: "Estrategia de lanzamiento en TikTok Shop",
-    thumbnail: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400&h=700&fit=crop",
-  },
-  {
-    title: "Marca de skincare: caso de éxito",
-    description: "De 0 a 10K pedidos en 30 días",
-    thumbnail: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=700&fit=crop",
-  },
-  {
-    title: "Creador conectado con marca",
-    description: "Contenido que generó +2M de views",
-    thumbnail: "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=400&h=700&fit=crop",
-  },
-  {
-    title: "Adaptación de producto viral",
-    description: "De Amazon a TikTok Shop en 7 días",
-    thumbnail: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=700&fit=crop",
-  },
+const tiktokVideos = [
+  "7597044434647174422",
+  "7594408068671130902",
+  "7580033109358382358",
+  "7568535529944370454",
+  "7552960543808687392",
 ];
 
 const VideoShowcase = () => (
@@ -46,34 +30,24 @@ const VideoShowcase = () => (
         </p>
       </motion.div>
 
-      <div className="mx-auto grid max-w-5xl grid-cols-2 gap-4 sm:gap-6 md:grid-cols-4">
-        {videos.map((v, i) => (
+      <div className="mx-auto flex max-w-6xl gap-4 overflow-x-auto pb-4 sm:gap-6 sm:justify-center sm:flex-wrap sm:overflow-x-visible">
+        {tiktokVideos.map((id, i) => (
           <motion.div
-            key={v.title}
+            key={id}
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: i * 0.1 }}
-            className="group relative aspect-[9/16] overflow-hidden rounded-xl border border-border"
+            className="flex-shrink-0"
           >
-            <img
-              src={v.thumbnail}
-              alt={v.title}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            <iframe
+              src={`https://www.tiktok.com/embed/v2/${id}`}
+              className="h-[580px] w-[325px] rounded-xl border border-border"
+              allowFullScreen
+              allow="encrypted-media"
               loading="lazy"
+              title={`TikTok video ${i + 1}`}
             />
-            {/* Overlay */}
-            <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-background/90 via-background/30 to-transparent p-4">
-              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/80 p-3 opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100">
-                <Play className="h-5 w-5 fill-primary-foreground text-primary-foreground" />
-              </div>
-              <p className="text-sm font-semibold leading-tight text-foreground">
-                {v.title}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {v.description}
-              </p>
-            </div>
           </motion.div>
         ))}
       </div>
