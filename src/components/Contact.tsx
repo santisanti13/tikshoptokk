@@ -32,12 +32,32 @@ const Contact = () => {
     defaultValues: { name: "", email: "", company: "", message: "" },
   });
 
-  const onSubmit = (data: ContactForm) => {
-    console.log("Contact form submitted:", { ...data, email: "[redacted]" });
-    toast.success("¡Mensaje enviado!", {
-      description: "Nos pondremos en contacto contigo pronto.",
-    });
-    form.reset();
+  const onSubmit = async (data: ContactForm) => {
+    try {
+      const { error } = await supabase.functions.invoke('send-transactional-email', {
+        body: {
+          type: 'contact_notification',
+          data: {
+            name: data.name,
+            email: data.email,
+            company: data.company || undefined,
+            message: data.message,
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      toast.success("¡Mensaje enviado!", {
+        description: "Nos pondremos en contacto contigo pronto.",
+      });
+      form.reset();
+    } catch (err) {
+      console.error("Failed to send contact form:", err);
+      toast.error("Error al enviar", {
+        description: "Inténtalo de nuevo más tarde.",
+      });
+    }
   };
 
   return (
