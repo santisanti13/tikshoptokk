@@ -42,7 +42,7 @@ const VideoShowcase = () => (
           >
             <iframe
               src={`https://www.tiktok.com/embed/v2/${id}`}
-              className="h-[580px] w-[325px] rounded-xl border border-border"
+              className="h-[400px] w-[225px] rounded-xl border border-border"
               allowFullScreen
               allow="encrypted-media"
               loading="lazy"
