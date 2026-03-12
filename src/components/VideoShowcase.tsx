@@ -9,6 +9,17 @@ const tiktokVideos = [
   "7580033109358382358",
   "7568535529944370454",
   "7552960543808687392",
+  "7603703003782090006",
+  "7585540094824598806",
+  "7569572860449082646",
+  "7562146211747122465",
+  "7610820653284936982",
+  "7608914775384362262",
+  "7606346631482477846",
+  "7595571355811122454",
+  "7567053674040593686",
+  "7589295993913412886",
+  "7563252871504891158",
 ];
 
 const VideoShowcase = () => {
@@ -40,8 +51,10 @@ const VideoShowcase = () => {
             </span>
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
-            Así se ven los productos, marcas y creadores que gestionamos en TikTok
-            Shop. Resultados reales, ventas reales.
+            Hemos lanzado cientos de productos a TikTok Shop con +500K
+            visualizaciones en 3 meses. Gestión integral de contenido y
+            creadores en más de 20 categorías distintas. Resultados reales,
+            ventas reales.
           </p>
         </motion.div>
 
