@@ -149,9 +149,18 @@ const Contact = () => {
                   </FormItem>
                 )}
               />
-              <Button type="submit" size="lg" className="w-full gap-2">
-                Enviar mensaje
-                <Send className="h-4 w-4" />
+              <Button type="submit" size="lg" className="w-full gap-2" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? (
+                  <>
+                    Enviando...
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  </>
+                ) : (
+                  <>
+                    Enviar mensaje
+                    <Send className="h-4 w-4" />
+                  </>
+                )}
               </Button>
             </form>
           </Form>
