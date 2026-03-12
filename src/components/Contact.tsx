@@ -14,7 +14,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "@/components/ui/sonner";
-import { Send } from "lucide-react";
+import { Send, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, "El nombre es obligatorio").max(100),
@@ -31,12 +32,32 @@ const Contact = () => {
     defaultValues: { name: "", email: "", company: "", message: "" },
   });
 
-  const onSubmit = (data: ContactForm) => {
-    console.log("Contact form submitted:", { ...data, email: "[redacted]" });
-    toast.success("¡Mensaje enviado!", {
-      description: "Nos pondremos en contacto contigo pronto.",
-    });
-    form.reset();
+  const onSubmit = async (data: ContactForm) => {
+    try {
+      const { error } = await supabase.functions.invoke('send-transactional-email', {
+        body: {
+          type: 'contact_notification',
+          data: {
+            name: data.name,
+            email: data.email,
+            company: data.company || undefined,
+            message: data.message,
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      toast.success("¡Mensaje enviado!", {
+        description: "Nos pondremos en contacto contigo pronto.",
+      });
+      form.reset();
+    } catch (err) {
+      console.error("Failed to send contact form:", err);
+      toast.error("Error al enviar", {
+        description: "Inténtalo de nuevo más tarde.",
+      });
+    }
   };
 
   return (
@@ -128,9 +149,18 @@ const Contact = () => {
                   </FormItem>
                 )}
               />
-              <Button type="submit" size="lg" className="w-full gap-2">
-                Enviar mensaje
-                <Send className="h-4 w-4" />
+              <Button type="submit" size="lg" className="w-full gap-2" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? (
+                  <>
+                    Enviando...
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  </>
+                ) : (
+                  <>
+                    Enviar mensaje
+                    <Send className="h-4 w-4" />
+                  </>
+                )}
               </Button>
             </form>
           </Form>
