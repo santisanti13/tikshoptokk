@@ -14,7 +14,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "@/components/ui/sonner";
-import { Send } from "lucide-react";
+import { Send, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, "El nombre es obligatorio").max(100),
