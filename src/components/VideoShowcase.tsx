@@ -51,8 +51,10 @@ const VideoShowcase = () => {
             </span>
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
-            Así se ven los productos, marcas y creadores que gestionamos en TikTok
-            Shop. Resultados reales, ventas reales.
+            Hemos lanzado cientos de productos a TikTok Shop con +500K
+            visualizaciones en 3 meses. Gestión integral de contenido y
+            creadores en más de 20 categorías distintas. Resultados reales,
+            ventas reales.
           </p>
         </motion.div>
 
