@@ -1,6 +1,7 @@
 import * as React from 'npm:react@18.3.1'
 import { renderAsync } from 'npm:@react-email/components@0.0.22'
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { sendLovableEmail } from 'npm:@lovable.dev/email-js'
 import { ContactNotificationEmail } from '../_shared/email-templates/contact-notification.tsx'
 
 const corsHeaders = {
@@ -45,6 +46,15 @@ Deno.serve(async (req) => {
       )
     }
 
+    const apiKey = Deno.env.get('LOVABLE_API_KEY')
+    if (!apiKey) {
+      console.error('LOVABLE_API_KEY not configured')
+      return new Response(
+        JSON.stringify({ error: 'Server configuration error' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const html = await renderAsync(
       React.createElement(ContactNotificationEmail, { name, email, company, message })
     )
@@ -67,40 +77,53 @@ Deno.serve(async (req) => {
       status: 'pending',
     })
 
-    const runId = crypto.randomUUID()
-
-    const { error: enqueueError } = await supabase.rpc('enqueue_email', {
-      queue_name: 'auth_emails',
-      payload: {
-        run_id: runId,
-        message_id: messageId,
-        to: notificationEmail,
-        from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
-        sender_domain: SENDER_DOMAIN,
-        subject: `Nuevo contacto de ${name}`,
-        html,
-        text,
-        purpose: 'transactional',
-        label: 'contact_notification',
-        queued_at: new Date().toISOString(),
-      },
+    // Generate unsubscribe token for transactional email compliance
+    const unsubscribeToken = crypto.randomUUID()
+    await supabase.from('email_unsubscribe_tokens').insert({
+      email: notificationEmail,
+      token: unsubscribeToken,
     })
 
-    if (enqueueError) {
-      console.error('Failed to enqueue contact email', { error: enqueueError })
-      await supabase.from('email_send_log').update({ status: 'failed', error_message: 'Failed to enqueue' }).eq('message_id', messageId)
+    try {
+      await sendLovableEmail(
+        {
+          to: notificationEmail,
+          from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
+          sender_domain: SENDER_DOMAIN,
+          subject: `Nuevo contacto de ${name}`,
+          html,
+          text,
+          purpose: 'transactional',
+          label: 'contact_notification',
+          idempotency_key: messageId,
+          unsubscribe_token: unsubscribeToken,
+        },
+        { apiKey }
+      )
+
+      await supabase.from('email_send_log')
+        .update({ status: 'sent' })
+        .eq('message_id', messageId)
+
+      console.log('Contact notification sent directly', { to: notificationEmail, from: email })
+
+      return new Response(
+        JSON.stringify({ success: true }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    } catch (sendError) {
+      const errorMsg = sendError instanceof Error ? sendError.message : String(sendError)
+      console.error('Direct email send failed', { error: errorMsg })
+
+      await supabase.from('email_send_log')
+        .update({ status: 'failed', error_message: errorMsg.slice(0, 1000) })
+        .eq('message_id', messageId)
+
       return new Response(
         JSON.stringify({ error: 'Failed to send email' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
-
-    console.log('Contact notification enqueued', { to: notificationEmail, from: email })
-
-    return new Response(
-      JSON.stringify({ success: true }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
   } catch (error) {
     console.error('Error:', error)
     return new Response(
