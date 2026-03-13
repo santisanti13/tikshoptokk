@@ -56,10 +56,10 @@ const Hero = () => (
         className="mx-auto mt-20 grid max-w-3xl grid-cols-2 gap-8 md:grid-cols-4"
       >
         {[
-          { value: "500+", label: "Productos lanzados" },
-          { value: "120+", label: "Marcas gestionadas" },
-          { value: "2K+", label: "Creadores conectados" },
-          { value: "€10M+", label: "En ventas generadas" },
+          { value: "Miles de €", label: "En facturación generada" },
+          { value: "Top 1", label: "Colaboración con creadores top de España" },
+          { value: "5M+", label: "Visitas en contenido con producto a la venta" },
+          { value: "30+", label: "Productos lanzados en más de 10 categorías" },
         ].map((s) => (
           <div key={s.label}>
             <p className="font-display text-3xl font-bold text-foreground">{s.value}</p>
