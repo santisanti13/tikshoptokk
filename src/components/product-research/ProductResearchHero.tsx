@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, TrendingUp, Search, BarChart3 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const ProductResearchHero = () => (
   <section className="relative flex min-h-[85vh] items-center overflow-hidden pt-16">
