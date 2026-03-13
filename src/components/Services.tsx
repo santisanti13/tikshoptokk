@@ -30,45 +30,55 @@ const services = [
   },
 ];
 
-const Services = () => (
-  <section id="servicios" className="relative py-24">
-    <div className="container">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="text-center"
-      >
-        <p className="text-sm font-medium uppercase tracking-widest text-primary">
-          Servicios
-        </p>
-        <h2 className="mt-3 font-display text-3xl font-bold sm:text-4xl">
-          Todo lo que necesitas para triunfar en TikTok Shop
-        </h2>
-      </motion.div>
+const Services = () => {
+  const navigate = useNavigate();
 
-      <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {services.map((s, i) => (
-          <motion.div
-            key={s.title}
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.1 }}
-            className="group rounded-xl border border-border bg-card p-6 transition-colors hover:border-primary/40"
-          >
-            <div className="mb-4 inline-flex rounded-lg bg-primary/10 p-3">
-              <s.icon className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="font-display text-lg font-semibold">{s.title}</h3>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              {s.description}
-            </p>
-          </motion.div>
-        ))}
+  return (
+    <section id="servicios" className="relative py-24">
+      <div className="container">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center"
+        >
+          <p className="text-sm font-medium uppercase tracking-widest text-primary">
+            Servicios
+          </p>
+          <h2 className="mt-3 font-display text-3xl font-bold sm:text-4xl">
+            Todo lo que necesitas para triunfar en TikTok Shop
+          </h2>
+        </motion.div>
+
+        <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {services.map((s, i) => (
+            <motion.div
+              key={s.title}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              onClick={() => s.link && navigate(s.link)}
+              className={`group rounded-xl border border-border bg-card p-6 transition-colors hover:border-primary/40 ${s.link ? "cursor-pointer" : ""}`}
+            >
+              <div className="mb-4 inline-flex rounded-lg bg-primary/10 p-3">
+                <s.icon className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="font-display text-lg font-semibold">{s.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                {s.description}
+              </p>
+              {s.link && (
+                <p className="mt-3 text-xs font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
+                  Ver más →
+                </p>
+              )}
+            </motion.div>
+          ))}
+        </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 export default Services;
