@@ -77,6 +77,13 @@ Deno.serve(async (req) => {
       status: 'pending',
     })
 
+    // Generate unsubscribe token for transactional email compliance
+    const unsubscribeToken = crypto.randomUUID()
+    await supabase.from('email_unsubscribe_tokens').insert({
+      email: notificationEmail,
+      token: unsubscribeToken,
+    })
+
     try {
       await sendLovableEmail(
         {
@@ -89,6 +96,7 @@ Deno.serve(async (req) => {
           purpose: 'transactional',
           label: 'contact_notification',
           idempotency_key: messageId,
+          unsubscribe_token: unsubscribeToken,
         },
         { apiKey }
       )
