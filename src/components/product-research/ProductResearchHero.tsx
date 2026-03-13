@@ -3,9 +3,18 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, TrendingUp, Search, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-const ProductResearchHero = () => (
-  <section className="relative flex min-h-[85vh] items-center overflow-hidden pt-16">
-    {/* Gradient orbs */}
+const ProductResearchHero = () => {
+  const navigate = useNavigate();
+
+  const goToContact = () => {
+    navigate("/");
+    setTimeout(() => {
+      document.getElementById("contacto")?.scrollIntoView({ behavior: "smooth" });
+    }, 300);
+  };
+
+  return (
+    <section className="relative flex min-h-[85vh] items-center overflow-hidden pt-16">
     <div className="pointer-events-none absolute inset-0">
       <div className="absolute -left-40 top-20 h-[600px] w-[600px] rounded-full bg-primary/25 blur-[150px]" />
       <div className="absolute -right-40 bottom-0 h-[500px] w-[500px] rounded-full bg-secondary/20 blur-[130px]" />
