@@ -8,6 +8,7 @@ const services = [
     title: "Product Research",
     description:
       "Encontramos productos virales y adaptamos la propuesta de valor de otros marketplaces y e-commerce al mercado de TikTok Shop.",
+    link: "/product-research",
   },
   {
     icon: Palette,
