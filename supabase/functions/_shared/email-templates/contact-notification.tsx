@@ -23,7 +23,7 @@ interface ContactNotificationEmailProps {
 }
 
 const FEATURED_VIDEO_ID = '7610820653284936982'
-const FEATURED_VIDEO_URL = `https://www.tiktok.com/@tikshoptokk/video/${FEATURED_VIDEO_ID}`
+const FEATURED_VIDEO_URL = `https://www.tiktok.com/@tikshoptok/video/${FEATURED_VIDEO_ID}`
 
 export const ContactNotificationEmail = ({
   name,
@@ -86,7 +86,7 @@ export const ContactNotificationEmail = ({
 
         <Section style={footer}>
           <Text style={footerText}>
-            Este email fue enviado desde el formulario de contacto de tikshoptokk.
+            Este email fue enviado desde el formulario de contacto de tikshoptok.
           </Text>
           <Text style={footerBrand}>© TikShopTok — tikshoptok.com</Text>
         </Section>

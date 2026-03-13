@@ -22,7 +22,7 @@ interface RecoveryEmailProps {
 }
 
 const FEATURED_VIDEO_ID = '7610820653284936982'
-const FEATURED_VIDEO_URL = `https://www.tiktok.com/@tikshoptokk/video/${FEATURED_VIDEO_ID}`
+const FEATURED_VIDEO_URL = `https://www.tiktok.com/@tikshoptok/video/${FEATURED_VIDEO_ID}`
 
 export const RecoveryEmail = ({
   siteName,
