@@ -92,15 +92,17 @@ const VideoShowcase = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="flex-shrink-0 snap-center"
+                className="flex-none snap-center"
+                style={{ width: 280, height: 500 }}
               >
                 <iframe
-                  src={`https://www.tiktok.com/embed/v2/${id}`}
-                  className="h-[400px] w-[225px] rounded-xl border border-border"
+                  src={`https://www.tiktok.com/player/v1/${id}?autoplay=1&loop=1&mute=1&controls=0`}
+                  className="h-full w-full rounded-xl border border-border"
                   allowFullScreen
-                  allow="encrypted-media"
+                  allow="autoplay; encrypted-media"
                   loading="lazy"
                   title={`TikTok video ${i + 1}`}
+                  style={{ border: "none" }}
                 />
               </motion.div>
             ))}
