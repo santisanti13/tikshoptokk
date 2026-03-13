@@ -86,7 +86,7 @@ export const ContactNotificationEmail = ({
 
         <Section style={footer}>
           <Text style={footerText}>
-            Este email fue enviado desde el formulario de contacto de tikshoptokk.
+            Este email fue enviado desde el formulario de contacto de tikshoptok.
           </Text>
           <Text style={footerBrand}>© TikShopTok — tikshoptok.com</Text>
         </Section>
