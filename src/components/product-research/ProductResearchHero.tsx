@@ -100,6 +100,7 @@ const ProductResearchHero = () => {
       </motion.div>
     </div>
   </section>
-);
+  );
+};
 
 export default ProductResearchHero;
