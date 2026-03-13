@@ -67,12 +67,9 @@ Deno.serve(async (req) => {
       status: 'pending',
     })
 
-    const runId = crypto.randomUUID()
-
     const { error: enqueueError } = await supabase.rpc('enqueue_email', {
-      queue_name: 'auth_emails',
+      queue_name: 'transactional_emails',
       payload: {
-        run_id: runId,
         message_id: messageId,
         to: notificationEmail,
         from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
