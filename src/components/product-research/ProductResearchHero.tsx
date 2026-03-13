@@ -48,11 +48,9 @@ const ProductResearchHero = () => {
         </p>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Button asChild size="lg" className="gap-2 text-base">
-            <a href="#contacto">
+          <Button size="lg" className="gap-2 text-base" onClick={goToContact}>
               Solicitar investigación
               <ArrowRight className="h-4 w-4" />
-            </a>
           </Button>
           <Button asChild variant="outline" size="lg" className="text-base">
             <a href="#viral-products">Ver productos trending</a>
