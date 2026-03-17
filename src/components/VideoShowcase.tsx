@@ -3,6 +3,8 @@ import { useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+const brands = ["Numada", "Nalui", "Newlux"];
+
 const tiktokVideos = [
   "7597044434647174422",
   "7594408068671130902",
@@ -21,6 +23,13 @@ const tiktokVideos = [
   "7589295993913412886",
   "7563252871504891158",
 ];
+
+// Interleave: brand card, then video, repeating brands cyclically
+const items: { type: "brand" | "video"; value: string }[] = [];
+tiktokVideos.forEach((id, i) => {
+  items.push({ type: "brand", value: brands[i % brands.length] });
+  items.push({ type: "video", value: id });
+});
 
 const VideoShowcase = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
