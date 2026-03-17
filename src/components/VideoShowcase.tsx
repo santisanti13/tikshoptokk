@@ -94,25 +94,33 @@ const VideoShowcase = () => {
             className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-2 pb-4 scrollbar-hide sm:gap-6"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
-            {tiktokVideos.map((id, i) => (
+            {items.map((item, i) => (
               <motion.div
-                key={id}
+                key={`${item.type}-${i}`}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
+                transition={{ duration: 0.5, delay: (i % 6) * 0.08 }}
                 className="flex-none snap-center"
                 style={{ width: 280, height: 500 }}
               >
-                <iframe
-                  src={`https://www.tiktok.com/player/v1/${id}?autoplay=1&loop=1&mute=1&controls=0`}
-                  className="h-full w-full rounded-xl border border-border"
-                  allowFullScreen
-                  allow="autoplay; encrypted-media"
-                  loading="lazy"
-                  title={`TikTok video ${i + 1}`}
-                  style={{ border: "none" }}
-                />
+                {item.type === "brand" ? (
+                  <div className="flex h-full w-full items-center justify-center rounded-xl border border-border bg-gradient-to-br from-primary/20 to-secondary/20">
+                    <span className="font-display text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                      {item.value}
+                    </span>
+                  </div>
+                ) : (
+                  <iframe
+                    src={`https://www.tiktok.com/player/v1/${item.value}?autoplay=1&loop=1&mute=1&controls=0`}
+                    className="h-full w-full rounded-xl border border-border"
+                    allowFullScreen
+                    allow="autoplay; encrypted-media"
+                    loading="lazy"
+                    title={`TikTok video`}
+                    style={{ border: "none" }}
+                  />
+                )}
               </motion.div>
             ))}
           </div>
