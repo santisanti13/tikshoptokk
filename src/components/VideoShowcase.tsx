@@ -3,8 +3,6 @@ import { useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const brands = ["Numada", "Nalui", "Newlux"];
-
 const tiktokVideos = [
   "7597044434647174422",
   "7594408068671130902",
@@ -23,13 +21,6 @@ const tiktokVideos = [
   "7589295993913412886",
   "7563252871504891158",
 ];
-
-// Interleave: brand card, then video, repeating brands cyclically
-const items: { type: "brand" | "video"; value: string }[] = [];
-tiktokVideos.forEach((id, i) => {
-  items.push({ type: "brand", value: brands[i % brands.length] });
-  items.push({ type: "video", value: id });
-});
 
 const VideoShowcase = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -94,33 +85,25 @@ const VideoShowcase = () => {
             className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-2 pb-4 scrollbar-hide sm:gap-6"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
-            {items.map((item, i) => (
+            {tiktokVideos.map((id, i) => (
               <motion.div
-                key={`${item.type}-${i}`}
+                key={id}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: (i % 6) * 0.08 }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
                 className="flex-none snap-center"
                 style={{ width: 280, height: 500 }}
               >
-                {item.type === "brand" ? (
-                  <div className="flex h-full w-full items-center justify-center rounded-xl border border-border bg-gradient-to-br from-primary/20 to-secondary/20">
-                    <span className="font-display text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                      {item.value}
-                    </span>
-                  </div>
-                ) : (
-                  <iframe
-                    src={`https://www.tiktok.com/player/v1/${item.value}?autoplay=1&loop=1&mute=1&controls=0`}
-                    className="h-full w-full rounded-xl border border-border"
-                    allowFullScreen
-                    allow="autoplay; encrypted-media"
-                    loading="lazy"
-                    title={`TikTok video`}
-                    style={{ border: "none" }}
-                  />
-                )}
+                <iframe
+                  src={`https://www.tiktok.com/player/v1/${id}?autoplay=1&loop=1&mute=1&controls=0`}
+                  className="h-full w-full rounded-xl border border-border"
+                  allowFullScreen
+                  allow="autoplay; encrypted-media"
+                  loading="lazy"
+                  title={`TikTok video ${i + 1}`}
+                  style={{ border: "none" }}
+                />
               </motion.div>
             ))}
           </div>
