@@ -85,6 +85,16 @@ const BlogPost = () => {
                   )}
                 </header>
 
+                {post.mainImage?.asset && (
+                  <div className="mb-10 overflow-hidden rounded-lg">
+                    <img
+                      src={urlFor(post.mainImage).width(800).height(450).fit("crop").auto("format").url()}
+                      alt={post.mainImage.alt || post.title}
+                      className="w-full object-cover"
+                    />
+                  </div>
+                )}
+
                 {post.body && <PortableTextRenderer blocks={post.body} />}
               </article>
             ) : (
