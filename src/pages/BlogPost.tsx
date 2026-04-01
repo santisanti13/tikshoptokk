@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { sanityClient } from "@/lib/sanity";
+import { sanityClient, urlFor } from "@/lib/sanity";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PortableTextRenderer from "@/components/blog/PortableTextRenderer";
@@ -23,7 +23,7 @@ const BlogPost = () => {
     queryFn: () =>
       sanityClient.fetch(
         `*[_type == "post" && slug.current == $slug][0] {
-          _id, title, publishedAt, excerpt, category, tags, body
+          _id, title, publishedAt, excerpt, category, tags, body, mainImage
         }`,
         { slug }
       ),
@@ -84,6 +84,16 @@ const BlogPost = () => {
                     </div>
                   )}
                 </header>
+
+                {post.mainImage?.asset && (
+                  <div className="mb-10 overflow-hidden rounded-lg">
+                    <img
+                      src={urlFor(post.mainImage).width(800).height(450).fit("crop").auto("format").url()}
+                      alt={post.mainImage.alt || post.title}
+                      className="w-full object-cover"
+                    />
+                  </div>
+                )}
 
                 {post.body && <PortableTextRenderer blocks={post.body} />}
               </article>
