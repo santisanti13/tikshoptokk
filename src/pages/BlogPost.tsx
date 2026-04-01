@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { sanityClient } from "@/lib/sanity";
+import { sanityClient, urlFor } from "@/lib/sanity";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PortableTextRenderer from "@/components/blog/PortableTextRenderer";
