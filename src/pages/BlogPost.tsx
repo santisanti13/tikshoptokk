@@ -23,7 +23,7 @@ const BlogPost = () => {
     queryFn: () =>
       sanityClient.fetch(
         `*[_type == "post" && slug.current == $slug][0] {
-          _id, title, publishedAt, excerpt, category, tags, body
+          _id, title, publishedAt, excerpt, category, tags, body, mainImage
         }`,
         { slug }
       ),
