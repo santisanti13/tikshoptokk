@@ -44,7 +44,7 @@ const Blog = () => {
             </div>
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {posts?.map((post: { _id: string; title: string; slug: string; excerpt: string; category: string; publishedAt: string }) => (
+              {posts?.map((post: { _id: string; title: string; slug: string; excerpt: string; category: string; publishedAt: string; mainImage?: { asset?: { _ref: string }; alt?: string } }) => (
                 <BlogCard
                   key={post._id}
                   title={post.title}
@@ -52,6 +52,7 @@ const Blog = () => {
                   excerpt={post.excerpt}
                   category={post.category}
                   publishedAt={post.publishedAt}
+                  mainImage={post.mainImage}
                 />
               ))}
             </div>
