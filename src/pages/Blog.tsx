@@ -11,7 +11,8 @@ const POSTS_QUERY = `*[_type == "post"] | order(publishedAt desc) {
   "slug": slug.current,
   excerpt,
   category,
-  publishedAt
+  publishedAt,
+  mainImage
 }`;
 
 const Blog = () => {
