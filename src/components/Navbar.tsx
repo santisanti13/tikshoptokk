@@ -39,7 +39,7 @@ const Navbar = () => {
           <Link to="/"><Logo /></Link>
         )}
 
-        <div className="hidden items-center gap-7 md:flex">
+        <div className="hidden items-center gap-7 lg:flex">
           {links.map((l) => (
             <NavItem key={l.href} href={l.href} label={l.label} />
           ))}
@@ -49,7 +49,7 @@ const Navbar = () => {
         </div>
 
         <button
-          className="md:hidden"
+          className="lg:hidden"
           aria-label={open ? "Cerrar menú" : "Abrir menú"}
           onClick={() => setOpen(!open)}
         >
@@ -58,7 +58,7 @@ const Navbar = () => {
       </div>
 
       {open && (
-        <div className="mx-auto mt-2 max-w-7xl rounded-3xl border border-white/10 bg-background/95 px-5 py-4 backdrop-blur-xl md:hidden">
+        <div className="mx-auto mt-2 max-w-7xl rounded-3xl border border-white/10 bg-background/95 px-5 py-4 backdrop-blur-xl lg:hidden">
           {links.map((l) => (
             <div key={l.href} className="block py-2.5">
               <NavItem href={l.href} label={l.label} onClick={() => setOpen(false)} />

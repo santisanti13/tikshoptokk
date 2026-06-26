@@ -52,11 +52,11 @@ const ProductResearchHero = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bento-solid bento-hover-cyan flex flex-col justify-between p-8 md:col-span-4"
+          className="bento-solid bento-hover-cyan flex flex-col justify-center gap-8 p-8 md:col-span-4"
         >
           <div className="text-xs font-medium uppercase tracking-[0.25em] text-secondary">Live data</div>
           <div>
-            <div className="font-display text-6xl font-bold tracking-tighter text-secondary">+5M</div>
+            <div className="font-display text-5xl font-bold tracking-tighter text-secondary md:text-6xl">+5M</div>
             <div className="mt-1 font-medium">Productos en base de datos</div>
             <div className="mt-6 h-1 w-32 overflow-hidden rounded-full bg-white/10">
               <div className="h-full w-3/4 bg-secondary" />
