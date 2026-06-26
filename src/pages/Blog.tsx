@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { sanityClient } from "@/lib/sanity";
+import SEO from "@/components/SEO";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BlogCard from "@/components/blog/BlogCard";
@@ -23,6 +24,11 @@ const Blog = () => {
 
   return (
     <>
+      <SEO
+        title="Blog de TikTok Shop — Guías, UGC y productos virales"
+        description="Estrategias, casos y tendencias sobre TikTok Shop, creadores UGC y productos virales. Aprende a vender más en TikTok con TikShopTok."
+        path="/blog"
+      />
       <Navbar />
       <main className="min-h-screen pt-24 pb-16">
         <div className="container">
