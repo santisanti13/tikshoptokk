@@ -46,7 +46,7 @@ const Hero = () => (
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.1 }}
-        className="bento-solid bento-hover-cyan flex flex-col justify-between p-8 md:col-span-4"
+        className="bento-solid bento-hover-cyan flex flex-col justify-center gap-8 p-8 md:col-span-4"
       >
         <div>
           <div className="mb-4 flex -space-x-3">
@@ -62,8 +62,8 @@ const Hero = () => (
           </div>
           <p className="text-sm text-muted-foreground">Impulsando a los mejores creadores top de España</p>
         </div>
-        <div className="mt-8">
-          <div className="font-display text-6xl font-bold tracking-tighter text-secondary">+5M</div>
+        <div>
+          <div className="font-display text-5xl font-bold tracking-tighter text-secondary md:text-6xl">+5M</div>
           <div className="mt-1 font-medium text-foreground/80">Visitas en contenido con producto</div>
         </div>
       </motion.div>
