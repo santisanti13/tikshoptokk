@@ -1,45 +1,46 @@
 import { motion } from "framer-motion";
-import { Star } from "lucide-react";
+import { Star, Quote } from "lucide-react";
 
 const testimonials = [
   {
     name: "Laura M.",
     company: "BeautyGlow",
-    text: "En 3 meses pasamos de 0 a €120K en ventas mensuales en TikTok Shop. El equipo de TikShopTok nos encontró los productos perfectos y los creadores ideales.",
+    text: "En 3 meses pasamos de 0 a €120K en ventas mensuales en TikTok Shop. TikShopTok nos encontró los productos perfectos y los creadores ideales.",
     result: "€120K/mes",
+    span: "md:col-span-5",
   },
   {
     name: "Carlos R.",
     company: "FitPro Nutrition",
-    text: "La conexión con creadores cambió todo. Antes gastábamos miles en ads sin retorno; ahora cada creador nos genera ventas reales y consistentes.",
+    text: "La conexión con creadores cambió todo. Antes gastábamos miles en ads sin retorno; ahora cada creador nos genera ventas reales.",
     result: "+340% ROI",
+    span: "md:col-span-4",
   },
   {
     name: "María P.",
     company: "HomeStyle",
-    text: "Lanzamos nuestra marca de decoración desde cero con TikShopTok. En 6 semanas teníamos productos virales y una red de 50 creadores activos.",
+    text: "Lanzamos nuestra marca de decoración desde cero. En 6 semanas teníamos productos virales y una red de 50 creadores activos.",
     result: "50 creadores",
+    span: "md:col-span-3",
   },
 ];
 
 const Testimonials = () => (
-  <section id="resultados" className="relative py-24">
-    <div className="container">
+  <section id="resultados" className="px-4 py-24 md:px-8">
+    <div className="mx-auto max-w-7xl">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="text-center"
+        className="mb-10 text-center"
       >
-        <p className="text-sm font-medium uppercase tracking-widest text-secondary">
-          Resultados
-        </p>
-        <h2 className="mt-3 font-display text-3xl font-bold sm:text-4xl">
-          Lo que dicen nuestros clientes
+        <p className="text-xs font-medium uppercase tracking-[0.25em] text-secondary">Resultados</p>
+        <h2 className="mt-3 font-display text-4xl font-bold tracking-tight md:text-5xl">
+          Lo que dicen <span className="gradient-text">nuestros clientes</span>
         </h2>
       </motion.div>
 
-      <div className="mt-16 grid gap-6 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
         {testimonials.map((t, i) => (
           <motion.div
             key={t.name}
@@ -47,24 +48,23 @@ const Testimonials = () => (
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.1 }}
-            className="flex flex-col justify-between rounded-xl border border-border bg-card p-6"
+            className={`bento bento-hover-pink relative flex flex-col justify-between overflow-hidden p-8 ${t.span}`}
           >
+            <Quote className="absolute right-6 top-6 h-10 w-10 text-primary/15" />
             <div>
               <div className="mb-4 flex gap-1">
                 {Array.from({ length: 5 }).map((_, j) => (
                   <Star key={j} className="h-4 w-4 fill-primary text-primary" />
                 ))}
               </div>
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                "{t.text}"
-              </p>
+              <p className="text-base leading-relaxed text-foreground/90">"{t.text}"</p>
             </div>
-            <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
+            <div className="mt-6 flex items-end justify-between border-t border-white/10 pt-4">
               <div>
                 <p className="font-display text-sm font-semibold">{t.name}</p>
                 <p className="text-xs text-muted-foreground">{t.company}</p>
               </div>
-              <span className="rounded-full bg-primary/10 px-3 py-1 font-display text-sm font-bold text-primary">
+              <span className="rounded-full border border-secondary/30 bg-secondary/10 px-3 py-1 font-display text-sm font-bold text-secondary">
                 {t.result}
               </span>
             </div>
