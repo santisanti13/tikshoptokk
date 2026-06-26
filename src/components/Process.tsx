@@ -1,67 +1,54 @@
 import { motion } from "framer-motion";
 
 const steps = [
-  {
-    num: "01",
-    title: "Análisis & Estrategia",
-    desc: "Analizamos tu nicho, competencia y oportunidades en TikTok Shop para diseñar la estrategia perfecta.",
-  },
-  {
-    num: "02",
-    title: "Selección de Producto",
-    desc: "Investigamos y seleccionamos los productos virales con mayor potencial de ventas para tu marca.",
-  },
-  {
-    num: "03",
-    title: "Creadores & Contenido",
-    desc: "Conectamos tu marca con creadores de contenido ideales y gestionamos toda la producción.",
-  },
-  {
-    num: "04",
-    title: "Lanzamiento & Escala",
-    desc: "Lanzamos, optimizamos y escalamos tu presencia en TikTok Shop con resultados medibles.",
-  },
+  { num: "01", title: "Análisis", desc: "Auditamos tu nicho, competencia y oportunidades en TikTok Shop." },
+  { num: "02", title: "Setup", desc: "Seleccionamos productos virales con potencial real de ventas." },
+  { num: "03", title: "Contenido", desc: "Conectamos con creadores y producimos contenido nativo." },
+  { num: "04", title: "Escalado", desc: "Optimizamos, escalamos y multiplicamos ventas medibles." },
 ];
 
 const Process = () => (
-  <section id="proceso" className="relative py-24">
-    <div className="container">
+  <section id="proceso" className="px-4 py-24 md:px-8">
+    <div className="mx-auto max-w-7xl">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="text-center"
+        className="mb-10 text-center"
       >
-        <p className="text-sm font-medium uppercase tracking-widest text-secondary">
-          Proceso
-        </p>
-        <h2 className="mt-3 font-display text-3xl font-bold sm:text-4xl">
-          Cómo trabajamos
-        </h2>
+        <p className="text-xs font-medium uppercase tracking-[0.25em] text-secondary">Proceso</p>
+        <h2 className="mt-3 font-display text-4xl font-bold tracking-tight md:text-5xl">Cómo trabajamos</h2>
       </motion.div>
 
-      <div className="relative mt-16 grid gap-8 md:grid-cols-4">
-        {/* Connecting line */}
-        <div className="absolute left-0 right-0 top-10 hidden h-px bg-gradient-to-r from-transparent via-border to-transparent md:block" />
-
-        {steps.map((s, i) => (
-          <motion.div
-            key={s.num}
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.12 }}
-            className="relative text-center"
-          >
-            <div className="relative z-10 mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full border border-border bg-card">
-              <span className="font-display text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                {s.num}
-              </span>
-            </div>
-            <h3 className="font-display text-lg font-semibold">{s.title}</h3>
-            <p className="mt-2 text-sm text-muted-foreground">{s.desc}</p>
-          </motion.div>
-        ))}
+      <div className="bento-solid p-6 md:p-10">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
+          {steps.map((s, i) => {
+            const isLast = i === steps.length - 1;
+            return (
+              <motion.div
+                key={s.num}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="relative"
+              >
+                <div
+                  className={`font-display text-5xl font-bold tracking-tighter ${isLast ? "text-primary" : "text-white/20"}`}
+                >
+                  {s.num}
+                </div>
+                <h3 className={`mt-3 font-display text-lg font-semibold ${isLast ? "text-primary" : "text-foreground"}`}>
+                  {s.title}
+                </h3>
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
+                {!isLast && (
+                  <div className="absolute right-0 top-6 hidden h-px w-8 bg-white/10 md:block" />
+                )}
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
     </div>
   </section>

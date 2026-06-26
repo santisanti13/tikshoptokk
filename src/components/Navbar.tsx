@@ -8,62 +8,46 @@ const links = [
   { label: "Product Research", href: "/product-research" },
   { label: "Blog", href: "/blog" },
   { label: "Proceso", href: "#proceso" },
-  { label: "Por qué nosotros", href: "#porqué" },
   { label: "Resultados", href: "#resultados" },
 ];
 
 const NavItem = ({ href, label, onClick }: { href: string; label: string; onClick?: () => void }) => {
   const isInternal = href.startsWith("/");
   const className = "text-sm text-muted-foreground transition-colors hover:text-foreground";
-
-  if (isInternal) {
-    return (
-      <Link to={href} className={className} onClick={onClick}>
-        {label}
-      </Link>
-    );
-  }
-  return (
-    <a href={href} className={className} onClick={onClick}>
-      {label}
-    </a>
-  );
+  if (isInternal) return <Link to={href} className={className} onClick={onClick}>{label}</Link>;
+  return <a href={href} className={className} onClick={onClick}>{label}</a>;
 };
+
+const Logo = () => (
+  <span className="font-display text-xl font-bold tracking-tight">
+    <span className="text-primary">Tik</span>
+    <span className="text-secondary">Shop</span>
+    <span className="text-foreground">Tok</span>
+  </span>
+);
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const location = useLocation();
 
-  const logoTo = location.pathname === "/" ? "#" : "/";
-
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-      <div className="container flex h-16 items-center justify-between">
+    <nav className="fixed left-0 right-0 top-4 z-50 px-4 md:px-8">
+      <div className="mx-auto flex max-w-7xl items-center justify-between rounded-full border border-white/10 bg-background/70 px-5 py-2.5 backdrop-blur-xl">
         {location.pathname === "/" ? (
-          <a href="#" className="font-display text-xl font-bold tracking-tight">
-            <span className="text-primary">Tik</span>
-            <span className="text-secondary">Shop</span>
-            <span className="text-foreground">Tok</span>
-          </a>
+          <a href="#"><Logo /></a>
         ) : (
-          <Link to="/" className="font-display text-xl font-bold tracking-tight">
-            <span className="text-primary">Tik</span>
-            <span className="text-secondary">Shop</span>
-            <span className="text-foreground">Tok</span>
-          </Link>
+          <Link to="/"><Logo /></Link>
         )}
 
-        {/* Desktop */}
-        <div className="hidden items-center gap-8 md:flex">
+        <div className="hidden items-center gap-7 md:flex">
           {links.map((l) => (
             <NavItem key={l.href} href={l.href} label={l.label} />
           ))}
-          <Button asChild size="sm">
-            <a href="#contacto">Agenda una consulta</a>
+          <Button asChild size="sm" className="rounded-full px-5">
+            <a href={location.pathname === "/" ? "#contacto" : "/#contacto"}>Agenda una consulta</a>
           </Button>
         </div>
 
-        {/* Mobile toggle */}
         <button
           className="md:hidden"
           aria-label={open ? "Cerrar menú" : "Abrir menú"}
@@ -73,16 +57,15 @@ const Navbar = () => {
         </button>
       </div>
 
-      {/* Mobile menu */}
       {open && (
-        <div className="border-t border-border bg-background px-6 pb-6 md:hidden">
+        <div className="mx-auto mt-2 max-w-7xl rounded-3xl border border-white/10 bg-background/95 px-5 py-4 backdrop-blur-xl md:hidden">
           {links.map((l) => (
-            <div key={l.href} className="block py-3">
+            <div key={l.href} className="block py-2.5">
               <NavItem href={l.href} label={l.label} onClick={() => setOpen(false)} />
             </div>
           ))}
-          <Button asChild size="sm" className="mt-2 w-full">
-            <a href="#contacto" onClick={() => setOpen(false)}>
+          <Button asChild size="sm" className="mt-3 w-full rounded-full">
+            <a href={location.pathname === "/" ? "#contacto" : "/#contacto"} onClick={() => setOpen(false)}>
               Agenda una consulta
             </a>
           </Button>
