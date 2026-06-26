@@ -45,79 +45,69 @@ const BlogPost = () => {
         image={seoImage}
       />
       <Navbar />
-      <main className="min-h-screen pt-24 pb-16">
-        <div className="container">
-          <div className="mx-auto max-w-3xl">
-            <Link
-              to="/blog"
-              className="mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-primary"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Volver al blog
-            </Link>
+      <main className="min-h-screen px-4 pt-28 pb-16 md:px-8">
+        <div className="mx-auto max-w-4xl">
+          <Link
+            to="/blog"
+            className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-primary"
+          >
+            <ArrowLeft className="h-4 w-4" /> Volver al blog
+          </Link>
 
-            {isLoading ? (
-              <div className="space-y-4">
-                <Skeleton className="h-10 w-3/4" />
-                <Skeleton className="h-6 w-1/4" />
-                <Skeleton className="h-96 w-full" />
-              </div>
-            ) : post ? (
-              <article>
-                <header className="mb-10">
+          {isLoading ? (
+            <div className="bento space-y-4 p-8">
+              <Skeleton className="h-10 w-3/4" />
+              <Skeleton className="h-6 w-1/4" />
+              <Skeleton className="h-96 w-full" />
+            </div>
+          ) : post ? (
+            <article className="bento overflow-hidden">
+              {post.mainImage?.asset && (
+                <div className="aspect-[21/9] overflow-hidden">
+                  <img
+                    src={urlFor(post.mainImage).width(1200).height(514).fit("crop").auto("format").url()}
+                    alt={post.mainImage.alt || post.title}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              )}
+              <div className="p-8 md:p-12">
+                <header className="mb-8">
                   <div className="mb-4 flex flex-wrap items-center gap-3">
                     {post.category && (
-                      <Badge variant="secondary">
+                      <Badge variant="secondary" className="rounded-full border-secondary/30 bg-secondary/10 text-secondary">
                         {categoryLabels[post.category] || post.category}
                       </Badge>
                     )}
-                    <span className="flex items-center gap-1 text-sm text-muted-foreground">
-                      <Calendar className="h-4 w-4" />
-                      {new Date(post.publishedAt).toLocaleDateString("es-ES", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </span>
+                    {post.publishedAt && (
+                      <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <Calendar className="h-4 w-4" />
+                        {new Date(post.publishedAt).toLocaleDateString("es-ES", { year: "numeric", month: "long", day: "numeric" })}
+                      </span>
+                    )}
                   </div>
-                  <h1 className="font-display text-3xl font-bold leading-tight text-foreground md:text-4xl">
+                  <h1 className="font-display text-4xl font-bold leading-tight tracking-tight md:text-5xl">
                     {post.title}
                   </h1>
                   {post.tags && (
-                    <div className="mt-4 flex flex-wrap gap-2">
+                    <div className="mt-5 flex flex-wrap gap-2">
                       {post.tags.map((tag: string) => (
-                        <span
-                          key={tag}
-                          className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground"
-                        >
+                        <span key={tag} className="rounded-full border border-white/10 px-3 py-1 text-xs text-muted-foreground">
                           {tag}
                         </span>
                       ))}
                     </div>
                   )}
                 </header>
-
-                {post.mainImage?.asset && (
-                  <div className="mb-10 overflow-hidden rounded-lg">
-                    <img
-                      src={urlFor(post.mainImage).width(800).height(450).fit("crop").auto("format").url()}
-                      alt={post.mainImage.alt || post.title}
-                      className="w-full object-cover"
-                    />
-                  </div>
-                )}
-
                 {post.body && <PortableTextRenderer blocks={post.body} />}
-              </article>
-            ) : (
-              <div className="text-center">
-                <h2 className="text-2xl font-bold text-foreground">Artículo no encontrado</h2>
-                <Link to="/blog" className="mt-4 text-primary hover:underline">
-                  Volver al blog
-                </Link>
               </div>
-            )}
-          </div>
+            </article>
+          ) : (
+            <div className="bento p-12 text-center">
+              <h2 className="font-display text-2xl font-bold">Artículo no encontrado</h2>
+              <Link to="/blog" className="mt-4 inline-block text-primary hover:underline">Volver al blog</Link>
+            </div>
+          )}
         </div>
       </main>
       <Footer />
