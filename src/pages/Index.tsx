@@ -1,3 +1,4 @@
+import SEO from "@/components/SEO";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Services from "@/components/Services";
@@ -10,6 +11,11 @@ import Footer from "@/components/Footer";
 
 const Index = () => (
   <>
+    <SEO
+      title="TikShopTok — Agencia de TikTok Shop y Social Commerce"
+      description="Agencia nativa de TikTok Shop: product research, creación de marcas, gestión de creadores UGC y lanzamiento de productos virales a escala."
+      path="/"
+    />
     <Navbar />
     <Hero />
     <Services />

@@ -1,6 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { sanityClient, urlFor } from "@/lib/sanity";
+import SEO from "@/components/SEO";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PortableTextRenderer from "@/components/blog/PortableTextRenderer";
@@ -30,8 +31,19 @@ const BlogPost = () => {
     enabled: !!slug,
   });
 
+  const seoTitle = post?.title ? `${post.title} — Blog TikShopTok` : "Cargando artículo — Blog TikShopTok";
+  const seoDescription = post?.excerpt || "Artículo del blog de TikShopTok sobre TikTok Shop, UGC y productos virales.";
+  const seoImage = post?.mainImage ? urlFor(post.mainImage).width(1200).height(630).url() : undefined;
+
   return (
     <>
+      <SEO
+        title={seoTitle.length > 60 ? `${post?.title?.slice(0, 55)}…` : seoTitle}
+        description={seoDescription.slice(0, 160)}
+        path={`/blog/${slug ?? ""}`}
+        type="article"
+        image={seoImage}
+      />
       <Navbar />
       <main className="min-h-screen pt-24 pb-16">
         <div className="container">
