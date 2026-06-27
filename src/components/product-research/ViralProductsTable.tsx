@@ -5,6 +5,7 @@ import { TrendingUp, TrendingDown, Flame, Eye, ShoppingCart, Star, RefreshCw, Ex
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import WaitlistDialog from "./WaitlistDialog";
 
 interface ViralProduct {
   rank: number;
@@ -48,6 +49,13 @@ const ViralProductsTable = () => {
   const [products, setProducts] = useState<ViralProduct[]>(MOCK_PRODUCTS);
   const [loading, setLoading] = useState(false);
   const [liveData, setLiveData] = useState(false);
+  const [waitlistOpen, setWaitlistOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<string | undefined>();
+
+  const openWaitlist = (name: string) => {
+    setSelectedItem(name);
+    setWaitlistOpen(true);
+  };
 
   const handleFetchLive = async () => {
     setLoading(true);
@@ -132,13 +140,15 @@ const ViralProductsTable = () => {
           </div>
 
           {products.map((product, i) => (
-            <motion.div
+            <motion.button
+              type="button"
+              onClick={() => openWaitlist(product.name)}
               key={product.rank}
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.03 }}
-              className="group relative overflow-hidden rounded-xl border border-border/30 bg-card/40 px-4 py-3 backdrop-blur-sm transition-all duration-300 hover:border-primary/30 hover:bg-card/70 sm:px-6"
+              className="group relative w-full text-left overflow-hidden rounded-xl border border-border/30 bg-card/40 px-4 py-3 backdrop-blur-sm transition-all duration-300 hover:border-primary/30 hover:bg-card/70 sm:px-6 cursor-pointer"
             >
               {/* Hover gradient */}
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-primary/3 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
@@ -208,7 +218,7 @@ const ViralProductsTable = () => {
                   </span>
                 </div>
               </div>
-            </motion.div>
+            </motion.button>
           ))}
         </div>
 
@@ -222,6 +232,7 @@ const ViralProductsTable = () => {
           </motion.p>
         )}
       </div>
+      <WaitlistDialog open={waitlistOpen} onOpenChange={setWaitlistOpen} itemName={selectedItem} />
     </section>
   );
 };
