@@ -49,6 +49,13 @@ const ViralProductsTable = () => {
   const [products, setProducts] = useState<ViralProduct[]>(MOCK_PRODUCTS);
   const [loading, setLoading] = useState(false);
   const [liveData, setLiveData] = useState(false);
+  const [waitlistOpen, setWaitlistOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<string | undefined>();
+
+  const openWaitlist = (name: string) => {
+    setSelectedItem(name);
+    setWaitlistOpen(true);
+  };
 
   const handleFetchLive = async () => {
     setLoading(true);
