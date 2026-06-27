@@ -5,6 +5,7 @@ import { TrendingUp, TrendingDown, Flame, Eye, ShoppingCart, Star, RefreshCw, Ex
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import WaitlistDialog from "./WaitlistDialog";
 
 interface ViralProduct {
   rank: number;
