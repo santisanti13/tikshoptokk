@@ -218,7 +218,7 @@ const ViralProductsTable = () => {
                   </span>
                 </div>
               </div>
-            </motion.div>
+            </motion.button>
           ))}
         </div>
 
@@ -232,6 +232,7 @@ const ViralProductsTable = () => {
           </motion.p>
         )}
       </div>
+      <WaitlistDialog open={waitlistOpen} onOpenChange={setWaitlistOpen} itemName={selectedItem} />
     </section>
   );
 };
