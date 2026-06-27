@@ -19,10 +19,15 @@ const NavItem = ({ href, label, onClick }: { href: string; label: string; onClic
 };
 
 const Logo = () => (
-  <span className="font-display text-xl font-bold tracking-tight">
-    <span className="text-primary">Tik</span>
-    <span className="text-secondary">Shop</span>
-    <span className="text-foreground">Tok</span>
+  <span className="flex items-baseline gap-2 tracking-tight">
+    <span className="font-display text-xl font-bold">
+      <span className="text-primary">Tik</span>
+      <span className="text-secondary">Shop</span>
+      <span className="text-foreground">Tok</span>
+    </span>
+    <span className="font-['Playfair_Display',serif] text-lg italic text-muted-foreground">
+      agency
+    </span>
   </span>
 );
 
