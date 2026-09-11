@@ -62,11 +62,20 @@ const ViralProductsTable = () => {
     try {
       const { data, error } = await supabase.functions.invoke("scrape-viral-products");
       if (error) throw error;
-      console.log("Scraped data:", data);
-      setLiveData(true);
-      // Data is supplementary - we keep our curated list but mark as "live enhanced"
+      if (!data?.success) throw new Error(data?.error || "Respuesta inválida");
+      setLastChecked(new Date());
+      toast({
+        title: "Tendencias verificadas",
+        description:
+          "Hemos comprobado las fuentes de TikTok Shop. El ranking mostrado es nuestra selección curada más reciente.",
+      });
     } catch (err) {
       console.error("Error fetching live data:", err);
+      toast({
+        title: "No hemos podido comprobar las tendencias",
+        description: "Inténtalo de nuevo en unos minutos.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }

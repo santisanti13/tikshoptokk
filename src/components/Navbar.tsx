@@ -12,10 +12,12 @@ const links = [
 ];
 
 const NavItem = ({ href, label, onClick }: { href: string; label: string; onClick?: () => void }) => {
+  const location = useLocation();
   const isInternal = href.startsWith("/");
   const className = "text-sm text-muted-foreground transition-colors hover:text-foreground";
   if (isInternal) return <Link to={href} className={className} onClick={onClick}>{label}</Link>;
-  return <a href={href} className={className} onClick={onClick}>{label}</a>;
+  const target = location.pathname === "/" ? href : `/${href}`;
+  return <a href={target} className={className} onClick={onClick}>{label}</a>;
 };
 
 const Logo = () => (
