@@ -2,7 +2,7 @@ import { createClient } from "@sanity/client";
 import { writeFileSync } from "fs";
 import { resolve } from "path";
 
-const BASE_URL = "https://tikshoptokk.lovable.app";
+const BASE_URL = "https://tikshoptok.com";
 
 const sanityClient = createClient({
   projectId: "215aijyj",
