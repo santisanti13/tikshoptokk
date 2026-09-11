@@ -5,6 +5,7 @@ import { TrendingUp, TrendingDown, Flame, Eye, ShoppingCart, Star, RefreshCw, Ex
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
 import WaitlistDialog from "./WaitlistDialog";
 
 interface ViralProduct {
@@ -48,7 +49,8 @@ const MOCK_PRODUCTS: ViralProduct[] = [
 const ViralProductsTable = () => {
   const [products, setProducts] = useState<ViralProduct[]>(MOCK_PRODUCTS);
   const [loading, setLoading] = useState(false);
-  const [liveData, setLiveData] = useState(false);
+  const [lastChecked, setLastChecked] = useState<Date | null>(null);
+  const { toast } = useToast();
   const [waitlistOpen, setWaitlistOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<string | undefined>();
 
@@ -62,11 +64,20 @@ const ViralProductsTable = () => {
     try {
       const { data, error } = await supabase.functions.invoke("scrape-viral-products");
       if (error) throw error;
-      console.log("Scraped data:", data);
-      setLiveData(true);
-      // Data is supplementary - we keep our curated list but mark as "live enhanced"
+      if (!data?.success) throw new Error(data?.error || "Respuesta inválida");
+      setLastChecked(new Date());
+      toast({
+        title: "Tendencias verificadas",
+        description:
+          "Hemos comprobado las fuentes de TikTok Shop. El ranking mostrado es nuestra selección curada más reciente.",
+      });
     } catch (err) {
       console.error("Error fetching live data:", err);
+      toast({
+        title: "No hemos podido comprobar las tendencias",
+        description: "Inténtalo de nuevo en unos minutos.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -222,13 +233,15 @@ const ViralProductsTable = () => {
           ))}
         </div>
 
-        {liveData && (
+        {lastChecked && (
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="mt-4 text-center text-xs text-muted-foreground"
           >
-            ✅ Datos enriquecidos con información en tiempo real vía Firecrawl
+            ✅ Fuentes comprobadas a las{" "}
+            {lastChecked.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })} · ranking curado por
+            TikShopTok
           </motion.p>
         )}
       </div>
