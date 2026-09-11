@@ -1,3 +1,15 @@
+interface Span {
+  _type: string;
+  _key: string;
+  text: string;
+  marks?: string[];
+}
+
+interface TableRow {
+  _key?: string;
+  cells?: string[];
+}
+
 interface Block {
   _type: string;
   _key: string;
@@ -8,13 +20,7 @@ interface Block {
   marks?: { decorators?: { title: string; value: string }[]; annotations?: unknown[] };
   alt?: string;
   asset?: { _ref: string };
-}
-
-interface Span {
-  _type: string;
-  _key: string;
-  text: string;
-  marks?: string[];
+  rows?: TableRow[];
 }
 
 interface PortableTextRendererProps {
@@ -24,10 +30,10 @@ interface PortableTextRendererProps {
 const renderSpan = (span: Span) => {
   let content: React.ReactNode = span.text;
   if (span.marks?.includes("strong")) {
-    content = <strong key={span._key}>{content}</strong>;
+    content = <strong className="text-foreground">{content}</strong>;
   }
   if (span.marks?.includes("em")) {
-    content = <em key={span._key}>{content}</em>;
+    content = <em>{content}</em>;
   }
   return <span key={span._key}>{content}</span>;
 };
@@ -35,32 +41,76 @@ const renderSpan = (span: Span) => {
 const PortableTextRenderer = ({ blocks }: PortableTextRendererProps) => {
   const elements: React.ReactNode[] = [];
   let currentList: React.ReactNode[] = [];
-  let inList = false;
+  let listType: "bullet" | "number" | null = null;
 
   const flushList = () => {
     if (currentList.length > 0) {
+      const ListTag = listType === "number" ? "ol" : "ul";
       elements.push(
-        <ul key={`list-${elements.length}`} className="my-4 ml-6 list-disc space-y-2 text-muted-foreground">
+        <ListTag
+          key={`list-${elements.length}`}
+          className={`my-4 ml-6 space-y-2 text-muted-foreground ${
+            listType === "number" ? "list-decimal" : "list-disc"
+          }`}
+        >
           {currentList}
-        </ul>
+        </ListTag>
       );
-      currentList = [];
-      inList = false;
     }
+    currentList = [];
+    listType = null;
   };
 
-  blocks.forEach((block) => {
+  blocks?.forEach((block) => {
     if (block._type === "image") return;
 
-    if (block.listItem === "bullet") {
-      inList = true;
-      currentList.push(
-        <li key={block._key}>{block.children?.map(renderSpan)}</li>
+    if (block._type === "table" && block.rows?.length) {
+      flushList();
+      const [head, ...body] = block.rows;
+      elements.push(
+        <div key={block._key} className="my-6 overflow-x-auto rounded-2xl border border-white/10">
+          <table className="w-full border-collapse text-sm">
+            <thead>
+              <tr className="bg-white/[0.04]">
+                {head.cells?.map((cell, i) => (
+                  <th
+                    key={i}
+                    className="border-b border-white/10 px-4 py-3 text-left font-display text-xs font-semibold uppercase tracking-wide text-secondary"
+                  >
+                    {cell}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {body.map((row, r) => (
+                <tr key={row._key ?? r} className="transition-colors hover:bg-white/[0.03]">
+                  {row.cells?.map((cell, i) => (
+                    <td
+                      key={i}
+                      className="border-b border-white/5 px-4 py-3 align-top text-muted-foreground last:text-foreground"
+                    >
+                      {cell}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       );
       return;
     }
 
-    if (inList) flushList();
+    if (block.listItem === "bullet" || block.listItem === "number") {
+      const type = block.listItem === "number" ? "number" : "bullet";
+      if (listType && listType !== type) flushList();
+      listType = type;
+      currentList.push(<li key={block._key}>{block.children?.map(renderSpan)}</li>);
+      return;
+    }
+
+    flushList();
 
     const children = block.children?.map(renderSpan);
 
@@ -102,7 +152,7 @@ const PortableTextRenderer = ({ blocks }: PortableTextRendererProps) => {
     }
   });
 
-  if (inList) flushList();
+  flushList();
 
   return <div className="prose-custom">{elements}</div>;
 };
