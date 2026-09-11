@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://tikshoptokk.lovable.app/sitemap.xml
+Sitemap: https://tikshoptok.com/sitemap.xml

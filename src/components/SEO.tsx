@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async";
 
-const SITE_URL = "https://tikshoptokk.lovable.app";
+const SITE_URL = "https://tikshoptok.com";
 
 interface SEOProps {
   title: string;
