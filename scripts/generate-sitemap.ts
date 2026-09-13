@@ -8,7 +8,7 @@ const sanityClient = createClient({
   projectId: "215aijyj",
   dataset: "production",
   apiVersion: "2024-01-01",
-  useCdn: true,
+  useCdn: false,
 });
 
 interface SitemapEntry {
