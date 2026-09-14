@@ -374,6 +374,16 @@ const ContenidoIAPlans = () => {
           </div>
         </motion.div>
       </div>
+
+      <Dialog open={Boolean(checkout)} onOpenChange={(open) => !open && setCheckout(null)}>
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{checkout?.label}</DialogTitle>
+          </DialogHeader>
+          <PaymentTestModeBanner />
+          {checkout && <StripeEmbeddedCheckout priceId={checkout.priceId} />}
+        </DialogContent>
+      </Dialog>
     </section>
   );
 };
