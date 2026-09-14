@@ -101,6 +101,8 @@ const UgcStudio = () => {
 
   
 
+  const MAX_TOTAL_SECONDS = 50;
+  const remainingSeconds = extendFrom ? Math.max(0, MAX_TOTAL_SECONDS - Number(extendFrom.duration_seconds)) : MAX_TOTAL_SECONDS;
   const effectiveResolution = extendFrom ? extendFrom.resolution : resolution;
   const cost = tokensForVideo(effectiveResolution, duration);
   const contextKey = `${presetId}|${projectId ?? ""}|${productId ?? ""}`;
@@ -303,7 +305,7 @@ const UgcStudio = () => {
     setCharacterId(null);
     setResolution(v.resolution);
     setAspectRatio(v.aspect_ratio === "16:9" ? "16:9" : "9:16");
-    setDuration(6);
+    setDuration(Math.min(6, Math.max(4, 50 - Number(v.duration_seconds))));
     if (v.project_id !== undefined) setProjectId(v.project_id ?? null);
     if (v.product_id !== undefined) setProductId(v.product_id ?? null);
     setPrompt("");
@@ -522,7 +524,8 @@ const UgcStudio = () => {
                     <p className="font-medium">Continuación de un vídeo</p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       Seguimos el vídeo de {extendFrom.duration_seconds}s ({extendFrom.resolution} ·{" "}
-                      {extendFrom.aspect_ratio ?? "9:16"}) y le añadimos los segundos que elijas. Solo pagas los nuevos.
+                      {extendFrom.aspect_ratio ?? "9:16"}) y le añadimos los segundos que elijas, hasta {MAX_TOTAL_SECONDS}s
+                      en total. Solo pagas los nuevos.
                     </p>
                     <Button
                       variant="ghost"
@@ -592,14 +595,19 @@ const UgcStudio = () => {
                     <Label>{extendFrom ? "Segundos nuevos" : "Duración"}</Label>
                     <div className="flex flex-wrap gap-2">
                       {DURATIONS.map((d) => (
-                        <Chip key={d} active={duration === d} onClick={() => setDuration(d)}>
+                        <Chip
+                          key={d}
+                          active={duration === d}
+                          disabled={Boolean(extendFrom) && d > remainingSeconds}
+                          onClick={() => setDuration(d)}
+                        >
                           {extendFrom ? `+${d}s` : `${d}s`}
                         </Chip>
                       ))}
                     </div>
                     {extendFrom && (
                       <p className="text-xs text-muted-foreground">
-                        Total: {Number(extendFrom.duration_seconds) + duration}s
+                        Total: {Number(extendFrom.duration_seconds) + duration}s de {MAX_TOTAL_SECONDS}s máximo
                       </p>
                     )}
                   </div>

@@ -119,7 +119,7 @@ const VideoGallery = ({ videos, urls, onReuse, onKeepIdentity, onExtend, keeping
                       <Copy className="mr-1.5 h-3.5 w-3.5" /> Reusar guion
                     </Button>
                   )}
-                  {onExtend && v.status === "completed" && v.video_path && (
+                  {onExtend && v.status === "completed" && v.video_path && Number(v.duration_seconds) < 50 && (
                     <Button
                       variant="outline"
                       size="sm"
