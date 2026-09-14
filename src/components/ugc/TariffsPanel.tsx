@@ -5,8 +5,9 @@ import { Check } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
-import { paymentsConfigured } from "@/lib/stripe";
+import { paymentsConfigured, getStripeEnvironment } from "@/lib/stripe";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const EXAMPLES = [
   { resolution: "360p", duration: 4, label: "Prueba rápida" },
@@ -17,6 +18,7 @@ const EXAMPLES = [
 const TariffsPanel = ({ onPick }: { onPick?: (label: string) => void }) => {
   const { toast } = useToast();
   const [checkout, setCheckout] = useState<{ priceId: string; label: string } | null>(null);
+  const [portalLoading, setPortalLoading] = useState(false);
 
   const buy = (priceId: string, label: string) => {
     onPick?.(label);
@@ -29,6 +31,26 @@ const TariffsPanel = ({ onPick }: { onPick?: (label: string) => void }) => {
       return;
     }
     setCheckout({ priceId, label });
+  };
+
+  const manageSubscription = async () => {
+    setPortalLoading(true);
+    const { data, error } = await supabase.functions.invoke("create-portal-session", {
+      body: {
+        environment: getStripeEnvironment(),
+        returnUrl: `${window.location.origin}/ugc-studio`,
+      },
+    });
+    setPortalLoading(false);
+    if (error || !data?.url) {
+      toast({
+        title: "No pudimos abrir la gestión de tu plan",
+        description: data?.error || "Contrata un plan primero o inténtalo de nuevo en un momento.",
+        variant: "destructive",
+      });
+      return;
+    }
+    window.open(data.url as string, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -73,6 +95,21 @@ const TariffsPanel = ({ onPick }: { onPick?: (label: string) => void }) => {
               </Button>
             </div>
           ))}
+        </div>
+        <div className="mt-5 flex flex-col gap-2 rounded-2xl border border-white/10 bg-card/40 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-muted-foreground">
+            Cambia de plan cuando quieras: se ajusta el importe por los días usados y los tokens del nuevo
+            plan entran al instante. Si cancelas, conservas el acceso y tus tokens hasta el final del mes
+            pagado, y los tokens que no gastes se acumulan.
+          </p>
+          <Button
+            variant="outline"
+            className="shrink-0 rounded-full"
+            onClick={manageSubscription}
+            disabled={portalLoading}
+          >
+            {portalLoading ? "Abriendo…" : "Gestionar mi plan"}
+          </Button>
         </div>
       </div>
 

@@ -61,9 +61,18 @@ async function upsertSubscription(subscription: any, env: StripeEnv) {
 
   const grant = grantForPrice(priceIdOf(item));
   if (grant?.plan) {
+    // Al cancelar se mantiene el acceso hasta el final del periodo ya pagado:
+    // el plan sigue activo mientras current_period_end esté en el futuro.
+    const periodStillOpen = Boolean(periodEnd) && periodEnd * 1000 > Date.now();
+    const keepsAccess =
+      subscription.status === "active" ||
+      subscription.status === "trialing" ||
+      subscription.status === "past_due" ||
+      (subscription.status === "canceled" && periodStillOpen);
+
     await db().rpc("ugc_set_plan", {
       _user_id: userId,
-      _plan: subscription.status === "active" || subscription.status === "trialing" ? grant.plan : "cancelado",
+      _plan: keepsAccess ? grant.plan : "cancelado",
       _monthly_tokens: grant.tokens,
       _renews_at: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
     });
