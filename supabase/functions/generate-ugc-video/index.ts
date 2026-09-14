@@ -22,6 +22,66 @@ function toBase64(bytes: Uint8Array): string {
   return btoa(binary);
 }
 
+const ALERT_STEP_TOKENS = 250;
+const OWNER_EMAIL = Deno.env.get("NOTIFICATION_EMAIL") ?? "santiagojimenezvalero@gmail.com";
+
+/**
+ * Avisa al dueño cada ALERT_STEP_TOKENS consumidos en el mes en curso para que
+ * recargue créditos de IA antes de agotarlos. Idempotente vía payment_events.
+ */
+async function creditsAlert(
+  admin: ReturnType<typeof createClient>,
+  tokensJustCharged: number,
+) {
+  const monthStart = new Date();
+  monthStart.setUTCDate(1);
+  monthStart.setUTCHours(0, 0, 0, 0);
+
+  const { data, error } = await admin
+    .from("ugc_token_ledger")
+    .select("delta_tokens")
+    .lt("delta_tokens", 0)
+    .gte("created_at", monthStart.toISOString());
+  if (error || !data) return;
+
+  const consumed = data.reduce((sum, r: { delta_tokens: number }) => sum + Math.abs(r.delta_tokens), 0);
+  const bucket = Math.floor(consumed / ALERT_STEP_TOKENS);
+  if (bucket === 0) return;
+  if (Math.floor((consumed - tokensJustCharged) / ALERT_STEP_TOKENS) === bucket) return;
+
+  const eventKey = `ai_credits_alert:${monthStart.toISOString().slice(0, 7)}:${bucket}`;
+  const { error: claimError } = await admin.from("payment_events").insert({ event_key: eventKey });
+  if (claimError) return; // ya avisado
+
+  const { sendTemplateEmail } = await import("../_shared/transactional-email-templates/send-email.ts");
+  const { logEmailSend } = await import("../_shared/emailLog.ts");
+  try {
+    const result = await sendTemplateEmail("payment-notification", OWNER_EMAIL, {
+      templateData: {
+        headline: "Recarga de créditos de IA",
+        planName: "Estudio UGC",
+        amountLabel: `${consumed} tokens consumidos este mes`,
+        detail:
+          `El estudio ha consumido ${consumed} tokens en el mes en curso. ` +
+          `Revisa el saldo de créditos de IA del workspace y recárgalo para que las generaciones no se detengan.`,
+      },
+      idempotencyKey: `${eventKey}-${crypto.randomUUID()}`,
+    });
+    await logEmailSend({
+      templateName: "payment-notification",
+      recipientEmail: OWNER_EMAIL,
+      status: result.sent ? "sent" : "suppressed",
+    });
+  } catch (e) {
+    await logEmailSend({
+      templateName: "payment-notification",
+      recipientEmail: OWNER_EMAIL,
+      status: "failed",
+      errorMessage: e instanceof Error ? e.message : String(e),
+    });
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -112,6 +172,10 @@ Deno.serve(async (req) => {
     if (balance === -1) {
       return json({ error: `Te faltan tokens: este vídeo cuesta ${tokens}. Recarga tu saldo para continuar.`, needTokens: tokens }, 402);
     }
+
+    // Aviso al dueño cada 250 tokens consumidos en el mes, para recargar
+    // los créditos de IA antes de quedarse sin margen de generación.
+    creditsAlert(admin, tokens).catch((e) => console.error("credits alert", e));
 
     const refund = async () => {
       await admin.rpc("ugc_grant_tokens", {
