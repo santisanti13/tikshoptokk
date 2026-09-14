@@ -2,6 +2,8 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { type StripeEnv, createStripeClient, verifyWebhook } from "../_shared/stripe.ts";
 import { grantForPrice } from "../_shared/ugcTokenPacks.ts";
 import { planForPrice, formatEur } from "../_shared/planCatalog.ts";
+import { sendTemplateEmail } from "../_shared/transactional-email-templates/send-email.ts";
+import { logEmailSend } from "../_shared/emailLog.ts";
 
 let _supabase: ReturnType<typeof createClient> | null = null;
 function db() {
