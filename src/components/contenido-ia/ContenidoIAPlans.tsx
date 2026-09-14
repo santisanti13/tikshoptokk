@@ -381,7 +381,12 @@ const ContenidoIAPlans = () => {
             <DialogTitle>{checkout?.label}</DialogTitle>
           </DialogHeader>
           <PaymentTestModeBanner />
-          {checkout && <StripeEmbeddedCheckout priceId={checkout.priceId} />}
+          {checkout && (
+            <StripeEmbeddedCheckout
+              priceId={checkout.priceId}
+              returnUrl={`${window.location.origin}/contenido-ia?checkout=success&session_id={CHECKOUT_SESSION_ID}`}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </section>
