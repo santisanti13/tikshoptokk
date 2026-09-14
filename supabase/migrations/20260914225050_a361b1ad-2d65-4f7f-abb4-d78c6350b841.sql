@@ -1,0 +1,1 @@
+ALTER TABLE public.ugc_videos ADD COLUMN IF NOT EXISTS source_video_id UUID REFERENCES public.ugc_videos(id) ON DELETE SET NULL, ADD COLUMN IF NOT EXISTS added_seconds NUMERIC;
