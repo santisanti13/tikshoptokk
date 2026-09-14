@@ -40,6 +40,7 @@ export type UgcPlan = {
   name: string;
   priceEur: number;
   tokens: number;
+  priceId: string;
   highlight?: boolean;
   perks: string[];
 };
@@ -51,6 +52,7 @@ export const UGC_PLANS: UgcPlan[] = [
     name: "Starter",
     priceEur: 49,
     tokens: 200,
+    priceId: "ugc_starter_monthly",
     perks: [
       "~16 vídeos de 8s en 720p al mes",
       "1 proyecto de marca",
