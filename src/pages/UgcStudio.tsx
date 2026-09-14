@@ -510,23 +510,67 @@ const UgcStudio = () => {
                       onChange={(e) => setIdea(e.target.value)}
                       placeholder="Chica probando el sérum antes de salir"
                     />
-                    <Button variant="outline" className="shrink-0 rounded-full" onClick={writeWithAssistant} disabled={assisting}>
+                    <Button variant="outline" className="shrink-0 rounded-full" onClick={() => writeWithAssistant(false)} disabled={assisting}>
                       {assisting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
                       <span className="ml-2 hidden sm:inline">Escribir guion</span>
                     </Button>
                   </div>
                 </div>
 
+                {extendFrom && (
+                  <div className="mt-5 rounded-2xl border border-primary/30 bg-primary/10 p-4 text-sm">
+                    <p className="font-medium">Continuación de un vídeo</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Seguimos el vídeo de {extendFrom.duration_seconds}s ({extendFrom.resolution} ·{" "}
+                      {extendFrom.aspect_ratio ?? "9:16"}) y le añadimos los segundos que elijas. Solo pagas los nuevos.
+                    </p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="mt-2 h-8 rounded-full px-3 text-xs"
+                      onClick={() => setExtendFrom(null)}
+                    >
+                      <X className="mr-1 h-3.5 w-3.5" /> Cancelar continuación
+                    </Button>
+                  </div>
+                )}
+
                 <div className="mt-5 space-y-2">
-                  <Label htmlFor="prompt">Guion del vídeo</Label>
+                  <Label htmlFor="prompt">{extendFrom ? "Qué pasa a continuación" : "Guion del vídeo"}</Label>
                   <Textarea
                     id="prompt"
                     rows={7}
-                    placeholder="El asistente lo rellena por ti, o escríbelo tú: encuadre, luz, tono, qué dice…"
+                    placeholder={
+                      extendFrom
+                        ? "Sigue hablando y enseña el interior del maletín mientras camina hacia la ventana…"
+                        : "El asistente lo rellena por ti, o escríbelo tú: encuadre, luz, tono, qué dice…"
+                    }
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
                   />
+                  {promptDrifted && (
+                    <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-amber-400/30 bg-amber-400/10 px-3 py-2">
+                      <p className="text-xs text-muted-foreground">
+                        Has cambiado el estilo, el proyecto o el producto: el guion todavía es el anterior.
+                      </p>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 rounded-full px-3 text-[11px]"
+                        onClick={() => writeWithAssistant(true)}
+                        disabled={assisting}
+                      >
+                        {assisting ? (
+                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Wand2 className="mr-1.5 h-3.5 w-3.5" />
+                        )}
+                        Reescribir guion
+                      </Button>
+                    </div>
+                  )}
                 </div>
+
 
                 <div className="mt-6 grid gap-5 sm:grid-cols-3">
                   <div className="space-y-2">
