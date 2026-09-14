@@ -6,10 +6,11 @@ import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
-import { paymentsConfigured } from "@/lib/stripe";
+import { paymentsConfigured, getStripeEnvironment } from "@/lib/stripe";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { planForPrice } from "@/lib/planCatalog";
+import { keepsAccess, type SubscriptionRow } from "@/hooks/useSubscription";
 
 type Plan = {
   name: string;
@@ -271,10 +272,10 @@ const ContenidoIAPlans = () => {
       .from("subscriptions")
       .select("price_id, status, current_period_end")
       .eq("user_id", data.session.user.id)
-      .eq("environment", stripeEnvironment())
+      .eq("environment", getStripeEnvironment())
       .order("created_at", { ascending: false })
       .limit(5);
-    const already = (rows ?? []).find((r) => r.price_id === priceId && keepsAccess(r));
+    const already = (rows ?? []).find((r) => r.price_id === priceId && keepsAccess(r as SubscriptionRow));
     if (already) {
       toast({
         title: "Ya tienes este plan activo",
