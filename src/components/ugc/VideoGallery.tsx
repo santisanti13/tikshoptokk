@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { AlertCircle, Coins, Download, Loader2, Play } from "lucide-react";
+import { AlertCircle, Coins, Copy, Download, Loader2, Play, UserCheck } from "lucide-react";
 
 export type VideoRow = {
   id: string;
@@ -12,11 +12,16 @@ export type VideoRow = {
   video_path: string | null;
   tokens_charged: number | null;
   created_at: string;
+  project_id?: string | null;
+  product_id?: string | null;
 };
 
 type Props = {
   videos: VideoRow[];
   urls: Record<string, string>;
+  onReuse?: (video: VideoRow) => void;
+  onKeepIdentity?: (video: VideoRow) => void;
+  keepingId?: string | null;
 };
 
 const statusLabel = (status: string) =>
