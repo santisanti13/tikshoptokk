@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Search, Palette, Users, Link2, ArrowUpRight } from "lucide-react";
+import { Search, Palette, Users, Link2, Sparkles, ArrowUpRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const services = [
@@ -35,6 +35,15 @@ const services = [
       "Conectamos marcas con los creadores ideales para maximizar resultados y generar ventas reales.",
     accent: "primary",
     span: "md:col-span-8",
+  },
+  {
+    icon: Sparkles,
+    title: "Cuentas y UGC con IA",
+    description:
+      "Creamos personajes con IA, lanzamos cuentas desde cero y producimos contenido diario para tu perfil o tu ecommerce.",
+    link: "/contenido-ia",
+    accent: "secondary",
+    span: "md:col-span-12",
   },
 ];
 
