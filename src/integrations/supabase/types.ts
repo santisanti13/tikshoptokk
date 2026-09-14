@@ -214,29 +214,41 @@ export type Database = {
       }
       ugc_products: {
         Row: {
+          blind_spots: string | null
           created_at: string
           description: string | null
           id: string
           image_path: string | null
+          model_path: string | null
           name: string
+          render_paths: string[]
+          source_url: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          blind_spots?: string | null
           created_at?: string
           description?: string | null
           id?: string
           image_path?: string | null
+          model_path?: string | null
           name: string
+          render_paths?: string[]
+          source_url?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          blind_spots?: string | null
           created_at?: string
           description?: string | null
           id?: string
           image_path?: string | null
+          model_path?: string | null
           name?: string
+          render_paths?: string[]
+          source_url?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -352,6 +364,7 @@ export type Database = {
           project_id: string | null
           prompt: string
           resolution: string
+          source_url: string | null
           source_video_id: string | null
           status: string
           tokens_charged: number
@@ -373,6 +386,7 @@ export type Database = {
           project_id?: string | null
           prompt: string
           resolution?: string
+          source_url?: string | null
           source_video_id?: string | null
           status?: string
           tokens_charged?: number
@@ -394,6 +408,7 @@ export type Database = {
           project_id?: string | null
           prompt?: string
           resolution?: string
+          source_url?: string | null
           source_video_id?: string | null
           status?: string
           tokens_charged?: number
