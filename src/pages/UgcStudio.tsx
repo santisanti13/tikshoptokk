@@ -577,33 +577,49 @@ const UgcStudio = () => {
                     <Label>Formato</Label>
                     <div className="flex gap-2">
                       {(["9:16", "16:9"] as const).map((r) => (
-                        <Chip key={r} active={aspectRatio === r} onClick={() => setAspectRatio(r)}>
+                        <Chip
+                          key={r}
+                          active={aspectRatio === r}
+                          disabled={Boolean(extendFrom)}
+                          onClick={() => setAspectRatio(r)}
+                        >
                           {r}
                         </Chip>
                       ))}
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label>Duración</Label>
+                    <Label>{extendFrom ? "Segundos nuevos" : "Duración"}</Label>
                     <div className="flex flex-wrap gap-2">
                       {DURATIONS.map((d) => (
                         <Chip key={d} active={duration === d} onClick={() => setDuration(d)}>
-                          {d}s
+                          {extendFrom ? `+${d}s` : `${d}s`}
                         </Chip>
                       ))}
                     </div>
+                    {extendFrom && (
+                      <p className="text-xs text-muted-foreground">
+                        Total: {Number(extendFrom.duration_seconds) + duration}s
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label>Calidad</Label>
                     <div className="flex flex-wrap gap-2">
                       {RESOLUTIONS.map((r) => (
-                        <Chip key={r} active={resolution === r} onClick={() => setResolution(r)}>
+                        <Chip
+                          key={r}
+                          active={effectiveResolution === r}
+                          disabled={Boolean(extendFrom)}
+                          onClick={() => setResolution(r)}
+                        >
                           {r}
                         </Chip>
                       ))}
                     </div>
                   </div>
                 </div>
+
 
                 <div className="mt-6 space-y-2">
                   <Label>Imagen de referencia (opcional)</Label>
