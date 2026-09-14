@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles, ImagePlus, X, Coins, Wand2 } from "lucide-react";
+import { Loader2, Sparkles, X, Coins, Wand2 } from "lucide-react";
+import ImageDropzone from "@/components/ugc/ImageDropzone";
 import ProjectsPanel, { type UgcProject } from "@/components/ugc/ProjectsPanel";
 import ProductsPanel, { type UgcProduct } from "@/components/ugc/ProductsPanel";
 import VideoGallery, { type VideoRow } from "@/components/ugc/VideoGallery";
@@ -484,30 +485,24 @@ const UgcStudio = () => {
                 </div>
 
                 <div className="mt-6 space-y-2">
-                  <Label>Foto puntual (opcional)</Label>
+                  <Label>Imagen de referencia (opcional)</Label>
                   {image ? (
                     <div className="flex items-center gap-3">
-                      <img src={image.preview} alt="Foto de partida" className="h-20 w-20 rounded-xl object-cover" />
+                      <img src={image.preview} alt="Imagen de referencia" className="h-20 w-20 rounded-xl object-cover" />
                       <Button variant="ghost" size="sm" onClick={() => setImage(null)}>
                         <X className="mr-1 h-4 w-4" /> Quitar
                       </Button>
                     </div>
                   ) : (
-                    <Button variant="outline" size="sm" className="rounded-full" onClick={() => fileRef.current?.click()}>
-                      <ImagePlus className="mr-2 h-4 w-4" /> Subir foto
-                    </Button>
+                    <ImageDropzone
+                      title="Arrastra tu imagen de referencia"
+                      hint="cara, producto o fotograma · o haz clic para elegirla"
+                      onFiles={(files) => pickImage(files[0])}
+                    />
                   )}
-                  <Input
-                    ref={fileRef}
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) pickImage(file);
-                      e.target.value = "";
-                    }}
-                  />
+                  <p className="text-xs text-muted-foreground">
+                    El vídeo partirá de esta imagen, junto con el guion y el proyecto o producto que elijas.
+                  </p>
                 </div>
 
                 <div className="mt-7 flex items-center justify-between rounded-2xl border border-white/10 bg-background/40 px-4 py-3 text-sm">
