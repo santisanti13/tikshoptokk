@@ -155,7 +155,7 @@ const UgcStudio = () => {
       return;
     }
     setAssisting(true);
-    const { data, error } = await supabase.functions.invoke("ugc-prompt-assistant", {
+    const { data, error } = await supabase.functions.invoke("ugc-prompt", {
       body: {
         idea: seed,
         projectId,
