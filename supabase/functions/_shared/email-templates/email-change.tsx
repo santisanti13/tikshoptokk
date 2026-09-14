@@ -11,70 +11,56 @@ import {
   Html,
   Link,
   Preview,
-  Section,
   Text,
-  Hr,
 } from 'npm:@react-email/components@0.0.22'
 
 interface EmailChangeEmailProps {
   siteName: string
+  // oldEmail is the user's current address (HookData.OldEmail). For the
+  // NEW-recipient half of a secure email_change fanout, `email` equals the
+  // recipient (NEW), so the "from" line must render oldEmail to read
+  // "from OLD to NEW" instead of "from NEW to NEW".
+  oldEmail: string
   email: string
   newEmail: string
   confirmationUrl: string
 }
 
-const FEATURED_VIDEO_ID = '7610820653284936982'
-const FEATURED_VIDEO_URL = `https://www.tiktok.com/@tikshoptok/video/${FEATURED_VIDEO_ID}`
-
 export const EmailChangeEmail = ({
   siteName,
-  email,
+  oldEmail,
   newEmail,
   confirmationUrl,
 }: EmailChangeEmailProps) => (
-  <Html lang="es" dir="ltr">
-    <Head />
-    <Preview>📧 Confirma tu cambio de email en {siteName}</Preview>
+  <Html lang="en" dir="ltr">
+    <Head>
+      <style>{darkModeCss}</style>
+    </Head>
+    <Preview>Confirm your email change for {siteName}</Preview>
     <Body style={main}>
-      <Container style={wrapper}>
-        <Section style={header}>
-          <Text style={brandName}>TikShopTok</Text>
-          <Text style={brandTagline}>Tu agencia de TikTok Shop</Text>
-        </Section>
-
-        <Section style={content}>
-          <Heading style={h1}>Confirma tu nuevo email 📧</Heading>
-          <Text style={text}>
-            Solicitaste cambiar tu email en {siteName} de{' '}
-            <Link href={`mailto:${email}`} style={linkCyan}>{email}</Link>{' '}
-            a{' '}
-            <Link href={`mailto:${newEmail}`} style={linkPrimary}>{newEmail}</Link>.
-          </Text>
-
-          <Section style={buttonContainer}>
-            <Button style={buttonPrimary} href={confirmationUrl}>
-              Confirmar Cambio de Email
-            </Button>
-          </Section>
-
-          <Hr style={divider} />
-
-          <Section style={videoSection}>
-            <Text style={videoLabel}>🔥 NUESTRO VÍDEO MÁS VIRAL</Text>
-            <Link href={FEATURED_VIDEO_URL} style={{ textDecoration: 'none' }}>
-              <Section style={videoCard}>
-                <Text style={videoPlayIcon}>▶</Text>
-                <Text style={videoTitle}>+500K visualizaciones</Text>
-                <Text style={videoSubtitle}>Ver en TikTok →</Text>
-              </Section>
-            </Link>
-          </Section>
-        </Section>
-
-        <Section style={footer}>
-          <Text style={footerText}>Si no solicitaste este cambio, protege tu cuenta inmediatamente.</Text>
-          <Text style={footerBrand}>© TikShopTok — tikshoptok.com</Text>
-        </Section>
+      <Container style={container}>
+        <Heading style={h1}>Confirm your email change</Heading>
+        <Text style={text}>
+          You requested to change your email address for {siteName} from{' '}
+          <Link href={`mailto:${oldEmail}`} style={link}>
+            {oldEmail}
+          </Link>{' '}
+          to{' '}
+          <Link href={`mailto:${newEmail}`} style={link}>
+            {newEmail}
+          </Link>
+          .
+        </Text>
+        <Text style={text}>
+          Click the button below to confirm this change:
+        </Text>
+        <Button className="dm-btn" style={button} href={confirmationUrl}>
+          Confirm Email Change
+        </Button>
+        <Text style={footer}>
+          If you didn't request this change, please secure your account
+          immediately.
+        </Text>
       </Container>
     </Body>
   </Html>
@@ -82,25 +68,36 @@ export const EmailChangeEmail = ({
 
 export default EmailChangeEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: "'Inter', Arial, sans-serif" }
-const wrapper = { maxWidth: '520px', margin: '0 auto' }
-const header = { background: 'linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #0a0a0f 100%)', borderBottom: '3px solid', borderImage: 'linear-gradient(90deg, #e8396b, #26bfbf) 1', padding: '32px 30px 24px', textAlign: 'center' as const }
-const brandName = { fontSize: '28px', fontWeight: 'bold' as const, fontFamily: "'Space Grotesk', Arial, sans-serif", color: '#e8396b', margin: '0', letterSpacing: '-0.5px' }
-const brandTagline = { fontSize: '12px', color: '#8888aa', margin: '4px 0 0', textTransform: 'uppercase' as const, letterSpacing: '2px' }
-const content = { padding: '32px 30px 20px' }
-const h1 = { fontSize: '24px', fontWeight: 'bold' as const, color: '#0a0a0f', margin: '0 0 16px', fontFamily: "'Space Grotesk', Arial, sans-serif" }
-const text = { fontSize: '15px', color: '#444466', lineHeight: '1.6', margin: '0 0 16px' }
-const linkPrimary = { color: '#e8396b', textDecoration: 'underline' }
-const linkCyan = { color: '#26bfbf', textDecoration: 'underline' }
-const buttonContainer = { textAlign: 'center' as const, margin: '28px 0' }
-const buttonPrimary = { background: 'linear-gradient(135deg, #e8396b, #d42d5f)', color: '#ffffff', fontSize: '15px', fontWeight: '600' as const, borderRadius: '12px', padding: '14px 32px', textDecoration: 'none', display: 'inline-block' as const }
-const divider = { borderColor: '#eeeef2', margin: '8px 0 24px' }
-const videoSection = { textAlign: 'center' as const, margin: '0 0 8px' }
-const videoLabel = { fontSize: '11px', fontWeight: 'bold' as const, color: '#e8396b', textTransform: 'uppercase' as const, letterSpacing: '1.5px', margin: '0 0 12px' }
-const videoCard = { background: 'linear-gradient(135deg, #0a0a0f, #1a1a2e)', borderRadius: '16px', padding: '24px 20px', border: '1px solid #2a2a3e' }
-const videoPlayIcon = { fontSize: '32px', color: '#e8396b', margin: '0 0 8px' }
-const videoTitle = { fontSize: '16px', fontWeight: 'bold' as const, color: '#ffffff', margin: '0 0 4px', fontFamily: "'Space Grotesk', Arial, sans-serif" }
-const videoSubtitle = { fontSize: '13px', color: '#26bfbf', margin: '0' }
-const footer = { backgroundColor: '#f8f8fa', padding: '20px 30px', borderTop: '1px solid #eeeef2' }
-const footerText = { fontSize: '12px', color: '#999999', margin: '0 0 8px', textAlign: 'center' as const }
-const footerBrand = { fontSize: '11px', color: '#cccccc', margin: '0', textAlign: 'center' as const }
+const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
+const container = { padding: '20px 25px' }
+const h1 = {
+  fontSize: '22px',
+  fontWeight: 'bold' as const,
+  color: '#000000',
+  margin: '0 0 20px',
+}
+const text = {
+  fontSize: '14px',
+  color: '#55575d',
+  lineHeight: '1.5',
+  margin: '0 0 25px',
+}
+const link = { color: 'inherit', textDecoration: 'underline' }
+const button = {
+  backgroundColor: '#000000',
+  color: '#ffffff',
+  fontSize: '14px',
+  border: '1px solid #000000',
+  borderRadius: '8px',
+  padding: '12px 20px',
+  textDecoration: 'none',
+}
+const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+// Rendered as a text child, which React may HTML-escape: keep this CSS free of >, &, and quotes.
+const darkModeCss = `
+  @media (prefers-color-scheme: dark) {
+    .dm-btn { background-color: #ffffff !important; color: #000000 !important; }
+  }
+  [data-ogsc] .dm-btn { background-color: #ffffff !important; color: #000000 !important; }
+  [data-ogsb] .dm-btn { background-color: #ffffff !important; color: #000000 !important; }
+`
