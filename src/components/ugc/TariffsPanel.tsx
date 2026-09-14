@@ -18,6 +18,7 @@ const EXAMPLES = [
 const TariffsPanel = ({ onPick }: { onPick?: (label: string) => void }) => {
   const { toast } = useToast();
   const [checkout, setCheckout] = useState<{ priceId: string; label: string } | null>(null);
+  const [portalLoading, setPortalLoading] = useState(false);
 
   const buy = (priceId: string, label: string) => {
     onPick?.(label);
