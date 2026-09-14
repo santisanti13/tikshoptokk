@@ -125,6 +125,129 @@ export type Database = {
         }
         Relationships: []
       }
+      ugc_products: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_path: string | null
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_path?: string | null
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_path?: string | null
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ugc_projects: {
+        Row: {
+          brand_notes: string | null
+          character_brief: string | null
+          created_at: string
+          id: string
+          name: string
+          tone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brand_notes?: string | null
+          character_brief?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          tone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brand_notes?: string | null
+          character_brief?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          tone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ugc_token_accounts: {
+        Row: {
+          balance_tokens: number
+          created_at: string
+          monthly_tokens: number
+          plan: string
+          renews_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance_tokens?: number
+          created_at?: string
+          monthly_tokens?: number
+          plan?: string
+          renews_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance_tokens?: number
+          created_at?: string
+          monthly_tokens?: number
+          plan?: string
+          renews_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ugc_token_ledger: {
+        Row: {
+          created_at: string
+          delta_tokens: number
+          id: string
+          metadata: Json | null
+          reason: string
+          user_id: string
+          video_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          delta_tokens: number
+          id?: string
+          metadata?: Json | null
+          reason: string
+          user_id: string
+          video_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          delta_tokens?: number
+          id?: string
+          metadata?: Json | null
+          reason?: string
+          user_id?: string
+          video_id?: string | null
+        }
+        Relationships: []
+      }
       ugc_videos: {
         Row: {
           aspect_ratio: string | null
@@ -134,9 +257,13 @@ export type Database = {
           has_start_image: boolean
           id: string
           job_id: string | null
+          product_id: string | null
+          project_id: string | null
           prompt: string
           resolution: string
           status: string
+          tokens_charged: number
+          tokens_refunded: boolean
           updated_at: string
           user_id: string
           video_path: string | null
@@ -149,9 +276,13 @@ export type Database = {
           has_start_image?: boolean
           id?: string
           job_id?: string | null
+          product_id?: string | null
+          project_id?: string | null
           prompt: string
           resolution?: string
           status?: string
+          tokens_charged?: number
+          tokens_refunded?: boolean
           updated_at?: string
           user_id: string
           video_path?: string | null
@@ -164,14 +295,33 @@ export type Database = {
           has_start_image?: boolean
           id?: string
           job_id?: string | null
+          product_id?: string | null
+          project_id?: string | null
           prompt?: string
           resolution?: string
           status?: string
+          tokens_charged?: number
+          tokens_refunded?: boolean
           updated_at?: string
           user_id?: string
           video_path?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "ugc_videos_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "ugc_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ugc_videos_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ugc_projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -203,6 +353,24 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      ugc_charge_tokens: {
+        Args: {
+          _reason: string
+          _tokens: number
+          _user_id: string
+          _video_id?: string
+        }
+        Returns: number
+      }
+      ugc_grant_tokens: {
+        Args: {
+          _reason: string
+          _tokens: number
+          _user_id: string
+          _video_id?: string
+        }
+        Returns: number
       }
     }
     Enums: {

@@ -66,9 +66,22 @@ Deno.serve(async (req) => {
 
     if (job.status === "failed") {
       const message = job?.error?.message ?? "La generación del vídeo ha fallado.";
+
+      // Un vídeo fallido no se cobra: se devuelven los tokens una sola vez.
+      let refunded = row.tokens_refunded;
+      if (!row.tokens_refunded && row.tokens_charged > 0) {
+        const { error: refundError } = await admin.rpc("ugc_grant_tokens", {
+          _user_id: user.id,
+          _tokens: row.tokens_charged,
+          _reason: "video_refund",
+          _video_id: row.id,
+        });
+        refunded = !refundError;
+      }
+
       const { data: updated } = await userClient
         .from("ugc_videos")
-        .update({ status: "failed", error_message: message })
+        .update({ status: "failed", error_message: message, tokens_refunded: refunded })
         .eq("id", row.id)
         .select()
         .single();
