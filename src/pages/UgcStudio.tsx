@@ -547,10 +547,7 @@ const UgcStudio = () => {
                     characters={characters}
                     onChanged={loadCharacters}
                     activeId={characterId}
-                    onUse={(file, name) => {
-                      const found = characters.find((c) => c.name === name);
-                      useCharacter(file, name, found?.id ?? "");
-                    }}
+                    onUse={(file, character) => useCharacter(file, character.name, character.id)}
                   />
                 </div>
 
