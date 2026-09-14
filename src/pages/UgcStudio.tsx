@@ -85,6 +85,7 @@ const UgcStudio = () => {
   const [productId, setProductId] = useState<string | null>(null);
   const [image, setImage] = useState<{ data: string; mimeType: string; preview: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [keepingId, setKeepingId] = useState<string | null>(null);
 
   const [projects, setProjects] = useState<UgcProject[]>([]);
   const [products, setProducts] = useState<UgcProduct[]>([]);
