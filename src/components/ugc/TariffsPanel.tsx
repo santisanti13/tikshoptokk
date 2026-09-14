@@ -36,6 +36,13 @@ const TariffsPanel = ({ onPick }: { onPick?: (label: string) => void }) => {
   };
 
   const manageSubscription = async () => {
+    if (!active) {
+      toast({
+        title: "Todavía no tienes un plan que gestionar",
+        description: "Contrata un plan y aquí podrás cambiarlo, ver facturas o cancelarlo.",
+      });
+      return;
+    }
     setPortalLoading(true);
     const { data, error } = await supabase.functions.invoke("create-portal-session", {
       body: {
