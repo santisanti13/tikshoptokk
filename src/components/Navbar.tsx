@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+
 
 const links = [
   { label: "Servicios", href: "#servicios" },
@@ -36,7 +38,19 @@ const Logo = () => (
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
   const location = useLocation();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setSignedIn(Boolean(data.session)));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => setSignedIn(Boolean(session)));
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  const accountLink = signedIn
+    ? { href: "/mi-cuenta", label: "Mi cuenta" }
+    : { href: "/login", label: "Acceder" };
+
 
   return (
     <nav className="fixed left-0 right-0 top-4 z-50 px-4 md:px-8">
@@ -51,10 +65,12 @@ const Navbar = () => {
           {links.map((l) => (
             <NavItem key={l.href} href={l.href} label={l.label} />
           ))}
+          <NavItem href={accountLink.href} label={accountLink.label} />
           <Button asChild size="sm" className="rounded-full px-5">
             <a href={location.pathname === "/" ? "#contacto" : "/#contacto"}>Agenda una consulta</a>
           </Button>
         </div>
+
 
         <button
           className="lg:hidden"
@@ -72,6 +88,10 @@ const Navbar = () => {
               <NavItem href={l.href} label={l.label} onClick={() => setOpen(false)} />
             </div>
           ))}
+          <div className="block py-2.5">
+            <NavItem href={accountLink.href} label={accountLink.label} onClick={() => setOpen(false)} />
+          </div>
+
           <Button asChild size="sm" className="mt-3 w-full rounded-full">
             <a href={location.pathname === "/" ? "#contacto" : "/#contacto"} onClick={() => setOpen(false)}>
               Agenda una consulta
