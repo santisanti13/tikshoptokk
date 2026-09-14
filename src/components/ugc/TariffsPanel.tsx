@@ -96,6 +96,21 @@ const TariffsPanel = ({ onPick }: { onPick?: (label: string) => void }) => {
             </div>
           ))}
         </div>
+        <div className="mt-5 flex flex-col gap-2 rounded-2xl border border-white/10 bg-card/40 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-muted-foreground">
+            Cambia de plan cuando quieras: se ajusta el importe por los días usados y los tokens del nuevo
+            plan entran al instante. Si cancelas, conservas el acceso y tus tokens hasta el final del mes
+            pagado, y los tokens que no gastes se acumulan.
+          </p>
+          <Button
+            variant="outline"
+            className="shrink-0 rounded-full"
+            onClick={manageSubscription}
+            disabled={portalLoading}
+          >
+            {portalLoading ? "Abriendo…" : "Gestionar mi plan"}
+          </Button>
+        </div>
       </div>
 
       <div>
