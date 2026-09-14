@@ -15,6 +15,7 @@ import ProductsPanel, { type UgcProduct } from "@/components/ugc/ProductsPanel";
 import VideoGallery, { type VideoRow } from "@/components/ugc/VideoGallery";
 import TariffsPanel from "@/components/ugc/TariffsPanel";
 import { eurFromTokens, formatEur, tokensForVideo } from "@/lib/ugcPricing";
+import { UGC_PRESETS, getPreset } from "@/lib/ugcPresets";
 
 const RESOLUTIONS = ["360p", "720p", "1080p"] as const;
 const DURATIONS = [4, 6, 8, 10] as const;
@@ -42,6 +43,7 @@ const UgcStudio = () => {
   const [plan, setPlan] = useState<string>("trial");
 
   const [idea, setIdea] = useState("");
+  const [presetId, setPresetId] = useState<string>("cara");
   const [prompt, setPrompt] = useState("");
   const [assisting, setAssisting] = useState(false);
   const [resolution, setResolution] = useState<string>("720p");
