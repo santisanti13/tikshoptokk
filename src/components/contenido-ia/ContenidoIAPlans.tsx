@@ -336,12 +336,19 @@ const ContenidoIAPlans = () => {
                         ))}
                       </ul>
                       <Button
-                        onClick={goToContact}
+                        onClick={() => contratar(plan)}
                         variant={plan.highlight ? "default" : "outline"}
                         className={`mt-7 w-full rounded-full ${plan.highlight ? "glow-pink" : "border-white/20 bg-transparent hover:bg-white/5"}`}
                       >
                         Contratar {plan.name}
                       </Button>
+                      <button
+                        type="button"
+                        onClick={goToContact}
+                        className="mt-3 text-xs text-muted-foreground underline-offset-4 hover:underline"
+                      >
+                        Prefiero hablar antes con vosotros
+                      </button>
                     </motion.div>
                   ))}
                 </div>
