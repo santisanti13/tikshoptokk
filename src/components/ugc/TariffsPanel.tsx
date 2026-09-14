@@ -1,6 +1,12 @@
+import { useState } from "react";
 import { UGC_PLANS, UGC_TOPUPS, TOKENS_PER_SECOND, TOKEN_PRICE_EUR, formatEur, tokensForVideo, eurFromTokens } from "@/lib/ugcPricing";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
+import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
+import { paymentsConfigured } from "@/lib/stripe";
+import { useToast } from "@/hooks/use-toast";
 
 const EXAMPLES = [
   { resolution: "360p", duration: 4, label: "Prueba rápida" },
@@ -9,6 +15,22 @@ const EXAMPLES = [
 ];
 
 const TariffsPanel = ({ onPick }: { onPick?: (label: string) => void }) => {
+  const { toast } = useToast();
+  const [checkout, setCheckout] = useState<{ priceId: string; label: string } | null>(null);
+
+  const buy = (priceId: string, label: string) => {
+    onPick?.(label);
+    if (!paymentsConfigured()) {
+      toast({
+        title: "Pagos no disponibles todavía",
+        description: "El cobro con tarjeta se activa al publicar la web. Escríbenos y lo gestionamos manualmente.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setCheckout({ priceId, label });
+  };
+
   return (
     <div className="space-y-10">
       <div>
@@ -45,7 +67,7 @@ const TariffsPanel = ({ onPick }: { onPick?: (label: string) => void }) => {
               <Button
                 className="mt-6 w-full rounded-full"
                 variant={plan.highlight ? "default" : "outline"}
-                onClick={() => onPick?.(plan.name)}
+                onClick={() => buy(plan.priceId, plan.name)}
               >
                 Contratar {plan.name}
               </Button>
@@ -62,7 +84,7 @@ const TariffsPanel = ({ onPick }: { onPick?: (label: string) => void }) => {
               <p className="font-display text-2xl font-bold">{pack.tokens}</p>
               <p className="text-xs text-muted-foreground">tokens</p>
               <p className="mt-3 text-sm">{formatEur(pack.priceEur)}</p>
-              <Button variant="ghost" size="sm" className="mt-3 rounded-full px-0" onClick={() => onPick?.(`${pack.tokens} tokens`)}>
+              <Button variant="ghost" size="sm" className="mt-3 rounded-full px-0" onClick={() => buy(pack.priceId, `${pack.tokens} tokens`)}>
                 Recargar
               </Button>
             </div>
@@ -104,6 +126,16 @@ const TariffsPanel = ({ onPick }: { onPick?: (label: string) => void }) => {
           Si un vídeo falla, sus tokens se devuelven automáticamente.
         </p>
       </div>
+
+      <Dialog open={Boolean(checkout)} onOpenChange={(open) => !open && setCheckout(null)}>
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{checkout?.label}</DialogTitle>
+          </DialogHeader>
+          <PaymentTestModeBanner />
+          {checkout && <StripeEmbeddedCheckout priceId={checkout.priceId} />}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

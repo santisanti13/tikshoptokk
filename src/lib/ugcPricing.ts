@@ -40,6 +40,7 @@ export type UgcPlan = {
   name: string;
   priceEur: number;
   tokens: number;
+  priceId: string;
   highlight?: boolean;
   perks: string[];
 };
@@ -51,6 +52,7 @@ export const UGC_PLANS: UgcPlan[] = [
     name: "Starter",
     priceEur: 49,
     tokens: 200,
+    priceId: "ugc_starter_monthly",
     perks: [
       "~16 vídeos de 8s en 720p al mes",
       "1 proyecto de marca",
@@ -62,6 +64,7 @@ export const UGC_PLANS: UgcPlan[] = [
     name: "Pro",
     priceEur: 149,
     tokens: 700,
+    priceId: "ugc_pro_monthly",
     highlight: true,
     perks: [
       "~58 vídeos de 8s en 720p al mes",
@@ -75,6 +78,7 @@ export const UGC_PLANS: UgcPlan[] = [
     name: "Studio",
     priceEur: 399,
     tokens: 2000,
+    priceId: "ugc_studio_monthly",
     perks: [
       "~166 vídeos de 8s en 720p al mes",
       "Todo lo del plan Pro",
@@ -86,7 +90,7 @@ export const UGC_PLANS: UgcPlan[] = [
 
 /** Recargas puntuales de tokens (sin suscripción). */
 export const UGC_TOPUPS = [
-  { id: "topup-100", tokens: 100, priceEur: 29 },
-  { id: "topup-500", tokens: 500, priceEur: 129 },
-  { id: "topup-2000", tokens: 2000, priceEur: 449 },
+  { id: "topup-100", tokens: 100, priceEur: 29, priceId: "ugc_topup_100_onetime" },
+  { id: "topup-500", tokens: 500, priceEur: 129, priceId: "ugc_topup_500_onetime" },
+  { id: "topup-2000", tokens: 2000, priceEur: 449, priceId: "ugc_topup_2000_onetime" },
 ];

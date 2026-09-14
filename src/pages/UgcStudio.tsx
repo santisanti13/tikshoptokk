@@ -80,6 +80,24 @@ const UgcStudio = () => {
     }
   }, []);
 
+  // Al volver del pago los tokens llegan unos segundos después: refrescamos el saldo varias veces.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("checkout") !== "success") return;
+    toast({
+      title: "Pago recibido",
+      description: "Estamos añadiendo tus tokens, se reflejarán en unos segundos.",
+    });
+    window.history.replaceState({}, "", "/ugc-studio");
+    let attempts = 0;
+    const timer = window.setInterval(() => {
+      attempts += 1;
+      loadBalance();
+      if (attempts >= 6) window.clearInterval(timer);
+    }, 5000);
+    return () => window.clearInterval(timer);
+  }, [loadBalance, toast]);
+
   const loadProjects = useCallback(async () => {
     const { data } = await supabase.from("ugc_projects").select("id, name, character_brief, tone, brand_notes").order("created_at", { ascending: false });
     setProjects((data ?? []) as UgcProject[]);
