@@ -168,6 +168,52 @@ const UgcStudio = () => {
     setImage({ data: btoa(binary), mimeType: file.type, preview: URL.createObjectURL(file) });
   }
 
+  // Reutiliza el guion y los ajustes de un vídeo anterior para editarlo y volver a generarlo.
+  function reuseVideo(v: VideoRow) {
+    setPrompt(v.prompt);
+    setResolution(v.resolution);
+    setDuration(Number(v.duration_seconds) || 8);
+    setAspectRatio(v.aspect_ratio === "16:9" ? "16:9" : "9:16");
+    if (v.project_id !== undefined) setProjectId(v.project_id ?? null);
+    if (v.product_id !== undefined) setProductId(v.product_id ?? null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    toast({ title: "Guion cargado", description: "Edítalo y genera una variante con los mismos ajustes." });
+  }
+
+  // Toma un fotograma del vídeo anterior como referencia para conservar cara, cuerpo y voz.
+  async function keepIdentity(v: VideoRow) {
+    const url = urls[v.id];
+    if (!url) {
+      toast({ title: "El vídeo aún no está listo", variant: "destructive" });
+      return;
+    }
+    setKeepingId(v.id);
+    try {
+      const frame = await captureFrame(url);
+      setImage(frame);
+      setPrompt((prev) => {
+        const base = (prev.trim() || v.prompt).replace(IDENTITY_NOTE, "").trim();
+        return `${base}\n\n${IDENTITY_NOTE}`;
+      });
+      if (v.project_id !== undefined) setProjectId(v.project_id ?? null);
+      if (v.product_id !== undefined) setProductId(v.product_id ?? null);
+      setAspectRatio(v.aspect_ratio === "16:9" ? "16:9" : "9:16");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      toast({
+        title: "Personaje fijado",
+        description: "Usaremos un fotograma de ese vídeo para mantener la misma cara, cuerpo y voz.",
+      });
+    } catch {
+      toast({
+        title: "No se pudo tomar la imagen",
+        description: "Descarga el vídeo, haz una captura y súbela como foto de partida.",
+        variant: "destructive",
+      });
+    } finally {
+      setKeepingId(null);
+    }
+  }
+
   async function writeWithAssistant() {
     const seed = idea.trim() || prompt.trim();
     if (seed.length < 3) {
