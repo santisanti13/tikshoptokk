@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { ImagePlus, Loader2, Package, Plus, Trash2 } from "lucide-react";
+import { Loader2, Package, Plus, Trash2 } from "lucide-react";
 
 export type UgcProduct = {
   id: string;
@@ -28,7 +28,7 @@ const ProductsPanel = ({ products, onChanged }: Props) => {
   const [preview, setPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [thumbs, setThumbs] = useState<Record<string, string>>({});
-  const fileRef = useRef<HTMLInputElement>(null);
+  
 
   useEffect(() => {
     products
