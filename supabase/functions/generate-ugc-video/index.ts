@@ -113,6 +113,10 @@ Deno.serve(async (req) => {
       return json({ error: `Te faltan tokens: este vídeo cuesta ${tokens}. Recarga tu saldo para continuar.`, needTokens: tokens }, 402);
     }
 
+    // Aviso al dueño cada 250 tokens consumidos en el mes, para recargar
+    // los créditos de IA antes de quedarse sin margen de generación.
+    creditsAlert(admin, tokens).catch((e) => console.error("credits alert", e));
+
     const refund = async () => {
       await admin.rpc("ugc_grant_tokens", {
         _user_id: user.id,
