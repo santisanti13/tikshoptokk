@@ -29,7 +29,7 @@ const WaitlistDialog = ({ open, onOpenChange, itemName }: WaitlistDialogProps) =
 
     setSubmitting(true);
     try {
-      const { error } = await supabase.functions.invoke("send-transactional-email", {
+      const { error } = await supabase.functions.invoke("send-contact-notification", {
         body: {
           type: "contact_notification",
           data: {
