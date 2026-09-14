@@ -8,6 +8,7 @@ import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { paymentsConfigured, getStripeEnvironment } from "@/lib/stripe";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useSubscription } from "@/hooks/useSubscription";
 
 const EXAMPLES = [
   { resolution: "360p", duration: 4, label: "Prueba rápida" },
@@ -19,6 +20,7 @@ const TariffsPanel = ({ onPick }: { onPick?: (label: string) => void }) => {
   const { toast } = useToast();
   const [checkout, setCheckout] = useState<{ priceId: string; label: string } | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
+  const { active } = useSubscription();
 
   const buy = (priceId: string, label: string) => {
     onPick?.(label);
@@ -34,6 +36,13 @@ const TariffsPanel = ({ onPick }: { onPick?: (label: string) => void }) => {
   };
 
   const manageSubscription = async () => {
+    if (!active) {
+      toast({
+        title: "Todavía no tienes un plan que gestionar",
+        description: "Contrata un plan y aquí podrás cambiarlo, ver facturas o cancelarlo.",
+      });
+      return;
+    }
     setPortalLoading(true);
     const { data, error } = await supabase.functions.invoke("create-portal-session", {
       body: {
