@@ -20,6 +20,38 @@ import { UGC_PRESETS, getPreset } from "@/lib/ugcPresets";
 const RESOLUTIONS = ["360p", "720p", "1080p"] as const;
 const DURATIONS = [4, 6, 8, 10] as const;
 
+const IDENTITY_NOTE =
+  "Continuidad: aparece exactamente la misma persona de la imagen de referencia — misma cara, mismo pelo, mismo cuerpo y misma ropa — y habla con la misma voz, acento y tono que en la pieza anterior. No cambies de protagonista.";
+
+// Extrae un fotograma del vídeo ya generado para usarlo como imagen de partida.
+async function captureFrame(url: string): Promise<{ data: string; mimeType: string; preview: string }> {
+  const video = document.createElement("video");
+  video.crossOrigin = "anonymous";
+  video.muted = true;
+  video.preload = "auto";
+  video.src = url;
+
+  await new Promise<void>((resolve, reject) => {
+    video.onloadeddata = () => resolve();
+    video.onerror = () => reject(new Error("video load"));
+  });
+
+  await new Promise<void>((resolve, reject) => {
+    video.onseeked = () => resolve();
+    video.onerror = () => reject(new Error("video seek"));
+    video.currentTime = Math.min(Math.max((video.duration || 4) * 0.35, 0.1), (video.duration || 4) - 0.1);
+  });
+
+  const canvas = document.createElement("canvas");
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext("2d");
+  if (!ctx || !canvas.width) throw new Error("no canvas");
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
+  return { data: dataUrl.split(",")[1], mimeType: "image/jpeg", preview: dataUrl };
+}
+
 const Chip = ({
   active,
   children,
