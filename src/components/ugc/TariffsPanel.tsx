@@ -31,6 +31,26 @@ const TariffsPanel = ({ onPick }: { onPick?: (label: string) => void }) => {
     setCheckout({ priceId, label });
   };
 
+  const manageSubscription = async () => {
+    setPortalLoading(true);
+    const { data, error } = await supabase.functions.invoke("create-portal-session", {
+      body: {
+        environment: getStripeEnvironment(),
+        returnUrl: `${window.location.origin}/ugc-studio`,
+      },
+    });
+    setPortalLoading(false);
+    if (error || !data?.url) {
+      toast({
+        title: "No pudimos abrir la gestión de tu plan",
+        description: data?.error || "Contrata un plan primero o inténtalo de nuevo en un momento.",
+        variant: "destructive",
+      });
+      return;
+    }
+    window.open(data.url as string, "_blank", "noopener,noreferrer");
+  };
+
   return (
     <div className="space-y-10">
       <div>
