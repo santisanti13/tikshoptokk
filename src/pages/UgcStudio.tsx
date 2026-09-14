@@ -526,7 +526,7 @@ const UgcStudio = () => {
                   {image ? (
                     <div className="flex items-center gap-3">
                       <img src={image.preview} alt="Imagen de referencia" className="h-20 w-20 rounded-xl object-cover" />
-                      <Button variant="ghost" size="sm" onClick={() => setImage(null)}>
+                      <Button variant="ghost" size="sm" onClick={() => { setImage(null); setCharacterId(null); }}>
                         <X className="mr-1 h-4 w-4" /> Quitar
                       </Button>
                     </div>
@@ -541,6 +541,19 @@ const UgcStudio = () => {
                     El vídeo partirá de esta imagen, junto con el guion y el proyecto o producto que elijas.
                   </p>
                 </div>
+
+                <div className="mt-6">
+                  <CharactersStrip
+                    characters={characters}
+                    onChanged={loadCharacters}
+                    activeId={characterId}
+                    onUse={(file, name) => {
+                      const found = characters.find((c) => c.name === name);
+                      useCharacter(file, name, found?.id ?? "");
+                    }}
+                  />
+                </div>
+
 
                 <div className="mt-7 flex items-center justify-between rounded-2xl border border-white/10 bg-background/40 px-4 py-3 text-sm">
                   <span className="text-muted-foreground">Coste de este vídeo</span>
