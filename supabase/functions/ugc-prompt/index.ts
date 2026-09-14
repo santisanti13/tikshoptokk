@@ -63,6 +63,8 @@ Deno.serve(async (req) => {
     const context: string[] = [`Idea: ${idea || "mantén la idea del guion de referencia"}`, `Formato: ${aspectRatio}`, `Duración: ${duration} segundos`];
     if (basePrompt) context.push(`GUION DE REFERENCIA a reescribir:\n${basePrompt}`);
     if (hasImage) context.push("El vídeo parte de una foto de producto que ya define el aspecto del producto.");
+    const reference = String(body?.reference ?? "").trim();
+    if (reference) context.push(`Vídeo o producto de TikTok tomado como referencia (imita el planteamiento, no lo copies literal):\n${reference.slice(0, 600)}`);
     if (preset) {
       context.push(`Estilo pedido: ${preset.label} — ${preset.hint}`);
       context.push(`Cómo escribirlo: ${preset.guidance}`);
@@ -87,12 +89,17 @@ Deno.serve(async (req) => {
     if (body?.productId) {
       const { data: product } = await userClient
         .from("ugc_products")
-        .select("name, description")
+        .select("name, description, blind_spots")
         .eq("id", body.productId)
         .maybeSingle();
       if (product) {
         context.push(`Producto: ${product.name}`);
         if (product.description) context.push(`Detalles del producto: ${product.description}`);
+        if (product.blind_spots) {
+          context.push(
+            `Datos cerrados del producto (no los cambies ni inventes nada que los contradiga; si el guion menciona esas partes, descríbelas así):\n${product.blind_spots}`,
+          );
+        }
       }
     }
 
