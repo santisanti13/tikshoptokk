@@ -1,0 +1,119 @@
+{
+  "version": 1,
+  "sdk_version": "2.0.4",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://zlklqsehcdketizzwmir.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "tikshoptok-agency",
+      "version": "0.1.0",
+      "title": "TikShopTok Agency"
+    },
+    "tools": [
+      {
+        "name": "get_agency_overview",
+        "title": "Get agency overview",
+        "description": "Get TikShopTok's positioning, services, headline results and key site links. Useful context before answering questions about the agency.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_blog_posts",
+        "title": "List blog posts",
+        "description": "List published TikShopTok blog posts (newest first) with title, slug, date, category, tags and excerpt.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "description": "How many posts to return. Defaults to 10."
+            },
+            "category": {
+              "type": "string",
+              "description": "Optional category filter: tiktok-shop, ugc, productos-virales or estrategia."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "search_blog_posts",
+        "title": "Search blog posts",
+        "description": "Search TikShopTok blog posts by free text across title, excerpt and tags. Returns matching posts newest first.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Search text, e.g. 'creadores UGC' or 'ranking tiendas'."
+            },
+            "limit": {
+              "type": "integer",
+              "description": "How many results to return. Defaults to 10."
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_blog_post",
+        "title": "Get blog post",
+        "description": "Get one TikShopTok blog post by slug, including its full body as plain text.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "slug": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The post slug, e.g. pulso-tiktok-shop-espana-2026-09-14."
+            }
+          },
+          "required": [
+            "slug"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
