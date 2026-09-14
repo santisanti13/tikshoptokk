@@ -172,9 +172,10 @@ Deno.serve(async (req) => {
     }
 
     // Imagen de partida: la que suben en el momento o la de la biblioteca de productos.
-    let image = body?.image as { data?: string; mimeType?: string } | undefined;
+    // En una continuación no se usa imagen: el punto de partida es el vídeo anterior.
+    let image = sourceVideo ? undefined : (body?.image as { data?: string; mimeType?: string } | undefined);
 
-    if (!image?.data && productId) {
+    if (!sourceVideo && !image?.data && productId) {
       const { data: product } = await userClient
         .from("ugc_products")
         .select("name, description, image_path")
@@ -191,6 +192,12 @@ Deno.serve(async (req) => {
           }
         }
       }
+    }
+
+    if (sourceVideo) {
+      prompt =
+        `${prompt}\n\nLa escena continúa exactamente desde donde termina el vídeo adjunto: misma persona, misma ropa, misma luz, mismo sitio y misma voz. ` +
+        `El audio sigue sin corte. No repitas lo que ya ha pasado.`;
     }
 
     const hasImage = Boolean(image?.data && image?.mimeType);
@@ -223,12 +230,17 @@ Deno.serve(async (req) => {
       });
     };
 
-    const input: unknown = hasImage
+    const input: unknown = sourceVideo
       ? [
           { type: "text", text: prompt },
-          { type: "image", data: image!.data, mime_type: image!.mimeType },
+          { type: "video", data: sourceBase64, mime_type: "video/mp4" },
         ]
-      : prompt;
+      : hasImage
+        ? [
+            { type: "text", text: prompt },
+            { type: "image", data: image!.data, mime_type: image!.mimeType },
+          ]
+        : prompt;
 
     const createRes = await fetch("https://ai.gateway.lovable.dev/v1/videos", {
       method: "POST",
@@ -240,8 +252,11 @@ Deno.serve(async (req) => {
           type: "video",
           resolution,
           duration: `${duration}s`,
-          aspect_ratio: aspectRatio,
+          // En una continuación el formato lo hereda del vídeo original y el
+          // proveedor rechaza el aspect_ratio explícito.
+          ...(sourceVideo ? {} : { aspect_ratio: aspectRatio }),
         },
+        ...(sourceVideo ? { generation_config: { video_config: { task: "extend" } } } : {}),
       }),
     });
 
@@ -267,9 +282,11 @@ Deno.serve(async (req) => {
         prompt,
         status: "in_progress",
         resolution,
-        duration_seconds: duration,
+        duration_seconds: sourceVideo ? Number(sourceVideo.duration_seconds) + duration : duration,
         aspect_ratio: aspectRatio,
         has_start_image: hasImage,
+        source_video_id: sourceVideo?.id ?? null,
+        added_seconds: sourceVideo ? duration : null,
         project_id: projectId,
         product_id: productId,
         tokens_charged: tokens,
