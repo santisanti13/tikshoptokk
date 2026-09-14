@@ -101,6 +101,69 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_events: {
+        Row: {
+          event_key: string
+          processed_at: string
+        }
+        Insert: {
+          event_key: string
+          processed_at?: string
+        }
+        Update: {
+          event_key?: string
+          processed_at?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean | null
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          environment: string
+          id: string
+          price_id: string
+          product_id: string
+          status: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          environment?: string
+          id?: string
+          price_id: string
+          product_id: string
+          status?: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          environment?: string
+          id?: string
+          price_id?: string
+          product_id?: string
+          status?: string
+          stripe_customer_id?: string
+          stripe_subscription_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -371,6 +434,15 @@ export type Database = {
           _video_id?: string
         }
         Returns: number
+      }
+      ugc_set_plan: {
+        Args: {
+          _monthly_tokens: number
+          _plan: string
+          _renews_at: string
+          _user_id: string
+        }
+        Returns: undefined
       }
     }
     Enums: {
