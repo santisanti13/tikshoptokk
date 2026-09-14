@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles, ImagePlus, X, Coins, Wand2 } from "lucide-react";
+import { Loader2, Sparkles, X, Coins, Wand2 } from "lucide-react";
+import ImageDropzone from "@/components/ugc/ImageDropzone";
 import ProjectsPanel, { type UgcProject } from "@/components/ugc/ProjectsPanel";
 import ProductsPanel, { type UgcProduct } from "@/components/ugc/ProductsPanel";
 import VideoGallery, { type VideoRow } from "@/components/ugc/VideoGallery";
@@ -91,7 +92,7 @@ const UgcStudio = () => {
   const [products, setProducts] = useState<UgcProduct[]>([]);
   const [videos, setVideos] = useState<VideoRow[]>([]);
   const [urls, setUrls] = useState<Record<string, string>>({});
-  const fileRef = useRef<HTMLInputElement>(null);
+  
 
   const cost = tokensForVideo(resolution, duration);
 
@@ -134,7 +135,7 @@ const UgcStudio = () => {
   }, [loadBalance, toast]);
 
   const loadProjects = useCallback(async () => {
-    const { data } = await supabase.from("ugc_projects").select("id, name, character_brief, tone, brand_notes").order("created_at", { ascending: false });
+    const { data } = await supabase.from("ugc_projects").select("id, name, character_brief, tone, brand_notes, reference_image_path").order("created_at", { ascending: false });
     setProjects((data ?? []) as UgcProject[]);
   }, []);
 
@@ -200,6 +201,22 @@ const UgcStudio = () => {
     for (let i = 0; i < bytes.length; i += 1) binary += String.fromCharCode(bytes[i]);
     setImage({ data: btoa(binary), mimeType: file.type, preview: URL.createObjectURL(file) });
   }
+
+  // Al elegir un proyecto con imagen de referencia, la usamos como punto de partida si no hay otra.
+  async function selectProject(p: UgcProject | null) {
+    setProjectId(p?.id ?? null);
+    if (!p?.reference_image_path || image) return;
+    const { data } = await supabase.storage.from("ugc-products").createSignedUrl(p.reference_image_path, 3600);
+    if (!data?.signedUrl) return;
+    try {
+      const blob = await (await fetch(data.signedUrl)).blob();
+      await pickImage(new File([blob], "referencia.jpg", { type: blob.type || "image/jpeg" }));
+      toast({ title: "Personaje del proyecto cargado", description: "Usaremos su imagen de referencia en este vídeo." });
+    } catch {
+      /* si falla, el usuario puede arrastrar la imagen a mano */
+    }
+  }
+
 
   // Reutiliza el guion y los ajustes de un vídeo anterior para editarlo y volver a generarlo.
   function reuseVideo(v: VideoRow) {
@@ -372,11 +389,11 @@ const UgcStudio = () => {
                       <div className="space-y-2">
                         <Label>Proyecto</Label>
                         <div className="flex flex-wrap gap-2">
-                          <Chip active={projectId === null} onClick={() => setProjectId(null)}>
+                          <Chip active={projectId === null} onClick={() => selectProject(null)}>
                             Sin proyecto
                           </Chip>
                           {projects.map((p) => (
-                            <Chip key={p.id} active={projectId === p.id} onClick={() => setProjectId(p.id)}>
+                            <Chip key={p.id} active={projectId === p.id} onClick={() => selectProject(p)}>
                               {p.name}
                             </Chip>
                           ))}
@@ -484,30 +501,24 @@ const UgcStudio = () => {
                 </div>
 
                 <div className="mt-6 space-y-2">
-                  <Label>Foto puntual (opcional)</Label>
+                  <Label>Imagen de referencia (opcional)</Label>
                   {image ? (
                     <div className="flex items-center gap-3">
-                      <img src={image.preview} alt="Foto de partida" className="h-20 w-20 rounded-xl object-cover" />
+                      <img src={image.preview} alt="Imagen de referencia" className="h-20 w-20 rounded-xl object-cover" />
                       <Button variant="ghost" size="sm" onClick={() => setImage(null)}>
                         <X className="mr-1 h-4 w-4" /> Quitar
                       </Button>
                     </div>
                   ) : (
-                    <Button variant="outline" size="sm" className="rounded-full" onClick={() => fileRef.current?.click()}>
-                      <ImagePlus className="mr-2 h-4 w-4" /> Subir foto
-                    </Button>
+                    <ImageDropzone
+                      title="Arrastra tu imagen de referencia"
+                      hint="cara, producto o fotograma · o haz clic para elegirla"
+                      onFiles={(files) => pickImage(files[0])}
+                    />
                   )}
-                  <Input
-                    ref={fileRef}
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) pickImage(file);
-                      e.target.value = "";
-                    }}
-                  />
+                  <p className="text-xs text-muted-foreground">
+                    El vídeo partirá de esta imagen, junto con el guion y el proyecto o producto que elijas.
+                  </p>
                 </div>
 
                 <div className="mt-7 flex items-center justify-between rounded-2xl border border-white/10 bg-background/40 px-4 py-3 text-sm">

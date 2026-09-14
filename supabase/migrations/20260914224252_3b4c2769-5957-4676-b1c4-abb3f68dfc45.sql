@@ -1,0 +1,1 @@
+ALTER TABLE public.ugc_projects ADD COLUMN IF NOT EXISTS reference_image_path TEXT;

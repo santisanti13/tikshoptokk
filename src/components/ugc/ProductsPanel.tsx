@@ -1,11 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import ImageDropzone from "@/components/ugc/ImageDropzone";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { ImagePlus, Loader2, Package, Plus, Trash2 } from "lucide-react";
+import { Loader2, Package, Plus, Trash2 } from "lucide-react";
 
 export type UgcProduct = {
   id: string;
@@ -27,7 +28,7 @@ const ProductsPanel = ({ products, onChanged }: Props) => {
   const [preview, setPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [thumbs, setThumbs] = useState<Record<string, string>>({});
-  const fileRef = useRef<HTMLInputElement>(null);
+  
 
   useEffect(() => {
     products
@@ -121,24 +122,14 @@ const ProductsPanel = ({ products, onChanged }: Props) => {
                 </Button>
               </div>
             ) : (
-              <Button variant="outline" size="sm" className="rounded-full" onClick={() => fileRef.current?.click()}>
-                <ImagePlus className="mr-2 h-4 w-4" /> Subir foto
-              </Button>
+              <ImageDropzone
+                title="Arrastra la foto del producto"
+                onFiles={(files) => {
+                  setFile(files[0]);
+                  setPreview(URL.createObjectURL(files[0]));
+                }}
+              />
             )}
-            <Input
-              ref={fileRef}
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              className="hidden"
-              onChange={(e) => {
-                const picked = e.target.files?.[0];
-                if (picked) {
-                  setFile(picked);
-                  setPreview(URL.createObjectURL(picked));
-                }
-                e.target.value = "";
-              }}
-            />
           </div>
           <Button onClick={save} disabled={saving} className="rounded-full">
             {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />} Guardar producto
