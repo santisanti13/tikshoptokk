@@ -127,6 +127,8 @@ Deno.serve(async (req) => {
     } | null = null;
     let sourceBase64: string | null = null;
 
+    const MAX_TOTAL_SECONDS = 50;
+
     if (extendFromId) {
       const { data: src } = await userClient
         .from("ugc_videos")
@@ -136,11 +138,22 @@ Deno.serve(async (req) => {
       if (!src || src.status !== "completed" || !src.video_path) {
         return json({ error: "El vídeo que quieres alargar no está listo todavía." }, 400);
       }
+      if (Number(src.duration_seconds) + duration > MAX_TOTAL_SECONDS) {
+        return json(
+          {
+            error: `El máximo es ${MAX_TOTAL_SECONDS} segundos por vídeo. Este ya dura ${src.duration_seconds}s: puedes añadir hasta ${Math.max(0, MAX_TOTAL_SECONDS - Number(src.duration_seconds))}s.`,
+          },
+          400,
+        );
+      }
       const file = await admin.storage.from("ugc-videos").download(src.video_path);
       if (!file.data) return json({ error: "No se pudo leer el vídeo original." }, 500);
       const bytes = new Uint8Array(await file.data.arrayBuffer());
       if (bytes.length > 40 * 1024 * 1024) {
-        return json({ error: "El vídeo ya es demasiado largo para alargarlo más. Descárgalo y únelo por tu cuenta." }, 400);
+        return json(
+          { error: "El vídeo pesa demasiado para alargarlo más. Prueba con una calidad menor o descárgalo y únelo por tu cuenta." },
+          400,
+        );
       }
       sourceVideo = src as typeof sourceVideo;
       sourceBase64 = toBase64(bytes);
