@@ -25,6 +25,14 @@ Reglas obligatorias:
 - Añade "Plano continuo, sin cortes de escena." al final.
 - Devuelve SOLO el prompt final, sin títulos ni explicaciones, entre 60 y 130 palabras.`;
 
+const REWRITE = `Además, recibes un GUION DE REFERENCIA ya escrito.
+Reescríbelo adaptándolo al estilo, proyecto y producto indicados en el contexto:
+- Conserva al protagonista, su descripción física, su ropa y su voz si el guion los describe.
+- Cambia el encuadre, la cámara, la luz, el audio y el ritmo a lo que pida el nuevo estilo.
+- Sustituye el producto y las referencias de marca por los nuevos si se indican.
+- Mantén la duración y el formato pedidos.
+- No expliques los cambios: devuelve solo el guion nuevo.`;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -40,8 +48,11 @@ Deno.serve(async (req) => {
     if (!userData?.user) return json({ error: "Inicia sesión para usar el asistente." }, 401);
 
     const body = await req.json();
+    const basePrompt = String(body?.basePrompt ?? "").trim();
     const idea = String(body?.idea ?? "").trim();
-    if (idea.length < 3) return json({ error: "Cuéntanos la idea en una frase." }, 400);
+    if (idea.length < 3 && basePrompt.length < 20) {
+      return json({ error: "Cuéntanos la idea en una frase." }, 400);
+    }
 
     const aspectRatio = body?.aspectRatio === "16:9" ? "16:9" : "9:16";
     const duration = Math.min(Math.max(Math.round(Number(body?.duration ?? 8)) || 8, 3), 10);
@@ -49,7 +60,8 @@ Deno.serve(async (req) => {
 
     const preset = getPreset(typeof body?.presetId === "string" ? body.presetId : null);
 
-    const context: string[] = [`Idea: ${idea}`, `Formato: ${aspectRatio}`, `Duración: ${duration} segundos`];
+    const context: string[] = [`Idea: ${idea || "mantén la idea del guion de referencia"}`, `Formato: ${aspectRatio}`, `Duración: ${duration} segundos`];
+    if (basePrompt) context.push(`GUION DE REFERENCIA a reescribir:\n${basePrompt}`);
     if (hasImage) context.push("El vídeo parte de una foto de producto que ya define el aspecto del producto.");
     if (preset) {
       context.push(`Estilo pedido: ${preset.label} — ${preset.hint}`);
@@ -90,7 +102,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: SYSTEM },
+          { role: "system", content: basePrompt ? `${SYSTEM}\n\n${REWRITE}` : SYSTEM },
           { role: "user", content: context.join("\n") },
         ],
       }),

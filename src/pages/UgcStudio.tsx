@@ -88,6 +88,9 @@ const UgcStudio = () => {
   const [image, setImage] = useState<{ data: string; mimeType: string; preview: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [keepingId, setKeepingId] = useState<string | null>(null);
+  const [extendFrom, setExtendFrom] = useState<VideoRow | null>(null);
+  // Contexto (estilo + proyecto + producto) con el que se escribió el guion actual.
+  const [promptContext, setPromptContext] = useState<string | null>(null);
 
   const [projects, setProjects] = useState<UgcProject[]>([]);
   const [products, setProducts] = useState<UgcProduct[]>([]);
@@ -98,7 +101,10 @@ const UgcStudio = () => {
 
   
 
-  const cost = tokensForVideo(resolution, duration);
+  const effectiveResolution = extendFrom ? extendFrom.resolution : resolution;
+  const cost = tokensForVideo(effectiveResolution, duration);
+  const contextKey = `${presetId}|${projectId ?? ""}|${productId ?? ""}`;
+  const promptDrifted = prompt.trim().length > 20 && promptContext !== null && promptContext !== contextKey;
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -247,8 +253,13 @@ const UgcStudio = () => {
     setAspectRatio(v.aspect_ratio === "16:9" ? "16:9" : "9:16");
     if (v.project_id !== undefined) setProjectId(v.project_id ?? null);
     if (v.product_id !== undefined) setProductId(v.product_id ?? null);
+    setExtendFrom(null);
+    setPromptContext(`${presetId}|${v.project_id ?? ""}|${v.product_id ?? ""}`);
     window.scrollTo({ top: 0, behavior: "smooth" });
-    toast({ title: "Guion cargado", description: "Edítalo y genera una variante con los mismos ajustes." });
+    toast({
+      title: "Guion cargado",
+      description: "Edítalo, o cambia el estilo o el producto y pulsa Reescribir guion.",
+    });
   }
 
   // Toma un fotograma del vídeo anterior como referencia para conservar cara, cuerpo y voz.
@@ -285,9 +296,29 @@ const UgcStudio = () => {
     }
   }
 
-  async function writeWithAssistant() {
-    const seed = idea.trim() || prompt.trim();
-    if (seed.length < 3) {
+  // Prepara una continuación: el vídeo elegido será el punto de partida.
+  function extendVideo(v: VideoRow) {
+    setExtendFrom(v);
+    setImage(null);
+    setCharacterId(null);
+    setResolution(v.resolution);
+    setAspectRatio(v.aspect_ratio === "16:9" ? "16:9" : "9:16");
+    setDuration(6);
+    if (v.project_id !== undefined) setProjectId(v.project_id ?? null);
+    if (v.product_id !== undefined) setProductId(v.product_id ?? null);
+    setPrompt("");
+    setIdea("");
+    setPromptContext(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    toast({
+      title: "Continuación preparada",
+      description: "Escribe qué pasa a continuación y elige cuántos segundos añadir.",
+    });
+  }
+
+  async function writeWithAssistant(rewrite = false) {
+    const seed = idea.trim() || (rewrite ? "" : prompt.trim());
+    if (!rewrite && seed.length < 3) {
       toast({ title: "Cuéntame la idea", description: "Una frase basta: “chica probando el sérum en el baño”.", variant: "destructive" });
       return;
     }
@@ -295,6 +326,7 @@ const UgcStudio = () => {
     const { data, error } = await supabase.functions.invoke("ugc-prompt", {
       body: {
         idea: seed,
+        ...(rewrite ? { basePrompt: prompt } : {}),
         presetId,
         projectId,
         productId,
@@ -310,7 +342,13 @@ const UgcStudio = () => {
       return;
     }
     setPrompt(data.prompt);
-    toast({ title: "Guion listo", description: "Revísalo y ajusta lo que quieras antes de generar." });
+    setPromptContext(contextKey);
+    toast({
+      title: rewrite ? "Guion reescrito" : "Guion listo",
+      description: rewrite
+        ? "Lo hemos adaptado al estilo, proyecto y producto que has elegido."
+        : "Revísalo y ajusta lo que quieras antes de generar.",
+    });
   }
 
   async function generate() {
@@ -323,8 +361,9 @@ const UgcStudio = () => {
       body: {
         prompt,
         presetId,
-        resolution,
+        resolution: effectiveResolution,
         duration,
+        ...(extendFrom ? { extendFromVideoId: extendFrom.id } : {}),
         aspectRatio,
         projectId,
         productId,
@@ -345,6 +384,7 @@ const UgcStudio = () => {
     }
     toast({ title: "Vídeo en cola", description: `Tarda entre 1 y 3 minutos. Has usado ${data.tokensCharged} tokens.` });
     setVideos((prev) => [data.video as VideoRow, ...prev]);
+    setExtendFrom(null);
     if (typeof data.balance === "number") setBalance(data.balance);
   }
 
@@ -470,50 +510,109 @@ const UgcStudio = () => {
                       onChange={(e) => setIdea(e.target.value)}
                       placeholder="Chica probando el sérum antes de salir"
                     />
-                    <Button variant="outline" className="shrink-0 rounded-full" onClick={writeWithAssistant} disabled={assisting}>
+                    <Button variant="outline" className="shrink-0 rounded-full" onClick={() => writeWithAssistant(false)} disabled={assisting}>
                       {assisting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
                       <span className="ml-2 hidden sm:inline">Escribir guion</span>
                     </Button>
                   </div>
                 </div>
 
+                {extendFrom && (
+                  <div className="mt-5 rounded-2xl border border-primary/30 bg-primary/10 p-4 text-sm">
+                    <p className="font-medium">Continuación de un vídeo</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Seguimos el vídeo de {extendFrom.duration_seconds}s ({extendFrom.resolution} ·{" "}
+                      {extendFrom.aspect_ratio ?? "9:16"}) y le añadimos los segundos que elijas. Solo pagas los nuevos.
+                    </p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="mt-2 h-8 rounded-full px-3 text-xs"
+                      onClick={() => setExtendFrom(null)}
+                    >
+                      <X className="mr-1 h-3.5 w-3.5" /> Cancelar continuación
+                    </Button>
+                  </div>
+                )}
+
                 <div className="mt-5 space-y-2">
-                  <Label htmlFor="prompt">Guion del vídeo</Label>
+                  <Label htmlFor="prompt">{extendFrom ? "Qué pasa a continuación" : "Guion del vídeo"}</Label>
                   <Textarea
                     id="prompt"
                     rows={7}
-                    placeholder="El asistente lo rellena por ti, o escríbelo tú: encuadre, luz, tono, qué dice…"
+                    placeholder={
+                      extendFrom
+                        ? "Sigue hablando y enseña el interior del maletín mientras camina hacia la ventana…"
+                        : "El asistente lo rellena por ti, o escríbelo tú: encuadre, luz, tono, qué dice…"
+                    }
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
                   />
+                  {promptDrifted && (
+                    <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-amber-400/30 bg-amber-400/10 px-3 py-2">
+                      <p className="text-xs text-muted-foreground">
+                        Has cambiado el estilo, el proyecto o el producto: el guion todavía es el anterior.
+                      </p>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 rounded-full px-3 text-[11px]"
+                        onClick={() => writeWithAssistant(true)}
+                        disabled={assisting}
+                      >
+                        {assisting ? (
+                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Wand2 className="mr-1.5 h-3.5 w-3.5" />
+                        )}
+                        Reescribir guion
+                      </Button>
+                    </div>
+                  )}
                 </div>
+
 
                 <div className="mt-6 grid gap-5 sm:grid-cols-3">
                   <div className="space-y-2">
                     <Label>Formato</Label>
                     <div className="flex gap-2">
                       {(["9:16", "16:9"] as const).map((r) => (
-                        <Chip key={r} active={aspectRatio === r} onClick={() => setAspectRatio(r)}>
+                        <Chip
+                          key={r}
+                          active={aspectRatio === r}
+                          disabled={Boolean(extendFrom)}
+                          onClick={() => setAspectRatio(r)}
+                        >
                           {r}
                         </Chip>
                       ))}
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label>Duración</Label>
+                    <Label>{extendFrom ? "Segundos nuevos" : "Duración"}</Label>
                     <div className="flex flex-wrap gap-2">
                       {DURATIONS.map((d) => (
                         <Chip key={d} active={duration === d} onClick={() => setDuration(d)}>
-                          {d}s
+                          {extendFrom ? `+${d}s` : `${d}s`}
                         </Chip>
                       ))}
                     </div>
+                    {extendFrom && (
+                      <p className="text-xs text-muted-foreground">
+                        Total: {Number(extendFrom.duration_seconds) + duration}s
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label>Calidad</Label>
                     <div className="flex flex-wrap gap-2">
                       {RESOLUTIONS.map((r) => (
-                        <Chip key={r} active={resolution === r} onClick={() => setResolution(r)}>
+                        <Chip
+                          key={r}
+                          active={effectiveResolution === r}
+                          disabled={Boolean(extendFrom)}
+                          onClick={() => setResolution(r)}
+                        >
                           {r}
                         </Chip>
                       ))}
@@ -521,7 +620,8 @@ const UgcStudio = () => {
                   </div>
                 </div>
 
-                <div className="mt-6 space-y-2">
+
+                <div className={`mt-6 space-y-2 ${extendFrom ? "hidden" : ""}`}>
                   <Label>Imagen de referencia (opcional)</Label>
                   {image ? (
                     <div className="flex items-center gap-3">
@@ -578,6 +678,7 @@ const UgcStudio = () => {
                     urls={urls}
                     onReuse={reuseVideo}
                     onKeepIdentity={keepIdentity}
+              onExtend={extendVideo}
                     keepingId={keepingId}
                   />
                 </div>

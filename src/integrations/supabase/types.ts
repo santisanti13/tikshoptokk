@@ -340,6 +340,7 @@ export type Database = {
       }
       ugc_videos: {
         Row: {
+          added_seconds: number | null
           aspect_ratio: string | null
           created_at: string
           duration_seconds: number
@@ -351,6 +352,7 @@ export type Database = {
           project_id: string | null
           prompt: string
           resolution: string
+          source_video_id: string | null
           status: string
           tokens_charged: number
           tokens_refunded: boolean
@@ -359,6 +361,7 @@ export type Database = {
           video_path: string | null
         }
         Insert: {
+          added_seconds?: number | null
           aspect_ratio?: string | null
           created_at?: string
           duration_seconds?: number
@@ -370,6 +373,7 @@ export type Database = {
           project_id?: string | null
           prompt: string
           resolution?: string
+          source_video_id?: string | null
           status?: string
           tokens_charged?: number
           tokens_refunded?: boolean
@@ -378,6 +382,7 @@ export type Database = {
           video_path?: string | null
         }
         Update: {
+          added_seconds?: number | null
           aspect_ratio?: string | null
           created_at?: string
           duration_seconds?: number
@@ -389,6 +394,7 @@ export type Database = {
           project_id?: string | null
           prompt?: string
           resolution?: string
+          source_video_id?: string | null
           status?: string
           tokens_charged?: number
           tokens_refunded?: boolean
@@ -409,6 +415,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "ugc_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ugc_videos_source_video_id_fkey"
+            columns: ["source_video_id"]
+            isOneToOne: false
+            referencedRelation: "ugc_videos"
             referencedColumns: ["id"]
           },
         ]
