@@ -135,7 +135,7 @@ const UgcStudio = () => {
   }, [loadBalance, toast]);
 
   const loadProjects = useCallback(async () => {
-    const { data } = await supabase.from("ugc_projects").select("id, name, character_brief, tone, brand_notes").order("created_at", { ascending: false });
+    const { data } = await supabase.from("ugc_projects").select("id, name, character_brief, tone, brand_notes, reference_image_path").order("created_at", { ascending: false });
     setProjects((data ?? []) as UgcProject[]);
   }, []);
 
