@@ -34,7 +34,7 @@ const Contact = () => {
 
   const onSubmit = async (data: ContactForm) => {
     try {
-      const { error } = await supabase.functions.invoke("send-transactional-email", {
+      const { error } = await supabase.functions.invoke("send-contact-notification", {
         body: {
           type: "contact_notification",
           data: {

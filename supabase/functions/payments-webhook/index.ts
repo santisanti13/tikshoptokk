@@ -2,6 +2,8 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { type StripeEnv, createStripeClient, verifyWebhook } from "../_shared/stripe.ts";
 import { grantForPrice } from "../_shared/ugcTokenPacks.ts";
 import { planForPrice, formatEur } from "../_shared/planCatalog.ts";
+import { sendTemplateEmail } from "../_shared/transactional-email-templates/send-email.ts";
+import { logEmailSend } from "../_shared/emailLog.ts";
 
 let _supabase: ReturnType<typeof createClient> | null = null;
 function db() {
@@ -31,6 +33,35 @@ async function grantTokens(userId: string, tokens: number, reason: string) {
   if (error) throw new Error(`grant failed: ${error.message}`);
 }
 
+/** Envía un correo del catálogo de plantillas y deja rastro en email_send_log. */
+async function sendAndLog(
+  templateName: "payment-notification" | "payment-receipt",
+  to: string,
+  templateData: Record<string, unknown>,
+) {
+  try {
+    const result = await sendTemplateEmail(templateName, to, {
+      templateData,
+      idempotencyKey: `${templateName}-${crypto.randomUUID()}`,
+    });
+    await logEmailSend({
+      templateName,
+      recipientEmail: to,
+      status: result.sent ? "sent" : "suppressed",
+      errorMessage: result.sent ? undefined : "Recipient suppressed",
+    });
+  } catch (e) {
+    const errorMsg = e instanceof Error ? e.message : String(e);
+    console.error("notify failed", { template: templateName, error: errorMsg });
+    await logEmailSend({
+      templateName,
+      recipientEmail: to,
+      status: "failed",
+      errorMessage: errorMsg,
+    });
+  }
+}
+
 /** Aviso por correo de cualquier movimiento de pago (y recibo opcional al cliente). */
 async function notify(payload: {
   headline: string;
@@ -40,13 +71,15 @@ async function notify(payload: {
   detail?: string;
   notifyCustomer?: boolean;
 }) {
-  try {
-    const { error } = await db().functions.invoke("send-transactional-email", {
-      body: { type: "payment_notification", data: payload },
-    });
-    if (error) console.error("notify failed", error.message);
-  } catch (e) {
-    console.error("notify threw", e);
+  const { notifyCustomer, ...data } = payload;
+
+  const ownerEmail = Deno.env.get("NOTIFICATION_EMAIL");
+  if (ownerEmail) {
+    await sendAndLog("payment-notification", ownerEmail, data);
+  }
+
+  if (notifyCustomer && data.customerEmail) {
+    await sendAndLog("payment-receipt", data.customerEmail, data);
   }
 }
 
