@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Sparkles, X, Coins, Wand2 } from "lucide-react";
 import ImageDropzone from "@/components/ugc/ImageDropzone";
+import CharactersStrip, { type UgcCharacter } from "@/components/ugc/CharactersStrip";
 import ProjectsPanel, { type UgcProject } from "@/components/ugc/ProjectsPanel";
 import ProductsPanel, { type UgcProduct } from "@/components/ugc/ProductsPanel";
 import VideoGallery, { type VideoRow } from "@/components/ugc/VideoGallery";
