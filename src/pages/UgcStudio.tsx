@@ -88,6 +88,9 @@ const UgcStudio = () => {
   const [image, setImage] = useState<{ data: string; mimeType: string; preview: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [keepingId, setKeepingId] = useState<string | null>(null);
+  const [extendFrom, setExtendFrom] = useState<VideoRow | null>(null);
+  // Contexto (estilo + proyecto + producto) con el que se escribió el guion actual.
+  const [promptContext, setPromptContext] = useState<string | null>(null);
 
   const [projects, setProjects] = useState<UgcProject[]>([]);
   const [products, setProducts] = useState<UgcProduct[]>([]);
@@ -98,7 +101,10 @@ const UgcStudio = () => {
 
   
 
-  const cost = tokensForVideo(resolution, duration);
+  const effectiveResolution = extendFrom ? extendFrom.resolution : resolution;
+  const cost = tokensForVideo(effectiveResolution, duration);
+  const contextKey = `${presetId}|${projectId ?? ""}|${productId ?? ""}`;
+  const promptDrifted = prompt.trim().length > 20 && promptContext !== null && promptContext !== contextKey;
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -247,8 +253,13 @@ const UgcStudio = () => {
     setAspectRatio(v.aspect_ratio === "16:9" ? "16:9" : "9:16");
     if (v.project_id !== undefined) setProjectId(v.project_id ?? null);
     if (v.product_id !== undefined) setProductId(v.product_id ?? null);
+    setExtendFrom(null);
+    setPromptContext(`${presetId}|${v.project_id ?? ""}|${v.product_id ?? ""}`);
     window.scrollTo({ top: 0, behavior: "smooth" });
-    toast({ title: "Guion cargado", description: "Edítalo y genera una variante con los mismos ajustes." });
+    toast({
+      title: "Guion cargado",
+      description: "Edítalo, o cambia el estilo o el producto y pulsa Reescribir guion.",
+    });
   }
 
   // Toma un fotograma del vídeo anterior como referencia para conservar cara, cuerpo y voz.
@@ -285,9 +296,29 @@ const UgcStudio = () => {
     }
   }
 
-  async function writeWithAssistant() {
-    const seed = idea.trim() || prompt.trim();
-    if (seed.length < 3) {
+  // Prepara una continuación: el vídeo elegido será el punto de partida.
+  function extendVideo(v: VideoRow) {
+    setExtendFrom(v);
+    setImage(null);
+    setCharacterId(null);
+    setResolution(v.resolution);
+    setAspectRatio(v.aspect_ratio === "16:9" ? "16:9" : "9:16");
+    setDuration(6);
+    if (v.project_id !== undefined) setProjectId(v.project_id ?? null);
+    if (v.product_id !== undefined) setProductId(v.product_id ?? null);
+    setPrompt("");
+    setIdea("");
+    setPromptContext(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    toast({
+      title: "Continuación preparada",
+      description: "Escribe qué pasa a continuación y elige cuántos segundos añadir.",
+    });
+  }
+
+  async function writeWithAssistant(rewrite = false) {
+    const seed = idea.trim() || (rewrite ? "" : prompt.trim());
+    if (!rewrite && seed.length < 3) {
       toast({ title: "Cuéntame la idea", description: "Una frase basta: “chica probando el sérum en el baño”.", variant: "destructive" });
       return;
     }
@@ -295,6 +326,7 @@ const UgcStudio = () => {
     const { data, error } = await supabase.functions.invoke("ugc-prompt", {
       body: {
         idea: seed,
+        ...(rewrite ? { basePrompt: prompt } : {}),
         presetId,
         projectId,
         productId,
@@ -310,7 +342,13 @@ const UgcStudio = () => {
       return;
     }
     setPrompt(data.prompt);
-    toast({ title: "Guion listo", description: "Revísalo y ajusta lo que quieras antes de generar." });
+    setPromptContext(contextKey);
+    toast({
+      title: rewrite ? "Guion reescrito" : "Guion listo",
+      description: rewrite
+        ? "Lo hemos adaptado al estilo, proyecto y producto que has elegido."
+        : "Revísalo y ajusta lo que quieras antes de generar.",
+    });
   }
 
   async function generate() {
@@ -323,8 +361,9 @@ const UgcStudio = () => {
       body: {
         prompt,
         presetId,
-        resolution,
+        resolution: effectiveResolution,
         duration,
+        ...(extendFrom ? { extendFromVideoId: extendFrom.id } : {}),
         aspectRatio,
         projectId,
         productId,
@@ -345,6 +384,7 @@ const UgcStudio = () => {
     }
     toast({ title: "Vídeo en cola", description: `Tarda entre 1 y 3 minutos. Has usado ${data.tokensCharged} tokens.` });
     setVideos((prev) => [data.video as VideoRow, ...prev]);
+    setExtendFrom(null);
     if (typeof data.balance === "number") setBalance(data.balance);
   }
 
@@ -578,6 +618,7 @@ const UgcStudio = () => {
                     urls={urls}
                     onReuse={reuseVideo}
                     onKeepIdentity={keepIdentity}
+              onExtend={extendVideo}
                     keepingId={keepingId}
                   />
                 </div>
