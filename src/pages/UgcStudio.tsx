@@ -171,8 +171,9 @@ const UgcStudio = () => {
     loadBalance();
     loadProjects();
     loadProducts();
+    loadCharacters();
     loadVideos();
-  }, [checkingAuth, loadBalance, loadProjects, loadProducts, loadVideos]);
+  }, [checkingAuth, loadBalance, loadProjects, loadProducts, loadCharacters, loadVideos]);
 
   // Consulta el estado de los vídeos que aún se están generando.
   useEffect(() => {
@@ -209,6 +210,17 @@ const UgcStudio = () => {
     const bytes = new Uint8Array(buffer);
     for (let i = 0; i < bytes.length; i += 1) binary += String.fromCharCode(bytes[i]);
     setImage({ data: btoa(binary), mimeType: file.type, preview: URL.createObjectURL(file) });
+  }
+
+  // Usa un personaje guardado como imagen de partida y pide mantener su cara, cuerpo y voz.
+  async function useCharacter(file: File, name: string, id: string) {
+    await pickImage(file);
+    setCharacterId(id);
+    setPrompt((prev) => {
+      const base = prev.replace(IDENTITY_NOTE, "").trim();
+      return base ? `${base}\n\n${IDENTITY_NOTE}` : IDENTITY_NOTE;
+    });
+    toast({ title: `${name} fijado`, description: "Los vídeos mantendrán esta misma persona y su voz." });
   }
 
   // Al elegir un proyecto con imagen de referencia, la usamos como punto de partida si no hay otra.
