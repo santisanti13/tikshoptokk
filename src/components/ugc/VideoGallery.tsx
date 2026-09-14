@@ -103,6 +103,37 @@ const VideoGallery = ({ videos, urls, onReuse, onKeepIdentity, keepingId }: Prop
                   </Button>
                 )}
               </div>
+
+              {(onReuse || onKeepIdentity) && (
+                <div className="flex flex-wrap gap-2 border-t border-white/10 pt-3">
+                  {onReuse && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 rounded-full px-3 text-[11px]"
+                      onClick={() => onReuse(v)}
+                    >
+                      <Copy className="mr-1.5 h-3.5 w-3.5" /> Reusar guion
+                    </Button>
+                  )}
+                  {onKeepIdentity && v.status === "completed" && urls[v.id] && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 rounded-full px-3 text-[11px]"
+                      disabled={keepingId === v.id}
+                      onClick={() => onKeepIdentity(v)}
+                    >
+                      {keepingId === v.id ? (
+                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <UserCheck className="mr-1.5 h-3.5 w-3.5" />
+                      )}
+                      Misma persona y voz
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
           </article>
         );
