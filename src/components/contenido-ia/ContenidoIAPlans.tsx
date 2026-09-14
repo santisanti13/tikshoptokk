@@ -217,11 +217,48 @@ const extras = [
   { label: "Auditoría inicial de cuenta", price: "250 € (se descuenta al contratar)" },
 ];
 
+/** Precio de pago online de cada plan (los IDs viven en el proveedor de pagos). */
+const PLAN_PRICES: Record<string, string> = {
+  Boost: "ag_boost_monthly",
+  Escala: "ag_escala_monthly",
+  Dominio: "ag_dominio_monthly",
+  Lanzadera: "ag_lanzadera_onetime",
+  Growth: "ag_growth_monthly",
+  Portfolio: "ag_portfolio_monthly",
+  "Diario Lite": "ag_diario_lite_monthly",
+  "Diario Pro": "ag_diario_pro_monthly",
+  "Full Commerce": "ag_full_commerce_monthly",
+  "Marca Personal": "ag_marca_personal_monthly",
+  Autoridad: "ag_autoridad_monthly",
+  "Media House": "ag_media_house_monthly",
+};
+
 const ContenidoIAPlans = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [checkout, setCheckout] = useState<{ priceId: string; label: string } | null>(null);
+
   const goToContact = () => {
     navigate("/");
     setTimeout(() => document.getElementById("contacto")?.scrollIntoView({ behavior: "smooth" }), 300);
+  };
+
+  const contratar = async (plan: Plan) => {
+    const priceId = PLAN_PRICES[plan.name];
+    if (!priceId || !paymentsConfigured()) {
+      goToContact();
+      return;
+    }
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) {
+      toast({
+        title: "Crea tu cuenta para contratar",
+        description: "Necesitamos una cuenta para asociar el plan y darte acceso al panel.",
+      });
+      navigate("/login?next=/contenido-ia");
+      return;
+    }
+    setCheckout({ priceId, label: `${plan.name} · ${plan.price}` });
   };
 
   return (
