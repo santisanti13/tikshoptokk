@@ -389,11 +389,11 @@ const UgcStudio = () => {
                       <div className="space-y-2">
                         <Label>Proyecto</Label>
                         <div className="flex flex-wrap gap-2">
-                          <Chip active={projectId === null} onClick={() => setProjectId(null)}>
+                          <Chip active={projectId === null} onClick={() => selectProject(null)}>
                             Sin proyecto
                           </Chip>
                           {projects.map((p) => (
-                            <Chip key={p.id} active={projectId === p.id} onClick={() => setProjectId(p.id)}>
+                            <Chip key={p.id} active={projectId === p.id} onClick={() => selectProject(p)}>
                               {p.name}
                             </Chip>
                           ))}
