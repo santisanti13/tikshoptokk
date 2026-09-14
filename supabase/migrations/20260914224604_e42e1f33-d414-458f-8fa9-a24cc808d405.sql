@@ -1,0 +1,1 @@
+REVOKE ALL ON public.ugc_characters FROM anon;

@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Sparkles, X, Coins, Wand2 } from "lucide-react";
 import ImageDropzone from "@/components/ugc/ImageDropzone";
+import CharactersStrip, { type UgcCharacter } from "@/components/ugc/CharactersStrip";
 import ProjectsPanel, { type UgcProject } from "@/components/ugc/ProjectsPanel";
 import ProductsPanel, { type UgcProduct } from "@/components/ugc/ProductsPanel";
 import VideoGallery, { type VideoRow } from "@/components/ugc/VideoGallery";
@@ -92,6 +93,9 @@ const UgcStudio = () => {
   const [products, setProducts] = useState<UgcProduct[]>([]);
   const [videos, setVideos] = useState<VideoRow[]>([]);
   const [urls, setUrls] = useState<Record<string, string>>({});
+  const [characters, setCharacters] = useState<UgcCharacter[]>([]);
+  const [characterId, setCharacterId] = useState<string | null>(null);
+
   
 
   const cost = tokensForVideo(resolution, duration);
@@ -144,6 +148,11 @@ const UgcStudio = () => {
     setProducts((data ?? []) as UgcProduct[]);
   }, []);
 
+  const loadCharacters = useCallback(async () => {
+    const { data } = await supabase.from("ugc_characters").select("id, name, image_path").order("created_at", { ascending: false });
+    setCharacters((data ?? []) as UgcCharacter[]);
+  }, []);
+
   const loadUrl = useCallback(async (row: VideoRow) => {
     if (!row.video_path) return;
     const { data } = await supabase.storage.from("ugc-videos").createSignedUrl(row.video_path, 3600);
@@ -162,8 +171,9 @@ const UgcStudio = () => {
     loadBalance();
     loadProjects();
     loadProducts();
+    loadCharacters();
     loadVideos();
-  }, [checkingAuth, loadBalance, loadProjects, loadProducts, loadVideos]);
+  }, [checkingAuth, loadBalance, loadProjects, loadProducts, loadCharacters, loadVideos]);
 
   // Consulta el estado de los vídeos que aún se están generando.
   useEffect(() => {
@@ -200,6 +210,17 @@ const UgcStudio = () => {
     const bytes = new Uint8Array(buffer);
     for (let i = 0; i < bytes.length; i += 1) binary += String.fromCharCode(bytes[i]);
     setImage({ data: btoa(binary), mimeType: file.type, preview: URL.createObjectURL(file) });
+  }
+
+  // Usa un personaje guardado como imagen de partida y pide mantener su cara, cuerpo y voz.
+  async function useCharacter(file: File, name: string, id: string) {
+    await pickImage(file);
+    setCharacterId(id);
+    setPrompt((prev) => {
+      const base = prev.replace(IDENTITY_NOTE, "").trim();
+      return base ? `${base}\n\n${IDENTITY_NOTE}` : IDENTITY_NOTE;
+    });
+    toast({ title: `${name} fijado`, description: "Los vídeos mantendrán esta misma persona y su voz." });
   }
 
   // Al elegir un proyecto con imagen de referencia, la usamos como punto de partida si no hay otra.
@@ -505,7 +526,7 @@ const UgcStudio = () => {
                   {image ? (
                     <div className="flex items-center gap-3">
                       <img src={image.preview} alt="Imagen de referencia" className="h-20 w-20 rounded-xl object-cover" />
-                      <Button variant="ghost" size="sm" onClick={() => setImage(null)}>
+                      <Button variant="ghost" size="sm" onClick={() => { setImage(null); setCharacterId(null); }}>
                         <X className="mr-1 h-4 w-4" /> Quitar
                       </Button>
                     </div>
@@ -520,6 +541,16 @@ const UgcStudio = () => {
                     El vídeo partirá de esta imagen, junto con el guion y el proyecto o producto que elijas.
                   </p>
                 </div>
+
+                <div className="mt-6">
+                  <CharactersStrip
+                    characters={characters}
+                    onChanged={loadCharacters}
+                    activeId={characterId}
+                    onUse={(file, character) => useCharacter(file, character.name, character.id)}
+                  />
+                </div>
+
 
                 <div className="mt-7 flex items-center justify-between rounded-2xl border border-white/10 bg-background/40 px-4 py-3 text-sm">
                   <span className="text-muted-foreground">Coste de este vídeo</span>
