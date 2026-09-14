@@ -326,6 +326,25 @@ const UgcStudio = () => {
                 )}
 
                 <div className="mt-6 space-y-2">
+                  <Label>Estilo del vídeo</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {UGC_PRESETS.map((p) => (
+                      <Chip
+                        key={p.id}
+                        active={presetId === p.id}
+                        onClick={() => {
+                          setPresetId(p.id);
+                          if (p.aspectRatio) setAspectRatio(p.aspectRatio);
+                        }}
+                      >
+                        {p.label}
+                      </Chip>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">{getPreset(presetId)?.hint}</p>
+                </div>
+
+                <div className="mt-6 space-y-2">
                   <Label htmlFor="idea">Tu idea en una frase</Label>
                   <div className="flex gap-2">
                     <Input
