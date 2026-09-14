@@ -531,7 +531,13 @@ const UgcStudio = () => {
               <div>
                 <h2 className="font-display text-xl font-bold tracking-tight">Tus vídeos</h2>
                 <div className="mt-4">
-                  <VideoGallery videos={videos} urls={urls} />
+                  <VideoGallery
+                    videos={videos}
+                    urls={urls}
+                    onReuse={reuseVideo}
+                    onKeepIdentity={keepIdentity}
+                    keepingId={keepingId}
+                  />
                 </div>
               </div>
             </section>
