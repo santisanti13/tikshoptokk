@@ -27,7 +27,7 @@ type Props = {
 const statusLabel = (status: string) =>
   status === "completed" ? "Listo" : status === "failed" ? "Error" : "Generando";
 
-const VideoGallery = ({ videos, urls }: Props) => {
+const VideoGallery = ({ videos, urls, onReuse, onKeepIdentity, keepingId }: Props) => {
   if (videos.length === 0) {
     return (
       <div className="rounded-3xl border border-dashed border-white/10 bg-card/40 p-10 text-center">
