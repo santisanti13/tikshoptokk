@@ -266,6 +266,24 @@ const ContenidoIAPlans = () => {
       navigate("/login?next=/contenido-ia");
       return;
     }
+    // Evita contratar dos veces el mismo plan.
+    const { data: rows } = await supabase
+      .from("subscriptions")
+      .select("price_id, status, current_period_end")
+      .eq("user_id", data.session.user.id)
+      .eq("environment", stripeEnvironment())
+      .order("created_at", { ascending: false })
+      .limit(5);
+    const already = (rows ?? []).find((r) => r.price_id === priceId && keepsAccess(r));
+    if (already) {
+      toast({
+        title: "Ya tienes este plan activo",
+        description: "Puedes cambiarlo o cancelarlo desde Mi cuenta.",
+      });
+      navigate("/mi-cuenta");
+      return;
+    }
+
     setCheckout({ priceId, label: `${plan.name} · ${plan.price}` });
   };
 
