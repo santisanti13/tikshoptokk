@@ -15,6 +15,22 @@ const EXAMPLES = [
 ];
 
 const TariffsPanel = ({ onPick }: { onPick?: (label: string) => void }) => {
+  const { toast } = useToast();
+  const [checkout, setCheckout] = useState<{ priceId: string; label: string } | null>(null);
+
+  const buy = (priceId: string, label: string) => {
+    onPick?.(label);
+    if (!paymentsConfigured()) {
+      toast({
+        title: "Pagos no disponibles todavía",
+        description: "El cobro con tarjeta se activa al publicar la web. Escríbenos y lo gestionamos manualmente.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setCheckout({ priceId, label });
+  };
+
   return (
     <div className="space-y-10">
       <div>
