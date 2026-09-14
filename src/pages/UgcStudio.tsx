@@ -92,7 +92,7 @@ const UgcStudio = () => {
   const [products, setProducts] = useState<UgcProduct[]>([]);
   const [videos, setVideos] = useState<VideoRow[]>([]);
   const [urls, setUrls] = useState<Record<string, string>>({});
-  const fileRef = useRef<HTMLInputElement>(null);
+  
 
   const cost = tokensForVideo(resolution, duration);
 
@@ -201,6 +201,22 @@ const UgcStudio = () => {
     for (let i = 0; i < bytes.length; i += 1) binary += String.fromCharCode(bytes[i]);
     setImage({ data: btoa(binary), mimeType: file.type, preview: URL.createObjectURL(file) });
   }
+
+  // Al elegir un proyecto con imagen de referencia, la usamos como punto de partida si no hay otra.
+  async function selectProject(p: UgcProject | null) {
+    setProjectId(p?.id ?? null);
+    if (!p?.reference_image_path || image) return;
+    const { data } = await supabase.storage.from("ugc-products").createSignedUrl(p.reference_image_path, 3600);
+    if (!data?.signedUrl) return;
+    try {
+      const blob = await (await fetch(data.signedUrl)).blob();
+      await pickImage(new File([blob], "referencia.jpg", { type: blob.type || "image/jpeg" }));
+      toast({ title: "Personaje del proyecto cargado", description: "Usaremos su imagen de referencia en este vídeo." });
+    } catch {
+      /* si falla, el usuario puede arrastrar la imagen a mano */
+    }
+  }
+
 
   // Reutiliza el guion y los ajustes de un vídeo anterior para editarlo y volver a generarlo.
   function reuseVideo(v: VideoRow) {
