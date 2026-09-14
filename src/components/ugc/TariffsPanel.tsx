@@ -67,7 +67,7 @@ const TariffsPanel = ({ onPick }: { onPick?: (label: string) => void }) => {
               <Button
                 className="mt-6 w-full rounded-full"
                 variant={plan.highlight ? "default" : "outline"}
-                onClick={() => onPick?.(plan.name)}
+                onClick={() => buy(plan.priceId, plan.name)}
               >
                 Contratar {plan.name}
               </Button>
@@ -84,7 +84,7 @@ const TariffsPanel = ({ onPick }: { onPick?: (label: string) => void }) => {
               <p className="font-display text-2xl font-bold">{pack.tokens}</p>
               <p className="text-xs text-muted-foreground">tokens</p>
               <p className="mt-3 text-sm">{formatEur(pack.priceEur)}</p>
-              <Button variant="ghost" size="sm" className="mt-3 rounded-full px-0" onClick={() => onPick?.(`${pack.tokens} tokens`)}>
+              <Button variant="ghost" size="sm" className="mt-3 rounded-full px-0" onClick={() => buy(pack.priceId, `${pack.tokens} tokens`)}>
                 Recargar
               </Button>
             </div>
