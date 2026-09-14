@@ -261,19 +261,25 @@ Deno.serve(async (req) => {
     const event = await verifyWebhook(req, env);
     switch (event.type) {
       case "customer.subscription.created":
+        await upsertSubscription(event.data.object, env, "created");
+        break;
       case "customer.subscription.updated":
-        await upsertSubscription(event.data.object, env);
+        await upsertSubscription(event.data.object, env, "updated");
         break;
       case "customer.subscription.deleted":
-        await upsertSubscription({ ...event.data.object, status: "canceled" }, env);
+        await upsertSubscription({ ...event.data.object, status: "canceled" }, env, "deleted");
         break;
       case "invoice.paid":
         await handleInvoicePaid(event.data.object, env);
+        break;
+      case "invoice.payment_failed":
+        await handlePaymentFailed(event.data.object, env);
         break;
       case "checkout.session.completed":
       case "checkout.session.async_payment_succeeded":
         await handleSessionCompleted(event.data.object, env);
         break;
+
       default:
         console.log("unhandled event", event.type);
     }
