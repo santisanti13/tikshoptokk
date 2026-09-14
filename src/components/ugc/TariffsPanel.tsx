@@ -1,6 +1,12 @@
+import { useState } from "react";
 import { UGC_PLANS, UGC_TOPUPS, TOKENS_PER_SECOND, TOKEN_PRICE_EUR, formatEur, tokensForVideo, eurFromTokens } from "@/lib/ugcPricing";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
+import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
+import { paymentsConfigured } from "@/lib/stripe";
+import { useToast } from "@/hooks/use-toast";
 
 const EXAMPLES = [
   { resolution: "360p", duration: 4, label: "Prueba rápida" },
