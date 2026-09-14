@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Sparkles, X, Coins, Wand2 } from "lucide-react";
 import ImageDropzone from "@/components/ugc/ImageDropzone";
+import TikTokLinkInput, { type TikTokReference } from "@/components/ugc/TikTokLinkInput";
 import CharactersStrip, { type UgcCharacter } from "@/components/ugc/CharactersStrip";
 import ProjectsPanel, { type UgcProject } from "@/components/ugc/ProjectsPanel";
 import ProductsPanel, { type UgcProduct } from "@/components/ugc/ProductsPanel";
@@ -89,6 +90,8 @@ const UgcStudio = () => {
   const [busy, setBusy] = useState(false);
   const [keepingId, setKeepingId] = useState<string | null>(null);
   const [extendFrom, setExtendFrom] = useState<VideoRow | null>(null);
+  // Referencia traída de un enlace de TikTok (vídeo o producto de TikTok Shop).
+  const [reference, setReference] = useState<{ url: string; summary: string; kind: string } | null>(null);
   // Contexto (estilo + proyecto + producto) con el que se escribió el guion actual.
   const [promptContext, setPromptContext] = useState<string | null>(null);
 
@@ -152,7 +155,7 @@ const UgcStudio = () => {
   }, []);
 
   const loadProducts = useCallback(async () => {
-    const { data } = await supabase.from("ugc_products").select("id, name, description, image_path").order("created_at", { ascending: false });
+    const { data } = await supabase.from("ugc_products").select("id, name, description, image_path, blind_spots, source_url, model_path, render_paths").order("created_at", { ascending: false });
     setProducts((data ?? []) as UgcProduct[]);
   }, []);
 
@@ -311,6 +314,7 @@ const UgcStudio = () => {
     setPrompt("");
     setIdea("");
     setPromptContext(null);
+    setReference(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
     toast({
       title: "Continuación preparada",
@@ -334,6 +338,7 @@ const UgcStudio = () => {
         productId,
         aspectRatio,
         duration,
+        ...(reference ? { reference: reference.summary } : {}),
         hasImage: Boolean(image || productId),
       },
     });
@@ -369,6 +374,7 @@ const UgcStudio = () => {
         aspectRatio,
         projectId,
         productId,
+        ...(reference ? { sourceUrl: reference.url } : {}),
         ...(image ? { image: { data: image.data, mimeType: image.mimeType } } : {}),
       },
     });
@@ -501,6 +507,39 @@ const UgcStudio = () => {
                     ))}
                   </div>
                   <p className="text-xs text-muted-foreground">{getPreset(presetId)?.hint}</p>
+                </div>
+
+                <div className="mt-6 space-y-2">
+                  <Label>Referencia desde TikTok (opcional)</Label>
+                  <TikTokLinkInput
+                    hint="Vídeo de TikTok o producto de TikTok Shop: usamos su portada como imagen de partida y su texto como referencia del guion."
+                    onLoaded={(ref: TikTokReference) => {
+                      const summary = [ref.title, ref.author ? `Cuenta: ${ref.author}.` : "", ref.price ? `Precio: ${ref.price}.` : ""]
+                        .filter(Boolean)
+                        .join(" ");
+                      setReference({ url: ref.url, summary: summary || ref.url, kind: ref.kind });
+                      if (ref.image) {
+                        setImage({
+                          data: ref.image.data,
+                          mimeType: ref.image.mimeType,
+                          preview: `data:${ref.image.mimeType};base64,${ref.image.data}`,
+                        });
+                      }
+                      if (!idea.trim() && ref.title) setIdea(ref.title.slice(0, 120));
+                      toast({
+                        title: ref.kind === "product" ? "Producto de TikTok Shop cargado" : "Vídeo de TikTok cargado",
+                        description: "Lo usamos como referencia del guion y como imagen de partida.",
+                      });
+                    }}
+                  />
+                  {reference && (
+                    <div className="flex items-start justify-between gap-2 rounded-2xl border border-white/10 bg-background/40 px-3 py-2">
+                      <p className="text-xs text-muted-foreground line-clamp-2">{reference.summary}</p>
+                      <Button variant="ghost" size="sm" className="h-7 shrink-0 px-2 text-[11px]" onClick={() => setReference(null)}>
+                        <X className="mr-1 h-3 w-3" /> Quitar
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="mt-6 space-y-2">
