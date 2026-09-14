@@ -17,7 +17,12 @@ export interface TemplateEntry {
  *   import { template as welcomeTemplate } from './welcome.tsx'
  *   // then add to TEMPLATES: 'welcome': welcomeTemplate
  */
+import { template as contactNotificationTemplate } from './contact-notification.tsx'
+import { template as paymentNotificationTemplate } from './payment-notification.tsx'
+import { template as paymentReceiptTemplate } from './payment-receipt.tsx'
+
 export const TEMPLATES: Record<string, TemplateEntry> = {
-  // Add templates here as they are created, e.g.:
-  // 'welcome': welcomeTemplate,
+  'contact-notification': contactNotificationTemplate,
+  'payment-notification': paymentNotificationTemplate,
+  'payment-receipt': paymentReceiptTemplate,
 }
