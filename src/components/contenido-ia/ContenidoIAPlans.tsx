@@ -9,6 +9,7 @@ import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { paymentsConfigured } from "@/lib/stripe";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { planForPrice } from "@/lib/planCatalog";
 
 type Plan = {
   name: string;
