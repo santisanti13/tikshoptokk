@@ -15,7 +15,7 @@ export type UgcCharacter = {
 type Props = {
   characters: UgcCharacter[];
   onChanged: () => void;
-  onUse: (file: File, name: string) => void;
+  onUse: (file: File, character: UgcCharacter) => void;
   activeId: string | null;
 };
 
@@ -68,7 +68,7 @@ const CharactersStrip = ({ characters, onChanged, onUse, activeId }: Props) => {
     setUsingId(character.id);
     try {
       const blob = await (await fetch(url)).blob();
-      onUse(new File([blob], `${character.name}.jpg`, { type: blob.type || "image/jpeg" }), character.name);
+      onUse(new File([blob], `${character.name}.jpg`, { type: blob.type || "image/jpeg" }), character);
     } catch {
       toast({ title: "No se pudo cargar la imagen", variant: "destructive" });
     } finally {
