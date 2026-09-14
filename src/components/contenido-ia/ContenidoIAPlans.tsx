@@ -335,6 +335,16 @@ const ContenidoIAPlans = () => {
                           </li>
                         ))}
                       </ul>
+                      {(() => {
+                        const entry = planForPrice(PLAN_PRICES[plan.name]);
+                        if (!entry?.tokens) return null;
+                        return (
+                          <p className="mt-5 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-muted-foreground">
+                            Incluye <span className="text-foreground">{entry.tokens} tokens</span>
+                            {entry.recurring ? " cada mes" : ""} para generar vídeos en el estudio UGC.
+                          </p>
+                        );
+                      })()}
                       <Button
                         onClick={() => contratar(plan)}
                         variant={plan.highlight ? "default" : "outline"}
