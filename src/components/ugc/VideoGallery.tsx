@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { AlertCircle, Coins, Copy, Download, Loader2, Play, UserCheck } from "lucide-react";
+import { AlertCircle, Clock, Coins, Copy, Download, Loader2, Play, UserCheck } from "lucide-react";
 
 export type VideoRow = {
   id: string;
@@ -12,6 +12,8 @@ export type VideoRow = {
   video_path: string | null;
   tokens_charged: number | null;
   created_at: string;
+  source_video_id?: string | null;
+  added_seconds?: number | null;
   project_id?: string | null;
   product_id?: string | null;
 };
@@ -21,13 +23,14 @@ type Props = {
   urls: Record<string, string>;
   onReuse?: (video: VideoRow) => void;
   onKeepIdentity?: (video: VideoRow) => void;
+  onExtend?: (video: VideoRow) => void;
   keepingId?: string | null;
 };
 
 const statusLabel = (status: string) =>
   status === "completed" ? "Listo" : status === "failed" ? "Error" : "Generando";
 
-const VideoGallery = ({ videos, urls, onReuse, onKeepIdentity, keepingId }: Props) => {
+const VideoGallery = ({ videos, urls, onReuse, onKeepIdentity, onExtend, keepingId }: Props) => {
   if (videos.length === 0) {
     return (
       <div className="rounded-3xl border border-dashed border-white/10 bg-card/40 p-10 text-center">
@@ -104,7 +107,7 @@ const VideoGallery = ({ videos, urls, onReuse, onKeepIdentity, keepingId }: Prop
                 )}
               </div>
 
-              {(onReuse || onKeepIdentity) && (
+              {(onReuse || onKeepIdentity || onExtend) && (
                 <div className="flex flex-wrap gap-2 border-t border-white/10 pt-3">
                   {onReuse && (
                     <Button
@@ -114,6 +117,16 @@ const VideoGallery = ({ videos, urls, onReuse, onKeepIdentity, keepingId }: Prop
                       onClick={() => onReuse(v)}
                     >
                       <Copy className="mr-1.5 h-3.5 w-3.5" /> Reusar guion
+                    </Button>
+                  )}
+                  {onExtend && v.status === "completed" && v.video_path && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 rounded-full px-3 text-[11px]"
+                      onClick={() => onExtend(v)}
+                    >
+                      <Clock className="mr-1.5 h-3.5 w-3.5" /> Alargar vídeo
                     </Button>
                   )}
                   {onKeepIdentity && v.status === "completed" && urls[v.id] && (
