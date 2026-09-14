@@ -6,9 +6,11 @@ import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
-import { paymentsConfigured } from "@/lib/stripe";
+import { paymentsConfigured, getStripeEnvironment } from "@/lib/stripe";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { planForPrice } from "@/lib/planCatalog";
+import { keepsAccess, type SubscriptionRow } from "@/hooks/useSubscription";
 
 type Plan = {
   name: string;
@@ -265,6 +267,24 @@ const ContenidoIAPlans = () => {
       navigate("/login?next=/contenido-ia");
       return;
     }
+    // Evita contratar dos veces el mismo plan.
+    const { data: rows } = await supabase
+      .from("subscriptions")
+      .select("price_id, status, current_period_end")
+      .eq("user_id", data.session.user.id)
+      .eq("environment", getStripeEnvironment())
+      .order("created_at", { ascending: false })
+      .limit(5);
+    const already = (rows ?? []).find((r) => r.price_id === priceId && keepsAccess(r as SubscriptionRow));
+    if (already) {
+      toast({
+        title: "Ya tienes este plan activo",
+        description: "Puedes cambiarlo o cancelarlo desde Mi cuenta.",
+      });
+      navigate("/mi-cuenta");
+      return;
+    }
+
     setCheckout({ priceId, label: `${plan.name} · ${plan.price}` });
   };
 
@@ -335,6 +355,16 @@ const ContenidoIAPlans = () => {
                           </li>
                         ))}
                       </ul>
+                      {(() => {
+                        const entry = planForPrice(PLAN_PRICES[plan.name]);
+                        if (!entry?.tokens) return null;
+                        return (
+                          <p className="mt-5 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-muted-foreground">
+                            Incluye <span className="text-foreground">{entry.tokens} tokens</span>
+                            {entry.recurring ? " cada mes" : ""} para generar vídeos en el estudio UGC.
+                          </p>
+                        );
+                      })()}
                       <Button
                         onClick={() => contratar(plan)}
                         variant={plan.highlight ? "default" : "outline"}
