@@ -92,6 +92,9 @@ const UgcStudio = () => {
   const [products, setProducts] = useState<UgcProduct[]>([]);
   const [videos, setVideos] = useState<VideoRow[]>([]);
   const [urls, setUrls] = useState<Record<string, string>>({});
+  const [characters, setCharacters] = useState<UgcCharacter[]>([]);
+  const [characterId, setCharacterId] = useState<string | null>(null);
+
   
 
   const cost = tokensForVideo(resolution, duration);
@@ -142,6 +145,11 @@ const UgcStudio = () => {
   const loadProducts = useCallback(async () => {
     const { data } = await supabase.from("ugc_products").select("id, name, description, image_path").order("created_at", { ascending: false });
     setProducts((data ?? []) as UgcProduct[]);
+  }, []);
+
+  const loadCharacters = useCallback(async () => {
+    const { data } = await supabase.from("ugc_characters").select("id, name, image_path").order("created_at", { ascending: false });
+    setCharacters((data ?? []) as UgcCharacter[]);
   }, []);
 
   const loadUrl = useCallback(async (row: VideoRow) => {
