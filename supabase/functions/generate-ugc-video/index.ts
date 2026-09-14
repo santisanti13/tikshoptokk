@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { tokensForVideo } from "../_shared/ugcPricing.ts";
+import { getPreset } from "../_shared/ugcPresets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -113,6 +114,10 @@ Deno.serve(async (req) => {
     const aspectRatio = body?.aspectRatio === "16:9" ? "16:9" : "9:16";
     const projectId = typeof body?.projectId === "string" ? body.projectId : null;
     const productId = typeof body?.productId === "string" ? body.productId : null;
+
+    // Preset de estilo: fija cámara, luz y audio del formato elegido.
+    const preset = getPreset(typeof body?.presetId === "string" ? body.presetId : null);
+    if (preset) prompt = `${prompt}\n\n${preset.recipe}`;
 
     // Contexto del proyecto: mantiene el mismo personaje en todas las piezas.
     if (projectId) {

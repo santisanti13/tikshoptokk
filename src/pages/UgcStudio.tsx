@@ -15,6 +15,7 @@ import ProductsPanel, { type UgcProduct } from "@/components/ugc/ProductsPanel";
 import VideoGallery, { type VideoRow } from "@/components/ugc/VideoGallery";
 import TariffsPanel from "@/components/ugc/TariffsPanel";
 import { eurFromTokens, formatEur, tokensForVideo } from "@/lib/ugcPricing";
+import { UGC_PRESETS, getPreset } from "@/lib/ugcPresets";
 
 const RESOLUTIONS = ["360p", "720p", "1080p"] as const;
 const DURATIONS = [4, 6, 8, 10] as const;
@@ -42,6 +43,7 @@ const UgcStudio = () => {
   const [plan, setPlan] = useState<string>("trial");
 
   const [idea, setIdea] = useState("");
+  const [presetId, setPresetId] = useState<string>("cara");
   const [prompt, setPrompt] = useState("");
   const [assisting, setAssisting] = useState(false);
   const [resolution, setResolution] = useState<string>("720p");
@@ -176,6 +178,7 @@ const UgcStudio = () => {
     const { data, error } = await supabase.functions.invoke("ugc-prompt", {
       body: {
         idea: seed,
+        presetId,
         projectId,
         productId,
         aspectRatio,
@@ -202,6 +205,7 @@ const UgcStudio = () => {
     const { data, error } = await supabase.functions.invoke("generate-ugc-video", {
       body: {
         prompt,
+        presetId,
         resolution,
         duration,
         aspectRatio,
@@ -320,6 +324,25 @@ const UgcStudio = () => {
                     )}
                   </div>
                 )}
+
+                <div className="mt-6 space-y-2">
+                  <Label>Estilo del vídeo</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {UGC_PRESETS.map((p) => (
+                      <Chip
+                        key={p.id}
+                        active={presetId === p.id}
+                        onClick={() => {
+                          setPresetId(p.id);
+                          if (p.aspectRatio) setAspectRatio(p.aspectRatio);
+                        }}
+                      >
+                        {p.label}
+                      </Chip>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">{getPreset(presetId)?.hint}</p>
+                </div>
 
                 <div className="mt-6 space-y-2">
                   <Label htmlFor="idea">Tu idea en una frase</Label>
