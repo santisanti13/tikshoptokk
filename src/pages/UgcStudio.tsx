@@ -621,7 +621,7 @@ const UgcStudio = () => {
                 </div>
 
 
-                <div className="mt-6 space-y-2">
+                <div className={`mt-6 space-y-2 ${extendFrom ? "hidden" : ""}`}>
                   <Label>Imagen de referencia (opcional)</Label>
                   {image ? (
                     <div className="flex items-center gap-3">
