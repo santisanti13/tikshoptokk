@@ -125,6 +125,54 @@ export type Database = {
         }
         Relationships: []
       }
+      ugc_videos: {
+        Row: {
+          aspect_ratio: string | null
+          created_at: string
+          duration_seconds: number
+          error_message: string | null
+          has_start_image: boolean
+          id: string
+          job_id: string | null
+          prompt: string
+          resolution: string
+          status: string
+          updated_at: string
+          user_id: string
+          video_path: string | null
+        }
+        Insert: {
+          aspect_ratio?: string | null
+          created_at?: string
+          duration_seconds?: number
+          error_message?: string | null
+          has_start_image?: boolean
+          id?: string
+          job_id?: string | null
+          prompt: string
+          resolution?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          video_path?: string | null
+        }
+        Update: {
+          aspect_ratio?: string | null
+          created_at?: string
+          duration_seconds?: number
+          error_message?: string | null
+          has_start_image?: boolean
+          id?: string
+          job_id?: string | null
+          prompt?: string
+          resolution?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          video_path?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
