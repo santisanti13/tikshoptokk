@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { AlertCircle, Coins, Download, Loader2, Play } from "lucide-react";
+import { AlertCircle, Coins, Copy, Download, Loader2, Play, UserCheck } from "lucide-react";
 
 export type VideoRow = {
   id: string;
@@ -12,17 +12,22 @@ export type VideoRow = {
   video_path: string | null;
   tokens_charged: number | null;
   created_at: string;
+  project_id?: string | null;
+  product_id?: string | null;
 };
 
 type Props = {
   videos: VideoRow[];
   urls: Record<string, string>;
+  onReuse?: (video: VideoRow) => void;
+  onKeepIdentity?: (video: VideoRow) => void;
+  keepingId?: string | null;
 };
 
 const statusLabel = (status: string) =>
   status === "completed" ? "Listo" : status === "failed" ? "Error" : "Generando";
 
-const VideoGallery = ({ videos, urls }: Props) => {
+const VideoGallery = ({ videos, urls, onReuse, onKeepIdentity, keepingId }: Props) => {
   if (videos.length === 0) {
     return (
       <div className="rounded-3xl border border-dashed border-white/10 bg-card/40 p-10 text-center">
@@ -98,6 +103,37 @@ const VideoGallery = ({ videos, urls }: Props) => {
                   </Button>
                 )}
               </div>
+
+              {(onReuse || onKeepIdentity) && (
+                <div className="flex flex-wrap gap-2 border-t border-white/10 pt-3">
+                  {onReuse && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 rounded-full px-3 text-[11px]"
+                      onClick={() => onReuse(v)}
+                    >
+                      <Copy className="mr-1.5 h-3.5 w-3.5" /> Reusar guion
+                    </Button>
+                  )}
+                  {onKeepIdentity && v.status === "completed" && urls[v.id] && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 rounded-full px-3 text-[11px]"
+                      disabled={keepingId === v.id}
+                      onClick={() => onKeepIdentity(v)}
+                    >
+                      {keepingId === v.id ? (
+                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <UserCheck className="mr-1.5 h-3.5 w-3.5" />
+                      )}
+                      Misma persona y voz
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
           </article>
         );

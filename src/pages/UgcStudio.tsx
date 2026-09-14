@@ -20,6 +20,38 @@ import { UGC_PRESETS, getPreset } from "@/lib/ugcPresets";
 const RESOLUTIONS = ["360p", "720p", "1080p"] as const;
 const DURATIONS = [4, 6, 8, 10] as const;
 
+const IDENTITY_NOTE =
+  "Continuidad: aparece exactamente la misma persona de la imagen de referencia — misma cara, mismo pelo, mismo cuerpo y misma ropa — y habla con la misma voz, acento y tono que en la pieza anterior. No cambies de protagonista.";
+
+// Extrae un fotograma del vídeo ya generado para usarlo como imagen de partida.
+async function captureFrame(url: string): Promise<{ data: string; mimeType: string; preview: string }> {
+  const video = document.createElement("video");
+  video.crossOrigin = "anonymous";
+  video.muted = true;
+  video.preload = "auto";
+  video.src = url;
+
+  await new Promise<void>((resolve, reject) => {
+    video.onloadeddata = () => resolve();
+    video.onerror = () => reject(new Error("video load"));
+  });
+
+  await new Promise<void>((resolve, reject) => {
+    video.onseeked = () => resolve();
+    video.onerror = () => reject(new Error("video seek"));
+    video.currentTime = Math.min(Math.max((video.duration || 4) * 0.35, 0.1), (video.duration || 4) - 0.1);
+  });
+
+  const canvas = document.createElement("canvas");
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext("2d");
+  if (!ctx || !canvas.width) throw new Error("no canvas");
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
+  return { data: dataUrl.split(",")[1], mimeType: "image/jpeg", preview: dataUrl };
+}
+
 const Chip = ({
   active,
   children,
@@ -53,6 +85,7 @@ const UgcStudio = () => {
   const [productId, setProductId] = useState<string | null>(null);
   const [image, setImage] = useState<{ data: string; mimeType: string; preview: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [keepingId, setKeepingId] = useState<string | null>(null);
 
   const [projects, setProjects] = useState<UgcProject[]>([]);
   const [products, setProducts] = useState<UgcProduct[]>([]);
@@ -166,6 +199,52 @@ const UgcStudio = () => {
     const bytes = new Uint8Array(buffer);
     for (let i = 0; i < bytes.length; i += 1) binary += String.fromCharCode(bytes[i]);
     setImage({ data: btoa(binary), mimeType: file.type, preview: URL.createObjectURL(file) });
+  }
+
+  // Reutiliza el guion y los ajustes de un vídeo anterior para editarlo y volver a generarlo.
+  function reuseVideo(v: VideoRow) {
+    setPrompt(v.prompt);
+    setResolution(v.resolution);
+    setDuration(Number(v.duration_seconds) || 8);
+    setAspectRatio(v.aspect_ratio === "16:9" ? "16:9" : "9:16");
+    if (v.project_id !== undefined) setProjectId(v.project_id ?? null);
+    if (v.product_id !== undefined) setProductId(v.product_id ?? null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    toast({ title: "Guion cargado", description: "Edítalo y genera una variante con los mismos ajustes." });
+  }
+
+  // Toma un fotograma del vídeo anterior como referencia para conservar cara, cuerpo y voz.
+  async function keepIdentity(v: VideoRow) {
+    const url = urls[v.id];
+    if (!url) {
+      toast({ title: "El vídeo aún no está listo", variant: "destructive" });
+      return;
+    }
+    setKeepingId(v.id);
+    try {
+      const frame = await captureFrame(url);
+      setImage(frame);
+      setPrompt((prev) => {
+        const base = (prev.trim() || v.prompt).replace(IDENTITY_NOTE, "").trim();
+        return `${base}\n\n${IDENTITY_NOTE}`;
+      });
+      if (v.project_id !== undefined) setProjectId(v.project_id ?? null);
+      if (v.product_id !== undefined) setProductId(v.product_id ?? null);
+      setAspectRatio(v.aspect_ratio === "16:9" ? "16:9" : "9:16");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      toast({
+        title: "Personaje fijado",
+        description: "Usaremos un fotograma de ese vídeo para mantener la misma cara, cuerpo y voz.",
+      });
+    } catch {
+      toast({
+        title: "No se pudo tomar la imagen",
+        description: "Descarga el vídeo, haz una captura y súbela como foto de partida.",
+        variant: "destructive",
+      });
+    } finally {
+      setKeepingId(null);
+    }
   }
 
   async function writeWithAssistant() {
@@ -452,7 +531,13 @@ const UgcStudio = () => {
               <div>
                 <h2 className="font-display text-xl font-bold tracking-tight">Tus vídeos</h2>
                 <div className="mt-4">
-                  <VideoGallery videos={videos} urls={urls} />
+                  <VideoGallery
+                    videos={videos}
+                    urls={urls}
+                    onReuse={reuseVideo}
+                    onKeepIdentity={keepIdentity}
+                    keepingId={keepingId}
+                  />
                 </div>
               </div>
             </section>
