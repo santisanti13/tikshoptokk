@@ -178,6 +178,7 @@ const UgcStudio = () => {
     const { data, error } = await supabase.functions.invoke("ugc-prompt", {
       body: {
         idea: seed,
+        presetId,
         projectId,
         productId,
         aspectRatio,
@@ -204,6 +205,7 @@ const UgcStudio = () => {
     const { data, error } = await supabase.functions.invoke("generate-ugc-video", {
       body: {
         prompt,
+        presetId,
         resolution,
         duration,
         aspectRatio,
