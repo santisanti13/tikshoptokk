@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { tokensForVideo } from "../_shared/ugcPricing.ts";
 import { getPreset } from "../_shared/ugcPresets.ts";
+import { blindSpotsBlock } from "../_shared/ugcBlindSpots.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -114,6 +115,7 @@ Deno.serve(async (req) => {
     let aspectRatio = body?.aspectRatio === "16:9" ? "16:9" : "9:16";
     const projectId = typeof body?.projectId === "string" ? body.projectId : null;
     const productId = typeof body?.productId === "string" ? body.productId : null;
+    const referenceUrl = typeof body?.sourceUrl === "string" && /tiktok\.com/i.test(body.sourceUrl) ? body.sourceUrl : null;
 
     // Continuación: alarga un vídeo ya generado añadiéndole segundos nuevos.
     const extendFromId = typeof body?.extendFromVideoId === "string" ? body.extendFromVideoId : null;
@@ -187,21 +189,43 @@ Deno.serve(async (req) => {
     // Imagen de partida: la que suben en el momento o la de la biblioteca de productos.
     // En una continuación no se usa imagen: el punto de partida es el vídeo anterior.
     let image = sourceVideo ? undefined : (body?.image as { data?: string; mimeType?: string } | undefined);
+    // Vistas del 3D del producto: referencias extra para que no cambie de forma.
+    const extraImages: { data: string; mimeType: string }[] = [];
 
-    if (!sourceVideo && !image?.data && productId) {
+    if (productId) {
       const { data: product } = await userClient
         .from("ugc_products")
-        .select("name, description, image_path")
+        .select("name, description, image_path, blind_spots, render_paths")
         .eq("id", productId)
         .maybeSingle();
       if (product) {
         const details = [product.name, product.description].filter(Boolean).join(" — ");
         if (details) prompt = `${prompt}\n\nProducto: ${details}.`;
-        if (product.image_path) {
+        const blind = blindSpotsBlock(product.blind_spots as string | null);
+        if (blind) prompt = `${prompt}\n\n${blind}`;
+
+        if (!sourceVideo && !image?.data && product.image_path) {
           const file = await admin.storage.from("ugc-products").download(product.image_path);
           if (file.data) {
             const bytes = new Uint8Array(await file.data.arrayBuffer());
             image = { data: toBase64(bytes), mimeType: file.data.type || "image/jpeg" };
+          }
+        }
+
+        // Máximo 3 vistas del 3D: son suficientes y mantienen el cuerpo ligero.
+        const renders = Array.isArray(product.render_paths) ? (product.render_paths as string[]).slice(0, 3) : [];
+        if (!sourceVideo && renders.length > 0) {
+          for (const path of renders) {
+            const file = await admin.storage.from("ugc-products").download(path);
+            if (!file.data) continue;
+            const bytes = new Uint8Array(await file.data.arrayBuffer());
+            extraImages.push({ data: toBase64(bytes), mimeType: file.data.type || "image/jpeg" });
+          }
+          if (extraImages.length > 0) {
+            prompt =
+              `${prompt}\n\nLas últimas ${extraImages.length} imágenes son vistas del mismo producto desde otros ángulos ` +
+              `(render de su modelo 3D, sobre fondo gris): la forma, las proporciones, el color y el acabado del producto ` +
+              `deben coincidir exactamente con ellas en todo el vídeo. No copies el fondo gris ni el estilo de render.`;
           }
         }
       }
@@ -252,8 +276,14 @@ Deno.serve(async (req) => {
         ? [
             { type: "text", text: prompt },
             { type: "image", data: image!.data, mime_type: image!.mimeType },
+            ...extraImages.map((img) => ({ type: "image", data: img.data, mime_type: img.mimeType })),
           ]
-        : prompt;
+        : extraImages.length > 0
+          ? [
+              { type: "text", text: prompt },
+              ...extraImages.map((img) => ({ type: "image", data: img.data, mime_type: img.mimeType })),
+            ]
+          : prompt;
 
     const createRes = await fetch("https://ai.gateway.lovable.dev/v1/videos", {
       method: "POST",
@@ -302,6 +332,7 @@ Deno.serve(async (req) => {
         added_seconds: sourceVideo ? duration : null,
         project_id: projectId,
         product_id: productId,
+        source_url: referenceUrl,
         tokens_charged: tokens,
       })
       .select()
