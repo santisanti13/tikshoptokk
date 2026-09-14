@@ -114,6 +114,10 @@ Deno.serve(async (req) => {
     const projectId = typeof body?.projectId === "string" ? body.projectId : null;
     const productId = typeof body?.productId === "string" ? body.productId : null;
 
+    // Preset de estilo: fija cámara, luz y audio del formato elegido.
+    const preset = getPreset(typeof body?.presetId === "string" ? body.presetId : null);
+    if (preset) prompt = `${prompt}\n\n${preset.recipe}`;
+
     // Contexto del proyecto: mantiene el mismo personaje en todas las piezas.
     if (projectId) {
       const { data: project } = await userClient

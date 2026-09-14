@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { getPreset } from "../_shared/ugcPresets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -46,8 +47,16 @@ Deno.serve(async (req) => {
     const duration = Math.min(Math.max(Math.round(Number(body?.duration ?? 8)) || 8, 3), 10);
     const hasImage = Boolean(body?.hasImage);
 
+    const preset = getPreset(typeof body?.presetId === "string" ? body.presetId : null);
+
     const context: string[] = [`Idea: ${idea}`, `Formato: ${aspectRatio}`, `Duración: ${duration} segundos`];
     if (hasImage) context.push("El vídeo parte de una foto de producto que ya define el aspecto del producto.");
+    if (preset) {
+      context.push(`Estilo pedido: ${preset.label} — ${preset.hint}`);
+      context.push(`Cómo escribirlo: ${preset.guidance}`);
+      context.push(`Base técnica que debe quedar reflejada: ${preset.recipe}`);
+      preset.examples.forEach((ex, i) => context.push(`Guion de referencia ${i + 1} (imita el estilo, no el contenido):\n${ex}`));
+    }
 
     if (body?.projectId) {
       const { data: project } = await userClient
