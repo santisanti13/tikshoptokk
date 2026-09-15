@@ -107,7 +107,7 @@ const VideoGallery = ({ videos, urls, onReuse, onKeepIdentity, onExtend, keeping
                 )}
               </div>
 
-              {(onReuse || onKeepIdentity || onExtend) && (
+              {(onReuse || onKeepIdentity || onExtend || onCaption) && (
                 <div className="flex flex-wrap gap-2 border-t border-white/10 pt-3">
                   {onReuse && (
                     <Button
@@ -117,6 +117,22 @@ const VideoGallery = ({ videos, urls, onReuse, onKeepIdentity, onExtend, keeping
                       onClick={() => onReuse(v)}
                     >
                       <Copy className="mr-1.5 h-3.5 w-3.5" /> Reusar guion
+                    </Button>
+                  )}
+                  {onCaption && v.status === "completed" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 rounded-full px-3 text-[11px]"
+                      disabled={captioningId === v.id}
+                      onClick={() => onCaption(v)}
+                    >
+                      {captioningId === v.id ? (
+                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <FileText className="mr-1.5 h-3.5 w-3.5" />
+                      )}
+                      Ficha para publicar
                     </Button>
                   )}
                   {onExtend && v.status === "completed" && v.video_path && Number(v.duration_seconds) < 50 && (
