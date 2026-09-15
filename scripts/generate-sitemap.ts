@@ -32,6 +32,11 @@ async function generate() {
     { path: "/blog", changefreq: "weekly", priority: "0.8" },
   ];
 
+  // Páginas locales de la agencia (una por ciudad).
+  for (const ciudad of ["valencia", "madrid", "barcelona", "sevilla"]) {
+    entries.push({ path: `/agencia-tiktok-shop/${ciudad}`, changefreq: "monthly", priority: "0.7" });
+  }
+
   for (const post of posts) {
     entries.push({
       path: `/blog/${post.slug}`,
