@@ -18,7 +18,6 @@ const Hero = () => (
 
         <div className="relative z-10">
           <div className="mb-5 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.25em] text-secondary">
-            <Sparkles className="h-4 w-4" />
             Agencia de TikTok Shop
           </div>
           <h1 className="font-display text-5xl font-bold leading-[1.05] tracking-tight md:text-7xl">
