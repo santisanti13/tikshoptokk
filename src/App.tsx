@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import ProductResearch from "./pages/ProductResearch";
 import ContenidoIA from "./pages/ContenidoIA";
 import Productos from "./pages/Productos";
+import AgenciaLocal from "./pages/AgenciaLocal";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import NotFound from "./pages/NotFound";
