@@ -142,12 +142,29 @@ Deno.serve(async (req) => {
       return json({ error: "Solo aceptamos enlaces de tiktok.com." }, 400);
     }
 
-    const looksLikeProduct = /\/(view\/product|product|shop)\//i.test(parsed.pathname);
+    const looksLikeProduct =
+      /\/(view\/product|product|shop)\//i.test(parsed.pathname) || /^shop\./i.test(parsed.hostname);
     const found = looksLikeProduct
-      ? ((await fromFirecrawl(url)) ?? (await fromOembed(url)))
-      : ((await fromOembed(url)) ?? (await fromFirecrawl(url)));
+      ? ((await fromDirectFetch(url)) ?? (await fromFirecrawl(url)) ?? (await fromOembed(url)))
+      : ((await fromOembed(url)) ?? (await fromDirectFetch(url)) ?? (await fromFirecrawl(url)));
 
     if (!found) {
+      // TikTok protege las fichas de producto con captcha: guardamos el enlace y
+      // el usuario completa la ficha con una captura, que sí sabemos leer.
+      if (looksLikeProduct) {
+        return json({
+          reference: {
+            url,
+            kind: "product" as const,
+            blocked: true,
+            title: null,
+            description: null,
+            author: null,
+            price: null,
+            image: null,
+          },
+        });
+      }
       return json(
         { error: "TikTok no ha dejado leer ese enlace. Sube la foto y escribe la ficha a mano." },
         422,
@@ -160,6 +177,7 @@ Deno.serve(async (req) => {
       reference: {
         url,
         kind: found.kind,
+        blocked: false,
         title: found.title,
         description: found.description,
         author: found.author,
