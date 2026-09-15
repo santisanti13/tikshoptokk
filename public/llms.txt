@@ -1,0 +1,28 @@
+# TikShopTok
+
+> Agencia española de social commerce y TikTok Shop. Lanzamos, gestionamos y escalamos cuentas y tiendas en TikTok Shop, conectamos marcas con creadores y ofrecemos un estudio de contenido UGC con IA que cualquier persona puede contratar por suscripción.
+
+Idioma principal: español (España). Web: https://tikshoptok.com
+
+## Qué hacemos
+
+- **Servicio de agencia (hecho por nosotros):** creación de cuentas de contenido, cuentas de venta para afiliados y tiendas, gestión de tienda, feed y páginas de producto, y red de influencers. Planes desde 690 €/mes hasta 4.500 €/mes, más un lanzamiento puntual de 1.200 €.
+- **Estudio UGC con IA (lo haces tú):** generación de vídeos verticales estilo UGC y carruseles a partir de una captura de la ficha de producto de TikTok Shop, con presets de estilo (UGC cara, cuerpo completo, POV, producto narrado en off, unboxing, demo, testimonio antes/después, pieza horizontal), coherencia de personaje y voz entre piezas, vídeos de hasta 50 segundos, vistas a partir de archivos 3D y control de puntos ciegos del producto. Planes de 24,90 €, 49 €, 149 € y 399 €/mes por tokens.
+- **Product research:** ranking de productos y tiendas virales de TikTok Shop en España.
+- **Blog "Pulso TikTok Shop España":** seguimiento periódico del mercado español con rankings de tiendas y señales de crecimiento.
+
+## Datos de resultados
+
+Más de 100.000 productos vendidos, 1,2 M € facturados por creadores de nuestra red, cuentas gestionadas entre 50.000 € y 150.000 € de GMV al mes y más de 150 productos lanzados.
+
+## Páginas principales
+
+- [Inicio](https://tikshoptok.com/): agencia, servicios, marcas y creadores, muestras de contenido real.
+- [Estudio de contenido con IA](https://tikshoptok.com/contenido-ia): planes y funcionamiento del SaaS de UGC.
+- [Product research](https://tikshoptok.com/product-research): productos y tiendas virales de TikTok Shop España.
+- [Productos](https://tikshoptok.com/productos): fichas de producto de las tiendas top con vídeo UGC.
+- [Blog](https://tikshoptok.com/blog): Pulso TikTok Shop España y guías de social commerce.
+
+## Contacto
+
+Formulario de contacto en la página de inicio. Marca y cuenta pública: @tikshoptok.
