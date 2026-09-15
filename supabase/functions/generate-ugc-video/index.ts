@@ -2,6 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { tokensForVideo } from "../_shared/ugcPricing.ts";
 import { getPreset } from "../_shared/ugcPresets.ts";
 import { blindSpotsBlock } from "../_shared/ugcBlindSpots.ts";
+import { complianceBlock } from "../_shared/ugcCompliance.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -203,6 +204,10 @@ Deno.serve(async (req) => {
         if (details) prompt = `${prompt}\n\nProducto: ${details}.`;
         const blind = blindSpotsBlock(product.blind_spots as string | null);
         if (blind) prompt = `${prompt}\n\n${blind}`;
+        // Reglas por categoría (salud, cosmética, infantil…) para no arriesgar la cuenta.
+        const rules = complianceBlock(`${details} ${product.blind_spots ?? ""}`);
+        if (rules) prompt = `${prompt}\n\n${rules}`;
+
 
         if (!sourceVideo && !image?.data && product.image_path) {
           const file = await admin.storage.from("ugc-products").download(product.image_path);

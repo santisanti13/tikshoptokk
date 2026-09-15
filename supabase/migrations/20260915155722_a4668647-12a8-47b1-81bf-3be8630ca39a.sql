@@ -1,0 +1,1 @@
+COMMENT ON TABLE public.ugc_carousels IS '@graphql({"totalCount": {"enabled": false}, "hide": true})';

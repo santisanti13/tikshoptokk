@@ -17,6 +17,7 @@ export type CatalogEntry = {
 };
 
 export const PLAN_CATALOG: Record<string, CatalogEntry> = {
+  ugc_arranque_monthly: { priceId: "ugc_arranque_monthly", name: "Arranque", kind: "ugc", priceEur: 24.9, recurring: true, tokens: 150 },
   ugc_starter_monthly: { priceId: "ugc_starter_monthly", name: "Starter", kind: "ugc", priceEur: 49, recurring: true, tokens: 200 },
   ugc_pro_monthly: { priceId: "ugc_pro_monthly", name: "Pro", kind: "ugc", priceEur: 149, recurring: true, tokens: 700 },
   ugc_studio_monthly: { priceId: "ugc_studio_monthly", name: "Studio", kind: "ugc", priceEur: 399, recurring: true, tokens: 2000 },

@@ -224,6 +224,59 @@ export type Database = {
         }
         Relationships: []
       }
+      ugc_carousels: {
+        Row: {
+          caption: Json | null
+          created_at: string
+          error_message: string | null
+          headline: string | null
+          id: string
+          product_id: string | null
+          slides: Json
+          status: string
+          style_id: string
+          tokens_charged: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          caption?: Json | null
+          created_at?: string
+          error_message?: string | null
+          headline?: string | null
+          id?: string
+          product_id?: string | null
+          slides?: Json
+          status?: string
+          style_id: string
+          tokens_charged?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          caption?: Json | null
+          created_at?: string
+          error_message?: string | null
+          headline?: string | null
+          id?: string
+          product_id?: string | null
+          slides?: Json
+          status?: string
+          style_id?: string
+          tokens_charged?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ugc_carousels_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "ugc_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ugc_characters: {
         Row: {
           created_at: string
@@ -390,6 +443,7 @@ export type Database = {
         Row: {
           added_seconds: number | null
           aspect_ratio: string | null
+          caption: Json | null
           created_at: string
           duration_seconds: number
           error_message: string | null
@@ -412,6 +466,7 @@ export type Database = {
         Insert: {
           added_seconds?: number | null
           aspect_ratio?: string | null
+          caption?: Json | null
           created_at?: string
           duration_seconds?: number
           error_message?: string | null
@@ -434,6 +489,7 @@ export type Database = {
         Update: {
           added_seconds?: number | null
           aspect_ratio?: string | null
+          caption?: Json | null
           created_at?: string
           duration_seconds?: number
           error_message?: string | null
