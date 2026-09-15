@@ -45,6 +45,52 @@ async function fromOembed(url: string) {
   };
 }
 
+const BROWSER_UA =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+
+const metaOf = (html: string, prop: string) => {
+  const re = new RegExp(
+    `<meta[^>]+(?:property|name)=["']${prop}["'][^>]*content=["']([^"']+)["']|<meta[^>]+content=["']([^"']+)["'][^>]*(?:property|name)=["']${prop}["']`,
+    "i",
+  );
+  const m = html.match(re);
+  return m ? (m[1] ?? m[2] ?? null) : null;
+};
+
+/** Lectura directa de la página de producto: TikTok suele servir las etiquetas og a un navegador. */
+async function fromDirectFetch(url: string) {
+  try {
+    const res = await fetch(url, {
+      redirect: "follow",
+      headers: {
+        "User-Agent": BROWSER_UA,
+        Accept: "text/html,application/xhtml+xml",
+        "Accept-Language": "es-ES,es;q=0.9",
+      },
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
+    // TikTok devuelve un captcha ("Security Check") cuando bloquea la lectura.
+    if (/security check|captcha/i.test(html.slice(0, 2000))) return null;
+    const title = metaOf(html, "og:title") ?? html.match(/<title>([^<]{2,200})<\/title>/i)?.[1] ?? null;
+    const description = metaOf(html, "og:description") ?? metaOf(html, "description");
+    const thumbnail = metaOf(html, "og:image");
+    const price = metaOf(html, "product:price:amount") ?? metaOf(html, "og:price:amount");
+    const currency = metaOf(html, "product:price:currency") ?? metaOf(html, "og:price:currency");
+    if (!title && !thumbnail) return null;
+    return {
+      kind: "product" as const,
+      title,
+      description: description ? description.slice(0, 600) : null,
+      author: null as string | null,
+      price: price ? `${price} ${currency ?? "EUR"}`.trim() : null,
+      thumbnail,
+    };
+  } catch {
+    return null;
+  }
+}
+
 /** Ficha de un producto de TikTok Shop leyendo la página con Firecrawl. */
 async function fromFirecrawl(url: string) {
   const key = Deno.env.get("FIRECRAWL_API_KEY");
