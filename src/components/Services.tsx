@@ -1,47 +1,46 @@
 import { motion } from "framer-motion";
-import { Search, Palette, Users, Link2, Sparkles, ArrowUpRight } from "lucide-react";
+import { Video, ShoppingBag, LayoutGrid, Users, Search, ArrowUpRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const services = [
+  {
+    icon: Video,
+    title: "Creación de cuentas de contenido",
+    description:
+      "Abrimos y construimos cuentas desde cero: nicho, personaje, línea visual y publicación diaria hasta que la cuenta crece sola.",
+    accent: "secondary",
+    span: "md:col-span-7",
+  },
+  {
+    icon: ShoppingBag,
+    title: "Cuentas de venta: afiliados y tiendas",
+    description:
+      "Montamos la cuenta para vender, ya seas afiliado o tienda: catálogo, comisiones, enlaces y contenido que convierte.",
+    accent: "primary",
+    span: "md:col-span-5",
+  },
+  {
+    icon: LayoutGrid,
+    title: "Gestión de tienda, feed y páginas de producto",
+    description:
+      "Operamos tu TikTok Shop día a día: feed, fichas y páginas de producto, precios, campañas y más de 150 productos lanzados.",
+    accent: "primary",
+    span: "md:col-span-5",
+  },
+  {
+    icon: Users,
+    title: "Red de influencers y afiliados",
+    description:
+      "Conectamos tu marca con creadores que ya facturan y coordinamos briefings, envíos y calendario de publicación.",
+    accent: "secondary",
+    span: "md:col-span-7",
+  },
   {
     icon: Search,
     title: "Product Research",
     description:
       "Encontramos productos virales y adaptamos la propuesta de valor de otros marketplaces al mercado de TikTok Shop.",
     link: "/product-research",
-    accent: "secondary",
-    span: "md:col-span-8",
-  },
-  {
-    icon: Palette,
-    title: "Creación de Marcas",
-    description:
-      "Estructuramos y lanzamos marcas nativas TikTok. Identidad y posicionamiento listos para escalar.",
-    accent: "primary",
-    span: "md:col-span-4",
-  },
-  {
-    icon: Users,
-    title: "Gestión de Creadores",
-    description:
-      "Dirigimos, planificamos y coordinamos creadores. Consejos, agendas y planificación para resultados consistentes.",
-    accent: "secondary",
-    span: "md:col-span-4",
-  },
-  {
-    icon: Link2,
-    title: "Conexión Marca-Creador",
-    description:
-      "Conectamos marcas con los creadores ideales para maximizar resultados y generar ventas reales.",
-    accent: "primary",
-    span: "md:col-span-8",
-  },
-  {
-    icon: Sparkles,
-    title: "Cuentas y UGC con IA",
-    description:
-      "Creamos personajes con IA, lanzamos cuentas desde cero y producimos contenido diario para tu perfil o tu ecommerce.",
-    link: "/contenido-ia",
     accent: "secondary",
     span: "md:col-span-12",
   },
@@ -62,7 +61,7 @@ const Services = () => {
           <div>
             <p className="text-xs font-medium uppercase tracking-[0.25em] text-primary">Servicios</p>
             <h2 className="mt-3 max-w-2xl font-display text-4xl font-bold tracking-tight md:text-5xl">
-              Todo lo que necesitas para <span className="gradient-text">triunfar</span> en TikTok Shop
+              Lo que hacemos <span className="gradient-text">por ti</span> en TikTok Shop
             </h2>
           </div>
         </motion.div>

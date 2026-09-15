@@ -2,10 +2,10 @@ import { motion } from "framer-motion";
 import { TrendingUp, Shield, Zap, Target } from "lucide-react";
 
 const points = [
-  { icon: TrendingUp, title: "Expertos en TikTok Shop", desc: "Equipo 100% especializado en la plataforma con experiencia probada en social commerce." },
-  { icon: Target, title: "Productos con demanda real", desc: "Research basado en datos, tendencias virales y validación de mercado." },
-  { icon: Zap, title: "Resultados rápidos", desc: "Procesos optimizados para empezar a vender en semanas, no en meses." },
-  { icon: Shield, title: "Gestión integral", desc: "Desde producto hasta creador: tú solo ves los resultados." },
+  { icon: TrendingUp, title: "Nativos de TikTok Shop", desc: "Solo trabajamos aquí: conocemos el algoritmo, las comisiones y las reglas de la plataforma." },
+  { icon: Target, title: "Creadores propios que ya facturan", desc: "Red de afiliados con cuentas de 50.000 € a 150.000 € de GMV al mes." },
+  { icon: Zap, title: "Producción de contenido diaria", desc: "Cuentas alimentadas todos los días, sin depender de una grabación puntual." },
+  { icon: Shield, title: "Operamos la tienda entera", desc: "Feed, fichas, páginas de producto y catálogo: más de 150 productos lanzados." },
 ];
 
 const WhyUs = () => (
@@ -19,13 +19,13 @@ const WhyUs = () => (
       >
         <div className="neon-blob-cyan -bottom-10 -left-10 opacity-60" />
         <div className="relative">
-          <p className="text-xs font-medium uppercase tracking-[0.25em] text-primary">¿Por qué TikShopTok?</p>
+          <p className="text-xs font-medium uppercase tracking-[0.25em] text-primary">Ventajas</p>
           <h2 className="mt-3 font-display text-4xl font-bold tracking-tight md:text-5xl">
-            Tu partner <span className="gradient-text">estratégico</span> en TikTok Shop
+            Por qué las marcas <span className="gradient-text">nos eligen</span>
           </h2>
           <p className="mt-6 text-muted-foreground">
-            No somos una agencia genérica. Somos especialistas en TikTok Shop con un
-            ecosistema completo: research, creación, gestión de creadores y conexión con marcas.
+            No somos una agencia genérica. Cubrimos el ciclo completo: research de producto,
+            creación de cuentas, contenido diario, red de creadores y gestión de la tienda.
           </p>
         </div>
       </motion.div>
