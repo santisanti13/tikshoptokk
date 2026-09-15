@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { AlertCircle, Clock, Coins, Copy, Download, Loader2, Play, UserCheck } from "lucide-react";
+import { AlertCircle, Clock, Coins, Copy, Download, FileText, Loader2, Play, UserCheck } from "lucide-react";
 
 export type VideoRow = {
   id: string;
@@ -24,13 +24,24 @@ type Props = {
   onReuse?: (video: VideoRow) => void;
   onKeepIdentity?: (video: VideoRow) => void;
   onExtend?: (video: VideoRow) => void;
+  onCaption?: (video: VideoRow) => void;
   keepingId?: string | null;
+  captioningId?: string | null;
 };
 
 const statusLabel = (status: string) =>
   status === "completed" ? "Listo" : status === "failed" ? "Error" : "Generando";
 
-const VideoGallery = ({ videos, urls, onReuse, onKeepIdentity, onExtend, keepingId }: Props) => {
+const VideoGallery = ({
+  videos,
+  urls,
+  onReuse,
+  onKeepIdentity,
+  onExtend,
+  onCaption,
+  keepingId,
+  captioningId,
+}: Props) => {
   if (videos.length === 0) {
     return (
       <div className="rounded-3xl border border-dashed border-white/10 bg-card/40 p-10 text-center">
