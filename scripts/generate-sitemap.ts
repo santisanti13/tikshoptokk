@@ -28,6 +28,7 @@ async function generate() {
     { path: "/", changefreq: "weekly", priority: "1.0" },
     { path: "/product-research", changefreq: "weekly", priority: "0.8" },
     { path: "/contenido-ia", changefreq: "weekly", priority: "0.8" },
+    { path: "/productos", changefreq: "weekly", priority: "0.7" },
     { path: "/blog", changefreq: "weekly", priority: "0.8" },
   ];
 
