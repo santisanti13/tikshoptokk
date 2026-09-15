@@ -35,6 +35,7 @@ const App = () => (
           <Route path="/product-research" element={<ProductResearch />} />
           <Route path="/contenido-ia" element={<ContenidoIA />} />
           <Route path="/productos" element={<Productos />} />
+          <Route path="/agencia-tiktok-shop/:ciudad" element={<AgenciaLocal />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
           <Route
