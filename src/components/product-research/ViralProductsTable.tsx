@@ -46,10 +46,47 @@ const MOCK_PRODUCTS: ViralProduct[] = [
   { rank: 20, name: "Olaplex No. 3 Hair Treatment", category: "Hair Care", price: "$30.00", sales: "189K+", revenue: "$5.7M", views: "67M", growth: "+134%", growthPositive: true, viralScore: 74, trending: false },
 ];
 
+/** Busca el primer valor cuya clave contenga alguno de los términos dados. */
+const pick = (row: Record<string, unknown>, terms: string[]): string => {
+  for (const [key, value] of Object.entries(row)) {
+    const k = key.toLowerCase();
+    if (terms.some((t) => k.includes(t)) && value !== null && value !== undefined && String(value).trim()) {
+      return String(value).trim();
+    }
+  }
+  return "—";
+};
+
+const toNumber = (text: string) => {
+  const n = Number.parseFloat(text.replace(/[^\d.,-]/g, "").replace(",", "."));
+  return Number.isFinite(n) ? n : 0;
+};
+
+/** Convierte una captura real de FastMoss en las filas de la tabla. */
+const mapSnapshot = (rows: Record<string, unknown>[]): ViralProduct[] =>
+  rows.slice(0, 20).map((row, i) => {
+    const growth = pick(row, ["crecim", "growth", "incre", "%"]);
+    const views = pick(row, ["view", "visit", "visualiza", "reproduc"]);
+    return {
+      rank: toNumber(pick(row, ["rank", "#", "puesto"])) || i + 1,
+      name: pick(row, ["producto", "product", "title", "nombre", "video", "tienda", "shop"]),
+      category: pick(row, ["categor", "category"]),
+      price: pick(row, ["precio", "price"]),
+      sales: pick(row, ["venta", "sales", "unidad", "orders", "pedido"]),
+      revenue: pick(row, ["gmv", "revenue", "ingres", "facturac"]),
+      views,
+      growth,
+      growthPositive: !growth.trim().startsWith("-"),
+      viralScore: Math.max(40, Math.min(99, 100 - i * 2)),
+      trending: i < 5,
+    };
+  });
+
 const ViralProductsTable = () => {
   const [products, setProducts] = useState<ViralProduct[]>(MOCK_PRODUCTS);
   const [loading, setLoading] = useState(false);
   const [lastChecked, setLastChecked] = useState<Date | null>(null);
+  const [isLive, setIsLive] = useState(false);
   const { toast } = useToast();
   const [waitlistOpen, setWaitlistOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<string | undefined>();
@@ -59,18 +96,51 @@ const ViralProductsTable = () => {
     setWaitlistOpen(true);
   };
 
+  /** Carga la última captura real guardada (FastMoss). */
+  const loadSnapshot = async (announce = false) => {
+    const { data } = await supabase
+      .from("market_snapshots")
+      .select("captured_on, rows, source")
+      .eq("country", "ES")
+      .order("captured_on", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const rows = (data?.rows as Record<string, unknown>[] | undefined) ?? [];
+    if (rows.length) {
+      setProducts(mapSnapshot(rows));
+      setIsLive(true);
+      setLastChecked(data?.captured_on ? new Date(data.captured_on) : new Date());
+      if (announce) {
+        toast({
+          title: "Datos reales cargados",
+          description: `Última captura de ${data?.source ?? "FastMoss"} del ${new Date(
+            data?.captured_on ?? Date.now(),
+          ).toLocaleDateString("es-ES")}.`,
+        });
+      }
+      return true;
+    }
+    return false;
+  };
+
+  useEffect(() => {
+    void loadSnapshot();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleFetchLive = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("scrape-viral-products");
-      if (error) throw error;
-      if (!data?.success) throw new Error(data?.error || "Respuesta inválida");
-      setLastChecked(new Date());
-      toast({
-        title: "Tendencias verificadas",
-        description:
-          "Hemos comprobado las fuentes de TikTok Shop. El ranking mostrado es nuestra selección curada más reciente.",
-      });
+      const live = await loadSnapshot(true);
+      if (!live) {
+        toast({
+          title: "Todavía sin captura del día",
+          description:
+            "Mostramos nuestro ranking curado hasta que se traiga la próxima captura real de TikTok Shop España.",
+        });
+        setLastChecked(new Date());
+      }
     } catch (err) {
       console.error("Error fetching live data:", err);
       toast({
