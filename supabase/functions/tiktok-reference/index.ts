@@ -45,6 +45,52 @@ async function fromOembed(url: string) {
   };
 }
 
+const BROWSER_UA =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+
+const metaOf = (html: string, prop: string) => {
+  const re = new RegExp(
+    `<meta[^>]+(?:property|name)=["']${prop}["'][^>]*content=["']([^"']+)["']|<meta[^>]+content=["']([^"']+)["'][^>]*(?:property|name)=["']${prop}["']`,
+    "i",
+  );
+  const m = html.match(re);
+  return m ? (m[1] ?? m[2] ?? null) : null;
+};
+
+/** Lectura directa de la página de producto: TikTok suele servir las etiquetas og a un navegador. */
+async function fromDirectFetch(url: string) {
+  try {
+    const res = await fetch(url, {
+      redirect: "follow",
+      headers: {
+        "User-Agent": BROWSER_UA,
+        Accept: "text/html,application/xhtml+xml",
+        "Accept-Language": "es-ES,es;q=0.9",
+      },
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
+    // TikTok devuelve un captcha ("Security Check") cuando bloquea la lectura.
+    if (/security check|captcha/i.test(html.slice(0, 2000))) return null;
+    const title = metaOf(html, "og:title") ?? html.match(/<title>([^<]{2,200})<\/title>/i)?.[1] ?? null;
+    const description = metaOf(html, "og:description") ?? metaOf(html, "description");
+    const thumbnail = metaOf(html, "og:image");
+    const price = metaOf(html, "product:price:amount") ?? metaOf(html, "og:price:amount");
+    const currency = metaOf(html, "product:price:currency") ?? metaOf(html, "og:price:currency");
+    if (!title && !thumbnail) return null;
+    return {
+      kind: "product" as const,
+      title,
+      description: description ? description.slice(0, 600) : null,
+      author: null as string | null,
+      price: price ? `${price} ${currency ?? "EUR"}`.trim() : null,
+      thumbnail,
+    };
+  } catch {
+    return null;
+  }
+}
+
 /** Ficha de un producto de TikTok Shop leyendo la página con Firecrawl. */
 async function fromFirecrawl(url: string) {
   const key = Deno.env.get("FIRECRAWL_API_KEY");
@@ -96,12 +142,29 @@ Deno.serve(async (req) => {
       return json({ error: "Solo aceptamos enlaces de tiktok.com." }, 400);
     }
 
-    const looksLikeProduct = /\/(view\/product|product|shop)\//i.test(parsed.pathname);
+    const looksLikeProduct =
+      /\/(view\/product|product|shop)\//i.test(parsed.pathname) || /^shop\./i.test(parsed.hostname);
     const found = looksLikeProduct
-      ? ((await fromFirecrawl(url)) ?? (await fromOembed(url)))
-      : ((await fromOembed(url)) ?? (await fromFirecrawl(url)));
+      ? ((await fromDirectFetch(url)) ?? (await fromFirecrawl(url)) ?? (await fromOembed(url)))
+      : ((await fromOembed(url)) ?? (await fromDirectFetch(url)) ?? (await fromFirecrawl(url)));
 
     if (!found) {
+      // TikTok protege las fichas de producto con captcha: guardamos el enlace y
+      // el usuario completa la ficha con una captura, que sí sabemos leer.
+      if (looksLikeProduct) {
+        return json({
+          reference: {
+            url,
+            kind: "product" as const,
+            blocked: true,
+            title: null,
+            description: null,
+            author: null,
+            price: null,
+            image: null,
+          },
+        });
+      }
       return json(
         { error: "TikTok no ha dejado leer ese enlace. Sube la foto y escribe la ficha a mano." },
         422,
@@ -114,6 +177,7 @@ Deno.serve(async (req) => {
       reference: {
         url,
         kind: found.kind,
+        blocked: false,
         title: found.title,
         description: found.description,
         author: found.author,
