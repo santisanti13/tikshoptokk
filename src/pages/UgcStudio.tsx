@@ -106,6 +106,10 @@ const UgcStudio = () => {
   const [characters, setCharacters] = useState<UgcCharacter[]>([]);
   const [characterId, setCharacterId] = useState<string | null>(null);
 
+  const [tab, setTab] = useState("captura");
+  const [captioningId, setCaptioningId] = useState<string | null>(null);
+  const [activeCaption, setActiveCaption] = useState<Caption | null>(null);
+
   
 
   const MAX_TOTAL_SECONDS = 50;
