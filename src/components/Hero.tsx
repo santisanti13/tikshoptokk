@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles, TrendingUp, Users, Zap } from "lucide-react";
+import { ArrowRight, Sparkles, TrendingUp, Users, Zap, Store } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Hero = () => (
   <section className="relative overflow-hidden px-4 pt-24 md:px-8 md:pt-28">
@@ -18,24 +19,25 @@ const Hero = () => (
         <div className="relative z-10">
           <div className="mb-5 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.25em] text-secondary">
             <Sparkles className="h-4 w-4" />
-            Agencia #1 en TikTok Shop
+            Agencia de TikTok Shop
           </div>
           <h1 className="font-display text-5xl font-bold leading-[1.05] tracking-tight md:text-7xl">
-            Domina el <span className="gradient-text">Social Commerce</span> en TikTok Shop
+            Creamos, lanzamos y escalamos cuentas y tiendas en{" "}
+            <span className="gradient-text">TikTok Shop</span>
           </h1>
           <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-            Encontramos productos virales, creamos marcas y conectamos con creadores para escalar
-            tus ventas a escala industrial.
+            Cuentas de contenido, cuentas de venta para afiliados y tiendas, gestión de feed,
+            páginas de producto y una red de creadores que factura todos los meses.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg" className="rounded-full px-8 glow-pink">
               <a href="#contacto">
-                Empezar ahora
+                Hablar con el equipo
                 <ArrowRight className="ml-1 h-4 w-4" />
               </a>
             </Button>
             <Button asChild size="lg" variant="outline" className="rounded-full border-white/20 bg-transparent px-8 hover:bg-white/5">
-              <a href="#servicios">Ver servicios</a>
+              <Link to="/contenido-ia">Hazlo tú mismo con el estudio</Link>
             </Button>
           </div>
         </div>
@@ -60,20 +62,22 @@ const Hero = () => (
               +50
             </div>
           </div>
-          <p className="text-sm text-muted-foreground">Impulsando a los mejores creadores top de España</p>
+          <p className="text-sm text-muted-foreground">
+            Creadores top de España trabajando con nuestras marcas
+          </p>
         </div>
         <div>
-          <div className="font-display text-5xl font-bold tracking-tighter text-secondary md:text-6xl">+5M</div>
-          <div className="mt-1 font-medium text-foreground/80">Visitas en contenido con producto</div>
+          <div className="font-display text-5xl font-bold tracking-tighter text-secondary md:text-6xl">1,2M €</div>
+          <div className="mt-1 font-medium text-foreground/80">Facturado por creadores en un año</div>
         </div>
       </motion.div>
 
       {/* Stat row */}
       {[
-        { icon: TrendingUp, value: "Miles de €", label: "Facturación generada", accent: "text-primary" },
-        { icon: Users, value: "Top 1", label: "Creadores top de España", accent: "text-secondary" },
-        { icon: Zap, value: "30+", label: "Productos lanzados", accent: "text-primary" },
-        { icon: Sparkles, value: "10+", label: "Categorías dominadas", accent: "text-secondary" },
+        { icon: TrendingUp, value: "+100.000", label: "Productos vendidos con marcas", accent: "text-primary" },
+        { icon: Users, value: "50–150k €", label: "GMV al mes de nuestros top creadores", accent: "text-secondary" },
+        { icon: Zap, value: "+150", label: "Productos lanzados", accent: "text-primary" },
+        { icon: Store, value: "~200.000 €", label: "Beneficio neto generado", accent: "text-secondary" },
       ].map((s, i) => (
         <motion.div
           key={s.label}

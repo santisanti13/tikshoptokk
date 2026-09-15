@@ -1,21 +1,45 @@
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-function safeNext(raw: string | null): string {
-  if (!raw) return "/";
-  if (!raw.startsWith("/") || raw.startsWith("//")) return "/";
+type Audience = "agency" | "studio";
+
+const AUDIENCES: Record<Audience, { title: string; subtitle: string; home: string; other: Audience }> = {
+  agency: {
+    title: "Acceso clientes",
+    subtitle: "Entra a tu zona de cliente: plan contratado, facturas y renovación.",
+    home: "/mi-cuenta",
+    other: "studio",
+  },
+  studio: {
+    title: "Acceso al estudio",
+    subtitle: "Entra al estudio de contenido para crear tus vídeos con IA.",
+    home: "/ugc-studio",
+    other: "agency",
+  },
+};
+
+const OTHER_LABEL: Record<Audience, string> = {
+  agency: "Soy cliente de la agencia",
+  studio: "Quiero entrar al estudio de contenido",
+};
+
+function safeNext(raw: string | null, fallback: string): string {
+  if (!raw) return fallback;
+  if (!raw.startsWith("/") || raw.startsWith("//")) return fallback;
   return raw;
 }
 
 const Login = () => {
   const [params] = useSearchParams();
-  const next = safeNext(params.get("next"));
+  const audience: Audience = params.get("as") === "agency" ? "agency" : "studio";
+  const config = AUDIENCES[audience];
+  const next = safeNext(params.get("next"), config.home);
   const [mode, setMode] = useState<"signin" | "signup" | "recover">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -88,6 +112,8 @@ const Login = () => {
     setNotice("Te hemos enviado un correo para confirmar tu cuenta. Ábrelo para continuar.");
   }
 
+  const heading =
+    mode === "signin" ? config.title : mode === "signup" ? "Crea tu cuenta" : "Recuperar contraseña";
 
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-24">
@@ -97,13 +123,22 @@ const Login = () => {
         <meta name="robots" content="noindex" />
       </Helmet>
       <div className="w-full max-w-sm rounded-3xl border border-white/10 bg-card/60 p-7 backdrop-blur-xl">
-        <h1 className="font-display text-2xl font-bold tracking-tight">
-          {mode === "signin" ? "Inicia sesión" : mode === "signup" ? "Crea tu cuenta" : "Recuperar contraseña"}
-        </h1>
+        <Link to="/" className="flex items-baseline gap-2 tracking-tight">
+          <span className="font-display text-lg font-bold">
+            <span className="text-primary">Tik</span>
+            <span className="text-secondary">Shop</span>
+            <span className="text-foreground">Tok</span>
+          </span>
+          <span className="font-['Playfair_Display',serif] text-base italic text-muted-foreground">
+            agency
+          </span>
+        </Link>
+
+        <h1 className="mt-6 font-display text-2xl font-bold tracking-tight">{heading}</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           {mode === "recover"
             ? "Escribe tu email y te enviamos un enlace para crear una contraseña nueva."
-            : "Accede para gestionar tu plan, tus tokens y el estudio UGC."}
+            : config.subtitle}
         </p>
 
         <Button
@@ -176,8 +211,13 @@ const Login = () => {
               He olvidado mi contraseña
             </button>
           )}
+          <Link
+            to={`/login?as=${config.other}`}
+            className="text-muted-foreground underline hover:text-foreground"
+          >
+            {OTHER_LABEL[config.other]}
+          </Link>
         </div>
-
       </div>
     </main>
   );
