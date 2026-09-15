@@ -309,9 +309,12 @@ const ViralProductsTable = () => {
             animate={{ opacity: 1 }}
             className="mt-4 text-center text-xs text-muted-foreground"
           >
-            ✅ Fuentes comprobadas a las{" "}
-            {lastChecked.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })} · ranking curado por
-            TikShopTok
+            {isLive
+              ? `✅ Datos reales de TikTok Shop España · captura del ${lastChecked.toLocaleDateString("es-ES")}`
+              : `✅ Fuentes comprobadas a las ${lastChecked.toLocaleTimeString("es-ES", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })} · ranking curado por TikShopTok`}
           </motion.p>
         )}
       </div>
