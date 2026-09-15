@@ -9,9 +9,11 @@ interface SEOProps {
   type?: "website" | "article";
   image?: string;
   noindex?: boolean;
+  /** JSON-LD extra de la página (Service, LocalBusiness, BreadcrumbList...). */
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
-const SEO = ({ title, description, path, type = "website", image, noindex }: SEOProps) => {
+const SEO = ({ title, description, path, type = "website", image, noindex, jsonLd }: SEOProps) => {
   const url = `${SITE_URL}${path}`;
   return (
     <Helmet>
@@ -27,6 +29,7 @@ const SEO = ({ title, description, path, type = "website", image, noindex }: SEO
       <meta name="twitter:description" content={description} />
       {image && <meta property="og:image" content={image} />}
       {image && <meta name="twitter:image" content={image} />}
+      {jsonLd && <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>}
     </Helmet>
   );
 };
