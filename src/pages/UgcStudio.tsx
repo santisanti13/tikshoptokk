@@ -405,7 +405,42 @@ const UgcStudio = () => {
       });
       loadBalance();
       return;
+  }
+
+  // Escribe la ficha para publicar (título, descripción con hashtags y tarjeta) de un vídeo ya listo.
+  async function writeCaption(video: VideoRow) {
+    setCaptioningId(video.id);
+    const { data, error } = await supabase.functions.invoke("ugc-caption", { body: { videoId: video.id } });
+    setCaptioningId(null);
+    const message = (data as { error?: string } | null)?.error;
+    if (error || message || !data?.caption) {
+      toast({
+        title: "No hemos podido escribir la ficha",
+        description: message ?? error?.message ?? "Inténtalo de nuevo en un momento.",
+        variant: "destructive",
+      });
+      return;
     }
+    setActiveCaption(data.caption as Caption);
+  }
+
+  // Pasa de la captura al panel de generación con todo relleno.
+  function useQuickStart(result: QuickStartResult, target: "video" | "carousel") {
+    setProductId(result.product.id);
+    loadProducts();
+    if (target === "carousel") {
+      setTab("carruseles");
+      return;
+    }
+    setPresetId(result.presetId);
+    setAspectRatio(result.aspectRatio);
+    setPrompt(result.prompt);
+    setPromptContext(`${result.presetId}|${projectId ?? ""}|${result.product.id}`);
+    setActiveCaption(result.caption);
+    setTab("generar");
+  }
+
+
     toast({ title: "Vídeo en cola", description: `Tarda entre 1 y 3 minutos. Has usado ${data.tokensCharged} tokens.` });
     setVideos((prev) => [data.video as VideoRow, ...prev]);
     setExtendFrom(null);
