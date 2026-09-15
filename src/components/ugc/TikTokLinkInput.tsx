@@ -8,6 +8,8 @@ import { Link2, Loader2 } from "lucide-react";
 export type TikTokReference = {
   url: string;
   kind: "video" | "product";
+  /** true cuando TikTok bloquea la lectura de la ficha: el enlace se guarda, la ficha se completa con captura. */
+  blocked?: boolean;
   title: string | null;
   description: string | null;
   author: string | null;
@@ -45,7 +47,14 @@ const TikTokLinkInput = ({ onLoaded, label, placeholder, hint }: Props) => {
       });
       return;
     }
-    onLoaded(data.reference as TikTokReference);
+    const ref = data.reference as TikTokReference;
+    onLoaded(ref);
+    if (ref.blocked) {
+      toast({
+        title: "Enlace del producto guardado",
+        description: "TikTok no deja leer la ficha desde fuera. Pega la captura de la ficha (Ctrl+V) o suéltala aquí y la leemos entera.",
+      });
+    }
     setUrl("");
   }
 
