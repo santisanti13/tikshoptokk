@@ -502,6 +502,14 @@ const UgcStudio = () => {
             <TabsTrigger value="tarifas">Tarifas</TabsTrigger>
           </TabsList>
 
+          <TabsContent value="captura" className="mt-8">
+            <QuickStartPanel
+              onVideo={(result) => useQuickStart(result, "video")}
+              onCarousel={(result) => useQuickStart(result, "carousel")}
+              onProductsChanged={loadProducts}
+            />
+          </TabsContent>
+
           <TabsContent value="generar" className="mt-8">
             <section className="grid gap-8 lg:grid-cols-[minmax(0,420px)_1fr]">
               <div className="rounded-3xl border border-white/10 bg-card/60 p-6 backdrop-blur-xl">
@@ -778,12 +786,24 @@ const UgcStudio = () => {
                     urls={urls}
                     onReuse={reuseVideo}
                     onKeepIdentity={keepIdentity}
-              onExtend={extendVideo}
+                    onExtend={extendVideo}
+                    onCaption={writeCaption}
                     keepingId={keepingId}
+                    captioningId={captioningId}
                   />
                 </div>
               </div>
             </section>
+          </TabsContent>
+
+          <TabsContent value="carruseles" className="mt-8">
+            <CarouselPanel
+              products={products}
+              productId={productId}
+              onProductId={setProductId}
+              balance={balance}
+              onBalance={setBalance}
+            />
           </TabsContent>
 
           <TabsContent value="proyectos" className="mt-8">
@@ -793,6 +813,7 @@ const UgcStudio = () => {
           <TabsContent value="productos" className="mt-8">
             <ProductsPanel products={products} onChanged={loadProducts} />
           </TabsContent>
+
 
           <TabsContent value="tarifas" className="mt-8">
             <TariffsPanel
