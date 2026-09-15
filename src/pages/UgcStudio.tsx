@@ -405,6 +405,11 @@ const UgcStudio = () => {
       });
       loadBalance();
       return;
+    }
+    toast({ title: "Vídeo en cola", description: `Tarda entre 1 y 3 minutos. Has usado ${data.tokensCharged} tokens.` });
+    setVideos((prev) => [data.video as VideoRow, ...prev]);
+    setExtendFrom(null);
+    if (typeof data.balance === "number") setBalance(data.balance);
   }
 
   // Escribe la ficha para publicar (título, descripción con hashtags y tarjeta) de un vídeo ya listo.
@@ -424,8 +429,8 @@ const UgcStudio = () => {
     setActiveCaption(data.caption as Caption);
   }
 
-  // Pasa de la captura al panel de generación con todo relleno.
-  function useQuickStart(result: QuickStartResult, target: "video" | "carousel") {
+  // Pasa de la captura al panel de generación (o de carruseles) con todo relleno.
+  function applyQuickStart(result: QuickStartResult, target: "video" | "carousel") {
     setProductId(result.product.id);
     loadProducts();
     if (target === "carousel") {
@@ -438,13 +443,6 @@ const UgcStudio = () => {
     setPromptContext(`${result.presetId}|${projectId ?? ""}|${result.product.id}`);
     setActiveCaption(result.caption);
     setTab("generar");
-  }
-
-
-    toast({ title: "Vídeo en cola", description: `Tarda entre 1 y 3 minutos. Has usado ${data.tokensCharged} tokens.` });
-    setVideos((prev) => [data.video as VideoRow, ...prev]);
-    setExtendFrom(null);
-    if (typeof data.balance === "number") setBalance(data.balance);
   }
 
   if (checkingAuth) {
