@@ -17,6 +17,10 @@ import ProjectsPanel, { type UgcProject } from "@/components/ugc/ProjectsPanel";
 import ProductsPanel, { type UgcProduct } from "@/components/ugc/ProductsPanel";
 import VideoGallery, { type VideoRow } from "@/components/ugc/VideoGallery";
 import TariffsPanel from "@/components/ugc/TariffsPanel";
+import QuickStartPanel, { type QuickStartResult } from "@/components/ugc/QuickStartPanel";
+import CarouselPanel from "@/components/ugc/CarouselPanel";
+import CaptionCard, { type Caption } from "@/components/ugc/CaptionCard";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { eurFromTokens, formatEur, tokensForVideo } from "@/lib/ugcPricing";
 import { UGC_PRESETS, getPreset } from "@/lib/ugcPresets";
 
@@ -101,6 +105,10 @@ const UgcStudio = () => {
   const [urls, setUrls] = useState<Record<string, string>>({});
   const [characters, setCharacters] = useState<UgcCharacter[]>([]);
   const [characterId, setCharacterId] = useState<string | null>(null);
+
+  const [tab, setTab] = useState("captura");
+  const [captioningId, setCaptioningId] = useState<string | null>(null);
+  const [activeCaption, setActiveCaption] = useState<Caption | null>(null);
 
   
 
@@ -404,6 +412,39 @@ const UgcStudio = () => {
     if (typeof data.balance === "number") setBalance(data.balance);
   }
 
+  // Escribe la ficha para publicar (título, descripción con hashtags y tarjeta) de un vídeo ya listo.
+  async function writeCaption(video: VideoRow) {
+    setCaptioningId(video.id);
+    const { data, error } = await supabase.functions.invoke("ugc-caption", { body: { videoId: video.id } });
+    setCaptioningId(null);
+    const message = (data as { error?: string } | null)?.error;
+    if (error || message || !data?.caption) {
+      toast({
+        title: "No hemos podido escribir la ficha",
+        description: message ?? error?.message ?? "Inténtalo de nuevo en un momento.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setActiveCaption(data.caption as Caption);
+  }
+
+  // Pasa de la captura al panel de generación (o de carruseles) con todo relleno.
+  function applyQuickStart(result: QuickStartResult, target: "video" | "carousel") {
+    setProductId(result.product.id);
+    loadProducts();
+    if (target === "carousel") {
+      setTab("carruseles");
+      return;
+    }
+    setPresetId(result.presetId);
+    setAspectRatio(result.aspectRatio);
+    setPrompt(result.prompt);
+    setPromptContext(`${result.presetId}|${projectId ?? ""}|${result.product.id}`);
+    setActiveCaption(result.caption);
+    setTab("generar");
+  }
+
   if (checkingAuth) {
     return (
       <main className="flex min-h-screen items-center justify-center">
@@ -449,13 +490,23 @@ const UgcStudio = () => {
           </div>
         </header>
 
-        <Tabs defaultValue="generar" className="mt-10">
+        <Tabs value={tab} onValueChange={setTab} className="mt-10">
           <TabsList className="flex w-full flex-wrap justify-start gap-1 bg-card/60">
-            <TabsTrigger value="generar">Generar</TabsTrigger>
+            <TabsTrigger value="captura">Sube tu captura</TabsTrigger>
+            <TabsTrigger value="generar">Vídeo</TabsTrigger>
+            <TabsTrigger value="carruseles">Carruseles</TabsTrigger>
             <TabsTrigger value="proyectos">Proyectos ({projects.length})</TabsTrigger>
             <TabsTrigger value="productos">Productos ({products.length})</TabsTrigger>
             <TabsTrigger value="tarifas">Tarifas</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="captura" className="mt-8">
+            <QuickStartPanel
+              onVideo={(result) => applyQuickStart(result, "video")}
+              onCarousel={(result) => applyQuickStart(result, "carousel")}
+              onProductsChanged={loadProducts}
+            />
+          </TabsContent>
 
           <TabsContent value="generar" className="mt-8">
             <section className="grid gap-8 lg:grid-cols-[minmax(0,420px)_1fr]">
@@ -733,12 +784,24 @@ const UgcStudio = () => {
                     urls={urls}
                     onReuse={reuseVideo}
                     onKeepIdentity={keepIdentity}
-              onExtend={extendVideo}
+                    onExtend={extendVideo}
+                    onCaption={writeCaption}
                     keepingId={keepingId}
+                    captioningId={captioningId}
                   />
                 </div>
               </div>
             </section>
+          </TabsContent>
+
+          <TabsContent value="carruseles" className="mt-8">
+            <CarouselPanel
+              products={products}
+              productId={productId}
+              onProductId={setProductId}
+              balance={balance}
+              onBalance={setBalance}
+            />
           </TabsContent>
 
           <TabsContent value="proyectos" className="mt-8">
@@ -748,6 +811,7 @@ const UgcStudio = () => {
           <TabsContent value="productos" className="mt-8">
             <ProductsPanel products={products} onChanged={loadProducts} />
           </TabsContent>
+
 
           <TabsContent value="tarifas" className="mt-8">
             <TariffsPanel
@@ -761,6 +825,15 @@ const UgcStudio = () => {
           </TabsContent>
         </Tabs>
       </main>
+
+      <Dialog open={activeCaption !== null} onOpenChange={(open) => !open && setActiveCaption(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Listo para publicar</DialogTitle>
+          </DialogHeader>
+          {activeCaption && <CaptionCard caption={activeCaption} title="Copia y pega en TikTok" />}
+        </DialogContent>
+      </Dialog>
 
       <Footer />
     </>

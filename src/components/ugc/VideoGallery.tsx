@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { AlertCircle, Clock, Coins, Copy, Download, Loader2, Play, UserCheck } from "lucide-react";
+import { AlertCircle, Clock, Coins, Copy, Download, FileText, Loader2, Play, UserCheck } from "lucide-react";
 
 export type VideoRow = {
   id: string;
@@ -24,13 +24,24 @@ type Props = {
   onReuse?: (video: VideoRow) => void;
   onKeepIdentity?: (video: VideoRow) => void;
   onExtend?: (video: VideoRow) => void;
+  onCaption?: (video: VideoRow) => void;
   keepingId?: string | null;
+  captioningId?: string | null;
 };
 
 const statusLabel = (status: string) =>
   status === "completed" ? "Listo" : status === "failed" ? "Error" : "Generando";
 
-const VideoGallery = ({ videos, urls, onReuse, onKeepIdentity, onExtend, keepingId }: Props) => {
+const VideoGallery = ({
+  videos,
+  urls,
+  onReuse,
+  onKeepIdentity,
+  onExtend,
+  onCaption,
+  keepingId,
+  captioningId,
+}: Props) => {
   if (videos.length === 0) {
     return (
       <div className="rounded-3xl border border-dashed border-white/10 bg-card/40 p-10 text-center">
@@ -107,7 +118,7 @@ const VideoGallery = ({ videos, urls, onReuse, onKeepIdentity, onExtend, keeping
                 )}
               </div>
 
-              {(onReuse || onKeepIdentity || onExtend) && (
+              {(onReuse || onKeepIdentity || onExtend || onCaption) && (
                 <div className="flex flex-wrap gap-2 border-t border-white/10 pt-3">
                   {onReuse && (
                     <Button
@@ -117,6 +128,22 @@ const VideoGallery = ({ videos, urls, onReuse, onKeepIdentity, onExtend, keeping
                       onClick={() => onReuse(v)}
                     >
                       <Copy className="mr-1.5 h-3.5 w-3.5" /> Reusar guion
+                    </Button>
+                  )}
+                  {onCaption && v.status === "completed" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 rounded-full px-3 text-[11px]"
+                      disabled={captioningId === v.id}
+                      onClick={() => onCaption(v)}
+                    >
+                      {captioningId === v.id ? (
+                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <FileText className="mr-1.5 h-3.5 w-3.5" />
+                      )}
+                      Ficha para publicar
                     </Button>
                   )}
                   {onExtend && v.status === "completed" && v.video_path && Number(v.duration_seconds) < 50 && (
