@@ -502,8 +502,8 @@ const UgcStudio = () => {
 
           <TabsContent value="captura" className="mt-8">
             <QuickStartPanel
-              onVideo={(result) => useQuickStart(result, "video")}
-              onCarousel={(result) => useQuickStart(result, "carousel")}
+              onVideo={(result) => applyQuickStart(result, "video")}
+              onCarousel={(result) => applyQuickStart(result, "carousel")}
               onProductsChanged={loadProducts}
             />
           </TabsContent>
