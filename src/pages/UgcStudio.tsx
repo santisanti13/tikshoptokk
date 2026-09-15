@@ -26,6 +26,34 @@ import { UGC_PRESETS, getPreset } from "@/lib/ugcPresets";
 const RESOLUTIONS = ["360p", "720p", "1080p"] as const;
 const DURATIONS = [4, 6, 8, 10] as const;
 
+// Título y descripción de cada sección del estudio.
+const SECTION_META: Record<string, { title: string; subtitle: string }> = {
+  captura: {
+    title: "Sube tu captura",
+    subtitle: "Arrastra la ficha del producto de TikTok Shop y te devolvemos producto, guion y texto para publicar.",
+  },
+  generar: {
+    title: "Crear vídeo",
+    subtitle: "Elige estilo, personaje y formato. El asistente escribe el guion y tú solo revisas antes de generar.",
+  },
+  carruseles: {
+    title: "Carruseles",
+    subtitle: "Seis estilos de carrusel con el texto ya puesto sobre cada lámina, listos para descargar.",
+  },
+  proyectos: {
+    title: "Proyectos",
+    subtitle: "Guarda personaje, tono y notas de marca para que todas tus piezas mantengan la misma línea.",
+  },
+  productos: {
+    title: "Productos",
+    subtitle: "Ficha, fotos, vistas 3D y puntos ciegos para que la IA no se invente nada del producto.",
+  },
+  tarifas: {
+    title: "Plan y tokens",
+    subtitle: "Consulta tu consumo, cambia de plan o recarga tokens cuando lo necesites.",
+  },
+};
+
 const IDENTITY_NOTE =
   "Continuidad: aparece exactamente la misma persona de la imagen de referencia — misma cara, mismo pelo, mismo cuerpo y misma ropa — y habla con la misma voz, acento y tono que en la pieza anterior. No cambies de protagonista.";
 
