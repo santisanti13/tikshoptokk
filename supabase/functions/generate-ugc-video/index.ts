@@ -247,6 +247,13 @@ Deno.serve(async (req) => {
       prompt = `${prompt}\n\nEncuadra la escena en formato ${aspectRatio} usando el producto de la imagen, aunque la foto tenga otra proporción.`;
     }
 
+    // Nota de seguridad: el modelo rechaza escenas que parezcan una persona real
+    // identificable. Se declara explícitamente que el personaje es ficticio.
+    prompt =
+      `${prompt}\n\nPersonaje: figurante ficticio y anónimo creado para este anuncio, sin parecido con ninguna persona real, ` +
+      `pública o famosa, y con consentimiento para aparecer. Contenido comercial apto para todos los públicos: sin afirmaciones ` +
+      `médicas, sin menores, sin contenido sensible y sin texto sobreimpreso.`;
+
     const tokens = tokensForVideo(resolution, duration);
 
     // Cobro previo del consumo; si algo falla después se devuelve.
