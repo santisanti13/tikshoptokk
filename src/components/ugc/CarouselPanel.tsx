@@ -176,7 +176,7 @@ const CarouselPanel = ({ products, productId, onProductId, balance, onBalance }:
 
   return (
     <section className="grid gap-8 lg:grid-cols-[minmax(0,420px)_1fr]">
-      <div className="rounded-3xl border border-white/10 bg-card/60 p-6 backdrop-blur-xl">
+      <div className="studio-card p-5 lg:p-6">
         <h2 className="font-display text-lg font-bold tracking-tight">Carrusel de imágenes</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           Cuesta {CAROUSEL_TOKENS} tokens ({formatEur(eurFromTokens(CAROUSEL_TOKENS))}) y sale con los textos puestos y la
@@ -243,7 +243,7 @@ const CarouselPanel = ({ products, productId, onProductId, balance, onBalance }:
           </div>
         ) : (
           rows.map((row) => (
-            <div key={row.id} className="rounded-3xl border border-white/10 bg-card/60 p-5 backdrop-blur-xl">
+            <div key={row.id} className="studio-card p-5 backdrop-blur-xl">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <p className="font-display text-base font-bold tracking-tight">

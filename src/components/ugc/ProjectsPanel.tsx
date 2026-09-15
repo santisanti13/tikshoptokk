@@ -95,7 +95,7 @@ const ProjectsPanel = ({ projects, onChanged }: Props) => {
 
   return (
     <div className="grid gap-8 lg:grid-cols-2">
-      <div className="rounded-3xl border border-white/10 bg-card/60 p-6 backdrop-blur-xl">
+      <div className="studio-card p-5 lg:p-6">
         <h2 className="font-display text-lg font-bold tracking-tight">Nuevo proyecto</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Un proyecto fija el personaje y el tono para que todos tus vídeos parezcan de la misma cuenta.
