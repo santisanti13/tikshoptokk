@@ -576,7 +576,8 @@ const UgcStudio = () => {
                   <div className="space-y-2">
                     <Label>Referencia desde TikTok (opcional)</Label>
                     <TikTokLinkInput
-                      hint="Vídeo de TikTok o producto de TikTok Shop: usamos su portada como imagen de partida y su texto como referencia del guion."
+                      placeholder="Enlace de vídeo o de producto de TikTok Shop"
+                      hint="Vale un vídeo de TikTok o la página de un producto de TikTok Shop: usamos su portada como imagen de partida y su texto como referencia del guion."
                       onLoaded={(ref: TikTokReference) => {
                         const summary = [ref.title, ref.author ? `Cuenta: ${ref.author}.` : "", ref.price ? `Precio: ${ref.price}.` : ""]
                           .filter(Boolean)
@@ -590,10 +591,12 @@ const UgcStudio = () => {
                           });
                         }
                         if (!idea.trim() && ref.title) setIdea(ref.title.slice(0, 120));
-                        toast({
-                          title: ref.kind === "product" ? "Producto de TikTok Shop cargado" : "Vídeo de TikTok cargado",
-                          description: "Lo usamos como referencia del guion y como imagen de partida.",
-                        });
+                        if (!ref.blocked) {
+                          toast({
+                            title: ref.kind === "product" ? "Producto de TikTok Shop cargado" : "Vídeo de TikTok cargado",
+                            description: "Lo usamos como referencia del guion y como imagen de partida.",
+                          });
+                        }
                       }}
                     />
                     {reference && (
