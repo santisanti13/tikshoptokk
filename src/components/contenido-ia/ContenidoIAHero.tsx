@@ -14,7 +14,7 @@ import {
   ShoppingBag,
   TrendingUp,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const workflow = [
   { icon: Target, step: "01", title: "Estrategia", detail: "Nicho, producto y ángulos" },
