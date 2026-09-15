@@ -55,22 +55,28 @@ const ContenidoIAHero = () => {
           <div className="neon-blob-pink -right-10 -top-10 opacity-70" />
           <div className="neon-blob-cyan -bottom-20 -left-10 opacity-40" />
           <div className="relative">
-            <div className="mb-5 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.25em] text-primary">
-              <Sparkles className="h-4 w-4" /> Cuentas y UGC con IA
+            <div className="mb-5 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.25em] text-secondary">
+              <Sparkles className="h-4 w-4" /> Estudio de contenido · software
             </div>
             <h1 className="font-display text-5xl font-bold leading-[1.05] tracking-tight md:text-7xl">
-              Contenido <span className="gradient-text">infinito</span> para tus cuentas de TikTok Shop
+              Tu propio estudio de <span className="gradient-text">UGC con IA</span>
             </h1>
             <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-              Creamos personajes y UGC con IA, lanzamos cuentas desde cero y las escalamos con
-              publicación diaria. Sin grabar, sin depender de creadores y con métricas de venta.
+              Elige un estilo, sube tu producto o tu personaje y genera vídeos listos para publicar
+              en minutos. Sin grabar, sin equipo y pagando solo por lo que generas. Y si prefieres
+              que lo hagamos nosotros, la agencia se encarga de todo.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button size="lg" className="rounded-full px-8 glow-pink" onClick={goToContact}>
-                Quiero mi plan <ArrowRight className="ml-1 h-4 w-4" />
+              <Button asChild size="lg" className="rounded-full px-8 glow-cyan">
+                <a href="#planes">
+                  Empezar ahora <ArrowRight className="ml-1 h-4 w-4" />
+                </a>
               </Button>
               <Button asChild size="lg" variant="outline" className="rounded-full border-white/20 bg-transparent px-8 hover:bg-white/5">
-                <a href="#planes">Ver precios</a>
+                <Link to="/login?as=studio">Entrar al estudio</Link>
+              </Button>
+              <Button size="lg" variant="ghost" className="rounded-full px-6" onClick={goToContact}>
+                Prefiero que lo hagáis vosotros
               </Button>
             </div>
           </div>
