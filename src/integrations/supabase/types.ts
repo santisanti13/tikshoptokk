@@ -101,6 +101,42 @@ export type Database = {
         }
         Relationships: []
       }
+      market_snapshots: {
+        Row: {
+          captured_on: string
+          country: string
+          created_at: string
+          id: string
+          notes: string | null
+          ranking_type: string
+          rows: Json
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          captured_on?: string
+          country?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          ranking_type: string
+          rows?: Json
+          source?: string
+          updated_at?: string
+        }
+        Update: {
+          captured_on?: string
+          country?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          ranking_type?: string
+          rows?: Json
+          source?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payment_events: {
         Row: {
           event_key: string
@@ -441,11 +477,53 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      admin_find_users: {
+        Args: { _search: string }
+        Returns: {
+          balance_tokens: number
+          email: string
+          plan: string
+          renews_at: string
+          user_id: string
+        }[]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      ugc_admin_adjust_tokens: {
+        Args: { _delta: number; _reason: string; _user_id: string }
+        Returns: number
+      }
       ugc_charge_tokens: {
         Args: {
           _reason: string
@@ -482,7 +560,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -609,6 +687,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const

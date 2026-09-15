@@ -15,7 +15,10 @@ import ResetPassword from "./pages/ResetPassword";
 import MiCuenta from "./pages/MiCuenta";
 import OAuthConsent from "./pages/OAuthConsent";
 import UgcStudio from "./pages/UgcStudio";
+import AdminTokens from "./pages/AdminTokens";
+import AdminPulso from "./pages/AdminPulso";
 import RequireAuth from "./components/RequireAuth";
+import RequireAdmin from "./components/RequireAdmin";
 
 
 const queryClient = new QueryClient();
@@ -46,6 +49,26 @@ const App = () => (
             element={
               <RequireAuth>
                 <MiCuenta />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/admin/tokens"
+            element={
+              <RequireAuth>
+                <RequireAdmin>
+                  <AdminTokens />
+                </RequireAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/admin/pulso"
+            element={
+              <RequireAuth>
+                <RequireAdmin>
+                  <AdminPulso />
+                </RequireAdmin>
               </RequireAuth>
             }
           />
