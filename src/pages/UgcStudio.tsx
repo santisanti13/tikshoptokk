@@ -492,9 +492,11 @@ const UgcStudio = () => {
           </div>
         </header>
 
-        <Tabs defaultValue="generar" className="mt-10">
+        <Tabs value={tab} onValueChange={setTab} className="mt-10">
           <TabsList className="flex w-full flex-wrap justify-start gap-1 bg-card/60">
-            <TabsTrigger value="generar">Generar</TabsTrigger>
+            <TabsTrigger value="captura">Sube tu captura</TabsTrigger>
+            <TabsTrigger value="generar">Vídeo</TabsTrigger>
+            <TabsTrigger value="carruseles">Carruseles</TabsTrigger>
             <TabsTrigger value="proyectos">Proyectos ({projects.length})</TabsTrigger>
             <TabsTrigger value="productos">Productos ({products.length})</TabsTrigger>
             <TabsTrigger value="tarifas">Tarifas</TabsTrigger>
