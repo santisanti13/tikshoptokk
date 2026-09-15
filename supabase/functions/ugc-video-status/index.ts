@@ -65,7 +65,18 @@ Deno.serve(async (req) => {
     const job = await jobRes.json();
 
     if (job.status === "failed") {
-      const message = job?.error?.message ?? "La generación del vídeo ha fallado.";
+      const raw = String(job?.error?.message ?? "");
+      const lower = raw.toLowerCase();
+      // Los rechazos por políticas del modelo llegan en inglés y sin contexto:
+      // se traducen a una indicación concreta para reescribir el guion.
+      const message =
+        lower.includes("reputational") ||
+        lower.includes("responsible ai") ||
+        lower.includes("photorealistic")
+          ? "El modelo ha rechazado el guion porque la persona descrita podría parecer alguien real. Describe al personaje sin edad ni datos concretos (por ejemplo «una creadora en su salón») o parte de una imagen de personaje tuya."
+          : lower.includes("safety") || lower.includes("policy") || lower.includes("blocked")
+            ? "El modelo ha bloqueado el guion por sus normas de contenido. Suaviza las promesas del producto y evita temas sensibles, salud o menores."
+            : raw || "La generación del vídeo ha fallado.";
 
       // Un vídeo fallido no se cobra: se devuelven los tokens una sola vez.
       let refunded = row.tokens_refunded;
