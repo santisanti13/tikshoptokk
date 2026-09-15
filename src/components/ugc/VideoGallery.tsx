@@ -60,7 +60,7 @@ const VideoGallery = ({
         return (
           <article
             key={v.id}
-            className="group overflow-hidden rounded-3xl border border-white/10 bg-card/60 backdrop-blur-xl transition-colors hover:border-primary/40"
+            className="group overflow-hidden studio-card backdrop-blur-xl transition-colors hover:border-primary/40"
           >
             <div className={`relative w-full bg-black ${vertical ? "aspect-[9/16]" : "aspect-video"}`}>
               {v.status === "completed" && urls[v.id] ? (

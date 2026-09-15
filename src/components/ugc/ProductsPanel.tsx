@@ -157,7 +157,7 @@ const ProductsPanel = ({ products, onChanged }: Props) => {
 
   return (
     <div className="grid gap-8 lg:grid-cols-2">
-      <div className="rounded-3xl border border-white/10 bg-card/60 p-6 backdrop-blur-xl">
+      <div className="studio-card p-5 lg:p-6">
         <h2 className="font-display text-lg font-bold tracking-tight">Añadir producto</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Guarda la foto y la ficha una vez; luego se reutiliza en cualquier vídeo y formato.

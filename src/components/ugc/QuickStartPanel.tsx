@@ -67,7 +67,7 @@ const QuickStartPanel = ({ onVideo, onCarousel, onProductsChanged }: Props) => {
 
   return (
     <section className="grid gap-8 lg:grid-cols-[minmax(0,420px)_1fr]">
-      <div className="rounded-3xl border border-white/10 bg-card/60 p-6 backdrop-blur-xl">
+      <div className="studio-card p-5 lg:p-6">
         <h2 className="font-display text-lg font-bold tracking-tight">Sube tu captura</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           Una captura de la ficha del producto en TikTok Shop es suficiente. Leemos el nombre, el precio y los argumentos
@@ -100,7 +100,7 @@ const QuickStartPanel = ({ onVideo, onCarousel, onProductsChanged }: Props) => {
             Aquí aparecerá el producto, el guion y el texto para publicar en cuanto subas la captura.
           </div>
         ) : (
-          <div className="space-y-6 rounded-3xl border border-white/10 bg-card/60 p-6 backdrop-blur-xl">
+          <div className="space-y-6 studio-card p-5 lg:p-6">
             <div>
               <p className="text-xs uppercase tracking-wide text-muted-foreground">Producto detectado</p>
               <h3 className="mt-1 font-display text-xl font-bold tracking-tight">{result.listing.name}</h3>

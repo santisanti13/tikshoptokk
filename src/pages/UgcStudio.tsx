@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import StudioShell from "@/components/ugc/StudioShell";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,6 +25,34 @@ import { UGC_PRESETS, getPreset } from "@/lib/ugcPresets";
 
 const RESOLUTIONS = ["360p", "720p", "1080p"] as const;
 const DURATIONS = [4, 6, 8, 10] as const;
+
+// Título y descripción de cada sección del estudio.
+const SECTION_META: Record<string, { title: string; subtitle: string }> = {
+  captura: {
+    title: "Sube tu captura",
+    subtitle: "Arrastra la ficha del producto de TikTok Shop y te devolvemos producto, guion y texto para publicar.",
+  },
+  generar: {
+    title: "Crear vídeo",
+    subtitle: "Elige estilo, personaje y formato. El asistente escribe el guion y tú solo revisas antes de generar.",
+  },
+  carruseles: {
+    title: "Carruseles",
+    subtitle: "Seis estilos de carrusel con el texto ya puesto sobre cada lámina, listos para descargar.",
+  },
+  proyectos: {
+    title: "Proyectos",
+    subtitle: "Guarda personaje, tono y notas de marca para que todas tus piezas mantengan la misma línea.",
+  },
+  productos: {
+    title: "Productos",
+    subtitle: "Ficha, fotos, vistas 3D y puntos ciegos para que la IA no se invente nada del producto.",
+  },
+  tarifas: {
+    title: "Plan y tokens",
+    subtitle: "Consulta tu consumo, cambia de plan o recarga tokens cuando lo necesites.",
+  },
+};
 
 const IDENTITY_NOTE =
   "Continuidad: aparece exactamente la misma persona de la imagen de referencia — misma cara, mismo pelo, mismo cuerpo y misma ropa — y habla con la misma voz, acento y tono que en la pieza anterior. No cambies de protagonista.";
@@ -455,6 +482,8 @@ const UgcStudio = () => {
 
   const lowBalance = balance !== null && balance < cost;
 
+  const meta = SECTION_META[tab] ?? SECTION_META.captura;
+
   return (
     <>
       <Helmet>
@@ -462,57 +491,31 @@ const UgcStudio = () => {
         <meta name="description" content="Herramienta interna de TikShopTok para generar vídeos UGC con IA." />
         <meta name="robots" content="noindex" />
       </Helmet>
-      <Navbar />
 
-      <main className="mx-auto max-w-7xl px-4 pb-24 pt-32 md:px-8">
-        <header className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <div className="max-w-2xl">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-card/60 px-3 py-1 text-xs text-muted-foreground">
-              <Sparkles className="h-3.5 w-3.5 text-primary" /> Estudio UGC
-            </span>
-            <h1 className="mt-4 font-display text-3xl font-bold tracking-tight md:text-4xl">
-              Vídeos UGC con IA, listos para TikTok Shop
-            </h1>
-            <p className="mt-3 text-muted-foreground">
-              Crea proyectos con un personaje fijo, guarda tus productos y genera piezas verticales u horizontales con el
-              mismo estilo. El asistente escribe el guion por ti.
-            </p>
-          </div>
+      <StudioShell
+        tab={tab}
+        onTab={setTab}
+        balance={balance}
+        plan={plan}
+        counts={{ proyectos: projects.length, productos: products.length }}
+        title={meta.title}
+        subtitle={meta.subtitle}
+      >
+        {tab === "captura" && (
+          <QuickStartPanel
+            onVideo={(result) => applyQuickStart(result, "video")}
+            onCarousel={(result) => applyQuickStart(result, "carousel")}
+            onProductsChanged={loadProducts}
+          />
+        )}
 
-          <div className="rounded-3xl border border-white/10 bg-card/60 p-5 backdrop-blur-xl md:min-w-[220px]">
-            <p className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-              <Coins className="h-3.5 w-3.5 text-primary" /> Saldo
-            </p>
-            <p className="mt-2 font-display text-3xl font-bold">{balance ?? "—"}</p>
-            <p className="text-xs text-muted-foreground">
-              tokens · equivale a {formatEur(eurFromTokens(balance ?? 0))} · plan {plan}
-            </p>
-          </div>
-        </header>
-
-        <Tabs value={tab} onValueChange={setTab} className="mt-10">
-          <TabsList className="flex w-full flex-wrap justify-start gap-1 bg-card/60">
-            <TabsTrigger value="captura">Sube tu captura</TabsTrigger>
-            <TabsTrigger value="generar">Vídeo</TabsTrigger>
-            <TabsTrigger value="carruseles">Carruseles</TabsTrigger>
-            <TabsTrigger value="proyectos">Proyectos ({projects.length})</TabsTrigger>
-            <TabsTrigger value="productos">Productos ({products.length})</TabsTrigger>
-            <TabsTrigger value="tarifas">Tarifas</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="captura" className="mt-8">
-            <QuickStartPanel
-              onVideo={(result) => applyQuickStart(result, "video")}
-              onCarousel={(result) => applyQuickStart(result, "carousel")}
-              onProductsChanged={loadProducts}
-            />
-          </TabsContent>
-
-          <TabsContent value="generar" className="mt-8">
-            <section className="grid gap-8 lg:grid-cols-[minmax(0,420px)_1fr]">
-              <div className="rounded-3xl border border-white/10 bg-card/60 p-6 backdrop-blur-xl">
+        {tab === "generar" && (
+          <section className="grid gap-6 xl:grid-cols-[minmax(0,440px)_1fr] xl:gap-8">
+            <div className="studio-card overflow-hidden">
+              <div className="space-y-7 p-5 lg:p-6">
                 {(projects.length > 0 || products.length > 0) && (
-                  <div className="space-y-4">
+                  <div className="space-y-5">
+                    <p className="studio-group-title">Contexto</p>
                     {projects.length > 0 && (
                       <div className="space-y-2">
                         <Label>Proyecto</Label>
@@ -541,214 +544,239 @@ const UgcStudio = () => {
                             </Chip>
                           ))}
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                          La foto guardada se reencuadra al formato que elijas.
-                        </p>
+                        <p className="studio-hint">La foto guardada se reencuadra al formato que elijas.</p>
                       </div>
                     )}
                   </div>
                 )}
 
-                <div className="mt-6 space-y-2">
-                  <Label>Estilo del vídeo</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {UGC_PRESETS.map((p) => (
-                      <Chip
-                        key={p.id}
-                        active={presetId === p.id}
-                        onClick={() => {
-                          setPresetId(p.id);
-                          if (p.aspectRatio) setAspectRatio(p.aspectRatio);
-                        }}
-                      >
-                        {p.label}
-                      </Chip>
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted-foreground">{getPreset(presetId)?.hint}</p>
-                </div>
+                <div className="studio-divider" />
 
-                <div className="mt-6 space-y-2">
-                  <Label>Referencia desde TikTok (opcional)</Label>
-                  <TikTokLinkInput
-                    hint="Vídeo de TikTok o producto de TikTok Shop: usamos su portada como imagen de partida y su texto como referencia del guion."
-                    onLoaded={(ref: TikTokReference) => {
-                      const summary = [ref.title, ref.author ? `Cuenta: ${ref.author}.` : "", ref.price ? `Precio: ${ref.price}.` : ""]
-                        .filter(Boolean)
-                        .join(" ");
-                      setReference({ url: ref.url, summary: summary || ref.url, kind: ref.kind });
-                      if (ref.image) {
-                        setImage({
-                          data: ref.image.data,
-                          mimeType: ref.image.mimeType,
-                          preview: `data:${ref.image.mimeType};base64,${ref.image.data}`,
-                        });
-                      }
-                      if (!idea.trim() && ref.title) setIdea(ref.title.slice(0, 120));
-                      toast({
-                        title: ref.kind === "product" ? "Producto de TikTok Shop cargado" : "Vídeo de TikTok cargado",
-                        description: "Lo usamos como referencia del guion y como imagen de partida.",
-                      });
-                    }}
-                  />
-                  {reference && (
-                    <div className="flex items-start justify-between gap-2 rounded-2xl border border-white/10 bg-background/40 px-3 py-2">
-                      <p className="text-xs text-muted-foreground line-clamp-2">{reference.summary}</p>
-                      <Button variant="ghost" size="sm" className="h-7 shrink-0 px-2 text-[11px]" onClick={() => setReference(null)}>
-                        <X className="mr-1 h-3 w-3" /> Quitar
-                      </Button>
-                    </div>
-                  )}
-                </div>
-
-                <div className="mt-6 space-y-2">
-                  <Label htmlFor="idea">Tu idea en una frase</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="idea"
-                      value={idea}
-                      onChange={(e) => setIdea(e.target.value)}
-                      placeholder="Chica probando el sérum antes de salir"
-                    />
-                    <Button variant="outline" className="shrink-0 rounded-full" onClick={() => writeWithAssistant(false)} disabled={assisting}>
-                      {assisting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
-                      <span className="ml-2 hidden sm:inline">Escribir guion</span>
-                    </Button>
-                  </div>
-                </div>
-
-                {extendFrom && (
-                  <div className="mt-5 rounded-2xl border border-primary/30 bg-primary/10 p-4 text-sm">
-                    <p className="font-medium">Continuación de un vídeo</p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Seguimos el vídeo de {extendFrom.duration_seconds}s ({extendFrom.resolution} ·{" "}
-                      {extendFrom.aspect_ratio ?? "9:16"}) y le añadimos los segundos que elijas, hasta {MAX_TOTAL_SECONDS}s
-                      en total. Solo pagas los nuevos.
-                    </p>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="mt-2 h-8 rounded-full px-3 text-xs"
-                      onClick={() => setExtendFrom(null)}
-                    >
-                      <X className="mr-1 h-3.5 w-3.5" /> Cancelar continuación
-                    </Button>
-                  </div>
-                )}
-
-                <div className="mt-5 space-y-2">
-                  <Label htmlFor="prompt">{extendFrom ? "Qué pasa a continuación" : "Guion del vídeo"}</Label>
-                  <Textarea
-                    id="prompt"
-                    rows={7}
-                    placeholder={
-                      extendFrom
-                        ? "Sigue hablando y enseña el interior del maletín mientras camina hacia la ventana…"
-                        : "El asistente lo rellena por ti, o escríbelo tú: encuadre, luz, tono, qué dice…"
-                    }
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                  />
-                  {promptDrifted && (
-                    <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-amber-400/30 bg-amber-400/10 px-3 py-2">
-                      <p className="text-xs text-muted-foreground">
-                        Has cambiado el estilo, el proyecto o el producto: el guion todavía es el anterior.
-                      </p>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-8 rounded-full px-3 text-[11px]"
-                        onClick={() => writeWithAssistant(true)}
-                        disabled={assisting}
-                      >
-                        {assisting ? (
-                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <Wand2 className="mr-1.5 h-3.5 w-3.5" />
-                        )}
-                        Reescribir guion
-                      </Button>
-                    </div>
-                  )}
-                </div>
-
-
-                <div className="mt-6 grid gap-5 sm:grid-cols-3">
+                <div className="space-y-5">
+                  <p className="studio-group-title">Estilo y referencias</p>
                   <div className="space-y-2">
-                    <Label>Formato</Label>
-                    <div className="flex gap-2">
-                      {(["9:16", "16:9"] as const).map((r) => (
-                        <Chip
-                          key={r}
-                          active={aspectRatio === r}
-                          disabled={Boolean(extendFrom)}
-                          onClick={() => setAspectRatio(r)}
-                        >
-                          {r}
-                        </Chip>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>{extendFrom ? "Segundos nuevos" : "Duración"}</Label>
+                    <Label>Estilo del vídeo</Label>
                     <div className="flex flex-wrap gap-2">
-                      {DURATIONS.map((d) => (
+                      {UGC_PRESETS.map((p) => (
                         <Chip
-                          key={d}
-                          active={duration === d}
-                          disabled={Boolean(extendFrom) && d > remainingSeconds}
-                          onClick={() => setDuration(d)}
+                          key={p.id}
+                          active={presetId === p.id}
+                          onClick={() => {
+                            setPresetId(p.id);
+                            if (p.aspectRatio) setAspectRatio(p.aspectRatio);
+                          }}
                         >
-                          {extendFrom ? `+${d}s` : `${d}s`}
+                          {p.label}
                         </Chip>
                       ))}
                     </div>
-                    {extendFrom && (
-                      <p className="text-xs text-muted-foreground">
-                        Total: {Number(extendFrom.duration_seconds) + duration}s de {MAX_TOTAL_SECONDS}s máximo
-                      </p>
+                    <p className="studio-hint">{getPreset(presetId)?.hint}</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Referencia desde TikTok (opcional)</Label>
+                    <TikTokLinkInput
+                      hint="Vídeo de TikTok o producto de TikTok Shop: usamos su portada como imagen de partida y su texto como referencia del guion."
+                      onLoaded={(ref: TikTokReference) => {
+                        const summary = [ref.title, ref.author ? `Cuenta: ${ref.author}.` : "", ref.price ? `Precio: ${ref.price}.` : ""]
+                          .filter(Boolean)
+                          .join(" ");
+                        setReference({ url: ref.url, summary: summary || ref.url, kind: ref.kind });
+                        if (ref.image) {
+                          setImage({
+                            data: ref.image.data,
+                            mimeType: ref.image.mimeType,
+                            preview: `data:${ref.image.mimeType};base64,${ref.image.data}`,
+                          });
+                        }
+                        if (!idea.trim() && ref.title) setIdea(ref.title.slice(0, 120));
+                        toast({
+                          title: ref.kind === "product" ? "Producto de TikTok Shop cargado" : "Vídeo de TikTok cargado",
+                          description: "Lo usamos como referencia del guion y como imagen de partida.",
+                        });
+                      }}
+                    />
+                    {reference && (
+                      <div className="flex items-start justify-between gap-2 rounded-xl border border-white/[0.07] bg-background/40 px-3 py-2">
+                        <p className="text-xs text-muted-foreground line-clamp-2">{reference.summary}</p>
+                        <Button variant="ghost" size="sm" className="h-7 shrink-0 px-2 text-[11px]" onClick={() => setReference(null)}>
+                          <X className="mr-1 h-3 w-3" /> Quitar
+                        </Button>
+                      </div>
                     )}
                   </div>
+                </div>
+
+                <div className="studio-divider" />
+
+                <div className="space-y-5">
+                  <p className="studio-group-title">Guion</p>
                   <div className="space-y-2">
-                    <Label>Calidad</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {RESOLUTIONS.map((r) => (
-                        <Chip
-                          key={r}
-                          active={effectiveResolution === r}
-                          disabled={Boolean(extendFrom)}
-                          onClick={() => setResolution(r)}
+                    <Label htmlFor="idea">Tu idea en una frase</Label>
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <Input
+                        id="idea"
+                        value={idea}
+                        onChange={(e) => setIdea(e.target.value)}
+                        placeholder="Chica probando el sérum antes de salir"
+                      />
+                      <Button
+                        variant="outline"
+                        className="shrink-0 rounded-full"
+                        onClick={() => writeWithAssistant(false)}
+                        disabled={assisting}
+                      >
+                        {assisting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
+                        <span className="ml-2">Escribir guion</span>
+                      </Button>
+                    </div>
+                  </div>
+
+                  {extendFrom && (
+                    <div className="rounded-xl border border-primary/30 bg-primary/10 p-4 text-sm">
+                      <p className="font-medium">Continuación de un vídeo</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Seguimos el vídeo de {extendFrom.duration_seconds}s ({extendFrom.resolution} ·{" "}
+                        {extendFrom.aspect_ratio ?? "9:16"}) y le añadimos los segundos que elijas, hasta{" "}
+                        {MAX_TOTAL_SECONDS}s en total. Solo pagas los nuevos.
+                      </p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="mt-2 h-8 rounded-full px-3 text-xs"
+                        onClick={() => setExtendFrom(null)}
+                      >
+                        <X className="mr-1 h-3.5 w-3.5" /> Cancelar continuación
+                      </Button>
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <Label htmlFor="prompt">{extendFrom ? "Qué pasa a continuación" : "Guion del vídeo"}</Label>
+                    <Textarea
+                      id="prompt"
+                      rows={7}
+                      placeholder={
+                        extendFrom
+                          ? "Sigue hablando y enseña el interior del maletín mientras camina hacia la ventana…"
+                          : "El asistente lo rellena por ti, o escríbelo tú: encuadre, luz, tono, qué dice…"
+                      }
+                      value={prompt}
+                      onChange={(e) => setPrompt(e.target.value)}
+                    />
+                    {promptDrifted && (
+                      <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-400/30 bg-amber-400/10 px-3 py-2">
+                        <p className="text-xs text-muted-foreground">
+                          Has cambiado el estilo, el proyecto o el producto: el guion todavía es el anterior.
+                        </p>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 rounded-full px-3 text-[11px]"
+                          onClick={() => writeWithAssistant(true)}
+                          disabled={assisting}
                         >
-                          {r}
-                        </Chip>
-                      ))}
+                          {assisting ? (
+                            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Wand2 className="mr-1.5 h-3.5 w-3.5" />
+                          )}
+                          Reescribir guion
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="studio-divider" />
+
+                <div className="space-y-5">
+                  <p className="studio-group-title">Formato de salida</p>
+                  <div className="grid gap-5 sm:grid-cols-3">
+                    <div className="space-y-2">
+                      <Label>Formato</Label>
+                      <div className="flex gap-2">
+                        {(["9:16", "16:9"] as const).map((r) => (
+                          <Chip
+                            key={r}
+                            active={aspectRatio === r}
+                            disabled={Boolean(extendFrom)}
+                            onClick={() => setAspectRatio(r)}
+                          >
+                            {r}
+                          </Chip>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{extendFrom ? "Segundos nuevos" : "Duración"}</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {DURATIONS.map((d) => (
+                          <Chip
+                            key={d}
+                            active={duration === d}
+                            disabled={Boolean(extendFrom) && d > remainingSeconds}
+                            onClick={() => setDuration(d)}
+                          >
+                            {extendFrom ? `+${d}s` : `${d}s`}
+                          </Chip>
+                        ))}
+                      </div>
+                      {extendFrom && (
+                        <p className="studio-hint">
+                          Total: {Number(extendFrom.duration_seconds) + duration}s de {MAX_TOTAL_SECONDS}s máximo
+                        </p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Calidad</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {RESOLUTIONS.map((r) => (
+                          <Chip
+                            key={r}
+                            active={effectiveResolution === r}
+                            disabled={Boolean(extendFrom)}
+                            onClick={() => setResolution(r)}
+                          >
+                            {r}
+                          </Chip>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
 
+                <div className={extendFrom ? "hidden" : "space-y-5"}>
+                  <div className="studio-divider" />
+                  <p className="studio-group-title">Personaje</p>
+                  <div className="space-y-2">
+                    <Label>Imagen de referencia (opcional)</Label>
+                    {image ? (
+                      <div className="flex items-center gap-3">
+                        <img src={image.preview} alt="Imagen de referencia" className="h-20 w-20 rounded-xl object-cover" />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setImage(null);
+                            setCharacterId(null);
+                          }}
+                        >
+                          <X className="mr-1 h-4 w-4" /> Quitar
+                        </Button>
+                      </div>
+                    ) : (
+                      <ImageDropzone
+                        title="Arrastra tu imagen de referencia"
+                        hint="cara, producto o fotograma · o haz clic para elegirla"
+                        onFiles={(files) => pickImage(files[0])}
+                      />
+                    )}
+                    <p className="studio-hint">
+                      El vídeo partirá de esta imagen, junto con el guion y el proyecto o producto que elijas.
+                    </p>
+                  </div>
 
-                <div className={`mt-6 space-y-2 ${extendFrom ? "hidden" : ""}`}>
-                  <Label>Imagen de referencia (opcional)</Label>
-                  {image ? (
-                    <div className="flex items-center gap-3">
-                      <img src={image.preview} alt="Imagen de referencia" className="h-20 w-20 rounded-xl object-cover" />
-                      <Button variant="ghost" size="sm" onClick={() => { setImage(null); setCharacterId(null); }}>
-                        <X className="mr-1 h-4 w-4" /> Quitar
-                      </Button>
-                    </div>
-                  ) : (
-                    <ImageDropzone
-                      title="Arrastra tu imagen de referencia"
-                      hint="cara, producto o fotograma · o haz clic para elegirla"
-                      onFiles={(files) => pickImage(files[0])}
-                    />
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    El vídeo partirá de esta imagen, junto con el guion y el proyecto o producto que elijas.
-                  </p>
-                </div>
-
-                <div className="mt-6">
                   <CharactersStrip
                     characters={characters}
                     onChanged={loadCharacters}
@@ -756,75 +784,74 @@ const UgcStudio = () => {
                     onUse={(file, character) => useCharacter(file, character.name, character.id)}
                   />
                 </div>
+              </div>
 
-
-                <div className="mt-7 flex items-center justify-between rounded-2xl border border-white/10 bg-background/40 px-4 py-3 text-sm">
+              {/* Barra de acción fija al pie de la tarjeta */}
+              <div className="sticky bottom-0 border-t border-white/[0.07] bg-[hsl(240_10%_6%)]/95 p-4 backdrop-blur-xl lg:p-5">
+                <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Coste de este vídeo</span>
-                  <span className="font-medium">
+                  <span className="font-semibold tabular-nums">
                     {cost} tokens · {formatEur(eurFromTokens(cost))}
                   </span>
                 </div>
-
-                <Button onClick={generate} disabled={busy || lowBalance} className="mt-4 w-full rounded-full">
+                <Button onClick={generate} disabled={busy || lowBalance} className="mt-3 h-11 w-full rounded-full text-sm font-semibold">
                   {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                   {busy ? "Enviando…" : "Generar vídeo"}
                 </Button>
-                <p className="mt-3 text-xs text-muted-foreground">
+                <p className="mt-2.5 text-center text-[11px] leading-relaxed text-muted-foreground">
                   {lowBalance
-                    ? "No te quedan tokens suficientes. Recarga desde la pestaña Tarifas."
+                    ? "No te quedan tokens suficientes. Recarga desde Plan y tokens."
                     : "Cada vídeo tarda 1–3 minutos. Si falla, te devolvemos los tokens."}
                 </p>
               </div>
+            </div>
 
-              <div>
-                <h2 className="font-display text-xl font-bold tracking-tight">Tus vídeos</h2>
-                <div className="mt-4">
-                  <VideoGallery
-                    videos={videos}
-                    urls={urls}
-                    onReuse={reuseVideo}
-                    onKeepIdentity={keepIdentity}
-                    onExtend={extendVideo}
-                    onCaption={writeCaption}
-                    keepingId={keepingId}
-                    captioningId={captioningId}
-                  />
-                </div>
+            <div className="min-w-0">
+              <div className="flex items-baseline justify-between">
+                <h2 className="font-display text-lg font-bold tracking-tight">Tus vídeos</h2>
+                <span className="text-xs text-muted-foreground tabular-nums">{videos.length}</span>
               </div>
-            </section>
-          </TabsContent>
+              <div className="mt-4">
+                <VideoGallery
+                  videos={videos}
+                  urls={urls}
+                  onReuse={reuseVideo}
+                  onKeepIdentity={keepIdentity}
+                  onExtend={extendVideo}
+                  onCaption={writeCaption}
+                  keepingId={keepingId}
+                  captioningId={captioningId}
+                />
+              </div>
+            </div>
+          </section>
+        )}
 
-          <TabsContent value="carruseles" className="mt-8">
-            <CarouselPanel
-              products={products}
-              productId={productId}
-              onProductId={setProductId}
-              balance={balance}
-              onBalance={setBalance}
-            />
-          </TabsContent>
+        {tab === "carruseles" && (
+          <CarouselPanel
+            products={products}
+            productId={productId}
+            onProductId={setProductId}
+            balance={balance}
+            onBalance={setBalance}
+          />
+        )}
 
-          <TabsContent value="proyectos" className="mt-8">
-            <ProjectsPanel projects={projects} onChanged={loadProjects} />
-          </TabsContent>
+        {tab === "proyectos" && <ProjectsPanel projects={projects} onChanged={loadProjects} />}
 
-          <TabsContent value="productos" className="mt-8">
-            <ProductsPanel products={products} onChanged={loadProducts} />
-          </TabsContent>
+        {tab === "productos" && <ProductsPanel products={products} onChanged={loadProducts} />}
 
-
-          <TabsContent value="tarifas" className="mt-8">
-            <TariffsPanel
-              onPick={(label) =>
-                toast({
-                  title: `${label} seleccionado`,
-                  description: "El pago con tarjeta se activa en el siguiente paso; mientras tanto te lo asignamos a mano.",
-                })
-              }
-            />
-          </TabsContent>
-        </Tabs>
-      </main>
+        {tab === "tarifas" && (
+          <TariffsPanel
+            onPick={(label) =>
+              toast({
+                title: `${label} seleccionado`,
+                description: "El pago con tarjeta se activa en el siguiente paso; mientras tanto te lo asignamos a mano.",
+              })
+            }
+          />
+        )}
+      </StudioShell>
 
       <Dialog open={activeCaption !== null} onOpenChange={(open) => !open && setActiveCaption(null)}>
         <DialogContent className="max-w-lg">
@@ -834,8 +861,6 @@ const UgcStudio = () => {
           {activeCaption && <CaptionCard caption={activeCaption} title="Copia y pega en TikTok" />}
         </DialogContent>
       </Dialog>
-
-      <Footer />
     </>
   );
 };
