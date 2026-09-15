@@ -88,8 +88,40 @@ export type UgcPlan = {
   perks: string[];
 };
 
+/** Tokens de un vídeo estándar (8 s en 720p): la unidad con la que comparamos precios. */
+export const STANDARD_VIDEO_TOKENS = 12;
+
+/** Vídeos estándar que da un cupo de tokens. */
+export function videosFromTokens(tokens: number): number {
+  return Math.floor(tokens / STANDARD_VIDEO_TOKENS);
+}
+
+/** Carruseles que da un cupo de tokens. */
+export function carouselsFromTokens(tokens: number): number {
+  return Math.floor(tokens / 3);
+}
+
+/** Precio por vídeo estándar de un plan, para comparar de frente con la competencia. */
+export function pricePerVideoEur(priceEur: number, tokens: number): number {
+  const videos = videosFromTokens(tokens);
+  return videos > 0 ? priceEur / videos : priceEur;
+}
+
 /** Suscripciones mensuales con cupo de tokens incluido. */
 export const UGC_PLANS: UgcPlan[] = [
+  {
+    id: "arranque",
+    name: "Arranque",
+    priceEur: 24.9,
+    tokens: 150,
+    priceId: "ugc_arranque_monthly",
+    perks: [
+      "12 vídeos o 50 carruseles al mes",
+      "De captura a contenido en un paso",
+      "Ficha lista para publicar (título, descripción y hashtags)",
+      "Si una pieza falla, no se cobra",
+    ],
+  },
   {
     id: "starter",
     name: "Starter",
@@ -98,8 +130,9 @@ export const UGC_PLANS: UgcPlan[] = [
     priceId: "ugc_starter_monthly",
     perks: [
       "~16 vídeos de 8s en 720p al mes",
+      "Carruseles de imágenes incluidos",
       "1 proyecto de marca",
-      "Asistente de prompts incluido",
+      "Asistente de guiones incluido",
     ],
   },
   {
