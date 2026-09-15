@@ -26,6 +26,26 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://tikshoptok.com/agencia-tiktok-shop/valencia</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://tikshoptok.com/agencia-tiktok-shop/madrid</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://tikshoptok.com/agencia-tiktok-shop/barcelona</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://tikshoptok.com/agencia-tiktok-shop/sevilla</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://tikshoptok.com/blog/pulso-tiktok-shop-espana-12-septiembre-2026</loc>
     <lastmod>2026-09-12</lastmod>
     <changefreq>weekly</changefreq>
