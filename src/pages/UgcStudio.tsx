@@ -17,6 +17,10 @@ import ProjectsPanel, { type UgcProject } from "@/components/ugc/ProjectsPanel";
 import ProductsPanel, { type UgcProduct } from "@/components/ugc/ProductsPanel";
 import VideoGallery, { type VideoRow } from "@/components/ugc/VideoGallery";
 import TariffsPanel from "@/components/ugc/TariffsPanel";
+import QuickStartPanel, { type QuickStartResult } from "@/components/ugc/QuickStartPanel";
+import CarouselPanel from "@/components/ugc/CarouselPanel";
+import CaptionCard, { type Caption } from "@/components/ugc/CaptionCard";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { eurFromTokens, formatEur, tokensForVideo } from "@/lib/ugcPricing";
 import { UGC_PRESETS, getPreset } from "@/lib/ugcPresets";
 
