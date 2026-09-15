@@ -455,6 +455,13 @@ export type Database = {
         }
         Returns: number
       }
+      ugc_ensure_account: {
+        Args: never
+        Returns: {
+          balance_tokens: number
+          plan: string
+        }[]
+      }
       ugc_grant_tokens: {
         Args: {
           _reason: string
