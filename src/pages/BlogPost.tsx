@@ -34,6 +34,37 @@ const BlogPost = () => {
   const seoTitle = post?.title ? `${post.title} — Blog TikShopTok` : "Cargando artículo — Blog TikShopTok";
   const seoDescription = post?.excerpt || "Artículo del blog de TikShopTok sobre TikTok Shop, UGC y productos virales.";
   const seoImage = post?.mainImage ? urlFor(post.mainImage).width(1200).height(630).url() : undefined;
+  const canonicalUrl = `https://tikshoptok.com/blog/${slug ?? ""}`;
+
+  const articleLd = post
+    ? JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        headline: post.title,
+        description: post.excerpt,
+        image: seoImage,
+        datePublished: post.publishedAt,
+        dateModified: post.publishedAt,
+        url: canonicalUrl,
+        mainEntityOfPage: {
+          "@type": "WebPage",
+          "@id": canonicalUrl,
+        },
+        author: {
+          "@type": "Organization",
+          name: "TikShopTok",
+          url: "https://tikshoptok.com",
+        },
+        publisher: {
+          "@type": "Organization",
+          name: "TikShopTok",
+          logo: {
+            "@type": "ImageObject",
+            url: "https://tikshoptok.com/favicon.svg",
+          },
+        },
+      })
+    : null;
 
   return (
     <>
@@ -44,6 +75,11 @@ const BlogPost = () => {
         type="article"
         image={seoImage}
       />
+      {articleLd && (
+        <Helmet>
+          <script type="application/ld+json">{articleLd}</script>
+        </Helmet>
+      )}
       <Navbar />
       <main className="min-h-screen px-4 pt-28 pb-16 md:px-8">
         <div className="mx-auto max-w-4xl">
