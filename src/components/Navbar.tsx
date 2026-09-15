@@ -1,17 +1,22 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 
 
 const links = [
   { label: "Servicios", href: "#servicios" },
+  { label: "Marcas", href: "#marcas" },
+  { label: "Estudio de contenido", href: "/contenido-ia" },
   { label: "Product Research", href: "/product-research" },
-  { label: "Contenido IA", href: "/contenido-ia" },
-  { label: "Productos", href: "/productos" },
   { label: "Blog", href: "/blog" },
-  { label: "Proceso", href: "#proceso" },
   { label: "Resultados", href: "#resultados" },
 ];
 
@@ -48,11 +53,6 @@ const Navbar = () => {
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  const accountLink = signedIn
-    ? { href: "/mi-cuenta", label: "Mi cuenta" }
-    : { href: "/login", label: "Acceder" };
-
-
   return (
     <nav className="fixed left-0 right-0 top-4 z-50 px-4 md:px-8">
       <div className="mx-auto flex max-w-7xl items-center justify-between rounded-full border border-white/10 bg-background/70 px-5 py-2.5 backdrop-blur-xl">
@@ -66,7 +66,32 @@ const Navbar = () => {
           {links.map((l) => (
             <NavItem key={l.href} href={l.href} label={l.label} />
           ))}
-          <NavItem href={accountLink.href} label={accountLink.label} />
+
+          {signedIn ? (
+            <NavItem href="/mi-cuenta" label="Mi cuenta" />
+          ) : (
+            <DropdownMenu>
+              <DropdownMenuTrigger className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground">
+                Entrar
+                <ChevronDown className="h-3.5 w-3.5" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-60">
+                <DropdownMenuItem asChild>
+                  <Link to="/login?as=agency" className="flex flex-col items-start gap-0.5">
+                    <span className="font-medium">Cliente de la agencia</span>
+                    <span className="text-xs text-muted-foreground">Plan, facturas y renovación</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/login?as=studio" className="flex flex-col items-start gap-0.5">
+                    <span className="font-medium">Estudio de contenido</span>
+                    <span className="text-xs text-muted-foreground">Crear vídeos con IA</span>
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+
           <Button asChild size="sm" className="rounded-full px-5">
             <a href={location.pathname === "/" ? "#contacto" : "/#contacto"}>Agenda una consulta</a>
           </Button>
@@ -89,9 +114,20 @@ const Navbar = () => {
               <NavItem href={l.href} label={l.label} onClick={() => setOpen(false)} />
             </div>
           ))}
-          <div className="block py-2.5">
-            <NavItem href={accountLink.href} label={accountLink.label} onClick={() => setOpen(false)} />
-          </div>
+          {signedIn ? (
+            <div className="block py-2.5">
+              <NavItem href="/mi-cuenta" label="Mi cuenta" onClick={() => setOpen(false)} />
+            </div>
+          ) : (
+            <div className="mt-2 border-t border-white/10 pt-2">
+              <div className="block py-2.5">
+                <NavItem href="/login?as=agency" label="Entrar — cliente de la agencia" onClick={() => setOpen(false)} />
+              </div>
+              <div className="block py-2.5">
+                <NavItem href="/login?as=studio" label="Entrar — estudio de contenido" onClick={() => setOpen(false)} />
+              </div>
+            </div>
+          )}
 
           <Button asChild size="sm" className="mt-3 w-full rounded-full">
             <a href={location.pathname === "/" ? "#contacto" : "/#contacto"} onClick={() => setOpen(false)}>
