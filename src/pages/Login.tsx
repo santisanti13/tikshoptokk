@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,14 +36,16 @@ const Login = () => {
   async function signInWithGoogle() {
     setBusy(true);
     setError(null);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}${next}` },
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
     });
-    if (error) {
-      setError(error.message);
+    if (result.error) {
+      setError(result.error.message);
       setBusy(false);
+      return;
     }
+    if (result.redirected) return;
+    window.location.href = next;
   }
 
   async function submit(e: React.FormEvent) {

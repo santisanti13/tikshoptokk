@@ -122,6 +122,14 @@ const UgcStudio = () => {
   }, []);
 
   const loadBalance = useCallback(async () => {
+    // Crea la cuenta de tokens con el saldo de prueba si el usuario aún no la tiene.
+    const { data: ensured } = await supabase.rpc("ugc_ensure_account");
+    const row = Array.isArray(ensured) ? ensured[0] : null;
+    if (row) {
+      setBalance(row.balance_tokens);
+      setPlan(row.plan);
+      return;
+    }
     const { data } = await supabase.from("ugc_token_accounts").select("balance_tokens, plan").maybeSingle();
     if (data) {
       setBalance(data.balance_tokens);
