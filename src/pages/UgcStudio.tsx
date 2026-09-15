@@ -826,6 +826,15 @@ const UgcStudio = () => {
         </Tabs>
       </main>
 
+      <Dialog open={activeCaption !== null} onOpenChange={(open) => !open && setActiveCaption(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Listo para publicar</DialogTitle>
+          </DialogHeader>
+          {activeCaption && <CaptionCard caption={activeCaption} title="Copia y pega en TikTok" />}
+        </DialogContent>
+      </Dialog>
+
       <Footer />
     </>
   );
