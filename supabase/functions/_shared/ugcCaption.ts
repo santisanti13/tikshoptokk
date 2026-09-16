@@ -18,12 +18,14 @@ Reglas: nada de promesas médicas ni datos inventados; usa solo lo que aparezca 
 
 export function normalizeCaption(raw: unknown, disclaimer?: string | null): Caption {
   const value = (raw ?? {}) as Record<string, unknown>;
-  const hashtags = Array.isArray(value.hashtags)
+  const generated = Array.isArray(value.hashtags)
     ? value.hashtags
         .map((h) => String(h).trim().replace(/^#*/, "#").toLowerCase())
-        .filter((h) => h.length > 1)
-        .slice(0, 5)
+        .filter((h) => h.length > 1 && h !== AIGC_DISCLOSURE_HASHTAG)
+        .slice(0, 4)
     : [];
+  // TikTok Shop exige declarar el uso de IA: el hashtag va siempre.
+  const hashtags = [...generated, AIGC_DISCLOSURE_HASHTAG];
   let description = String(value.description ?? "").trim();
   if (disclaimer && !description.includes(disclaimer)) description = `${description}\n\n${disclaimer}`;
   return {
