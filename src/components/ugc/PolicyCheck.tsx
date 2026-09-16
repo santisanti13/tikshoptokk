@@ -1,5 +1,5 @@
 import { AlertTriangle, ShieldAlert, ShieldCheck } from "lucide-react";
-import type { PolicyIssue } from "@/lib/ugcPolicy";
+import { AIGC_DISCLOSURE_NOTE, type PolicyIssue } from "@/lib/ugcPolicy";
 
 type Props = { issues: PolicyIssue[]; ready: boolean };
 
@@ -13,11 +13,14 @@ const PolicyCheck = ({ issues, ready }: Props) => {
 
   if (issues.length === 0) {
     return (
-      <div className="flex items-start gap-2 rounded-xl border border-emerald-400/25 bg-emerald-400/10 px-3 py-2">
-        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
-        <p className="text-xs text-muted-foreground">
-          Revisión de normas superada: no vemos promesas ni contenido que pueda tumbar el vídeo en TikTok Shop.
-        </p>
+      <div className="space-y-2">
+        <div className="flex items-start gap-2 rounded-xl border border-emerald-400/25 bg-emerald-400/10 px-3 py-2">
+          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+          <p className="text-xs text-muted-foreground">
+            Revisión de normas superada: no vemos promesas ni contenido que pueda tumbar el vídeo en TikTok Shop.
+          </p>
+        </div>
+        <p className="studio-hint">{AIGC_DISCLOSURE_NOTE}</p>
       </div>
     );
   }
