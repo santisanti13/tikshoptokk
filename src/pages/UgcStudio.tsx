@@ -430,8 +430,8 @@ const UgcStudio = () => {
     }
     if (policyBlocked) {
       toast({
-        title: "El guion incumple las normas de TikTok Shop",
-        description: "Corrige lo marcado en rojo antes de generar: así no arriesgas la cuenta ni gastas tokens.",
+        title: "Eso no se puede promocionar en TikTok Shop",
+        description: "Cambia lo marcado en rojo: es contenido prohibido de raíz, no un aviso. El resto de avisos no impide generar.",
         variant: "destructive",
       });
       return;
@@ -878,7 +878,7 @@ const UgcStudio = () => {
                 </Button>
                 <p className="mt-2.5 text-center text-[11px] leading-relaxed text-muted-foreground">
                   {policyBlocked
-                    ? "Corrige lo marcado en rojo en el guion: no generamos piezas que puedan sancionar tu cuenta."
+                    ? "Ese producto o esa persona no se pueden promocionar en TikTok Shop. Cambia lo marcado en rojo."
                     : lowBalance
                       ? "No te quedan tokens suficientes. Recarga desde Plan y tokens."
                       : "Cada vídeo tarda 1–3 minutos. Si falla, te devolvemos los tokens."}
