@@ -430,8 +430,8 @@ const UgcStudio = () => {
     }
     if (policyBlocked) {
       toast({
-        title: "El guion incumple las normas de TikTok Shop",
-        description: "Corrige lo marcado en rojo antes de generar: así no arriesgas la cuenta ni gastas tokens.",
+        title: "Eso no se puede promocionar en TikTok Shop",
+        description: "Cambia lo marcado en rojo: es contenido prohibido de raíz, no un aviso. El resto de avisos no impide generar.",
         variant: "destructive",
       });
       return;
