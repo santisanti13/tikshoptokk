@@ -119,17 +119,17 @@
     --card-foreground: 72 18% 91%;
     --popover: 84 9% 8%;
     --popover-foreground: 72 18% 91%;
-    --primary: 82 88% 64%;
-    --primary-foreground: 90 18% 7%;
+    --primary: 284 78% 64%;
+    --primary-foreground: 0 0% 100%;
     --secondary: 75 13% 17%;
     --secondary-foreground: 72 18% 91%;
     --muted: 80 8% 14%;
     --muted-foreground: 75 7% 58%;
-    --accent: 82 88% 64%;
-    --accent-foreground: 90 18% 7%;
+    --accent: 284 78% 64%;
+    --accent-foreground: 0 0% 100%;
     --border: 78 8% 19%;
     --input: 78 8% 19%;
-    --ring: 82 88% 64%;
+    --ring: 284 78% 64%;
     font-family: 'Work Sans', sans-serif;
     letter-spacing: 0;
   }
