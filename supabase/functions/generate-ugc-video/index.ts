@@ -287,6 +287,14 @@ Deno.serve(async (req) => {
       `pública o famosa, y con consentimiento para aparecer. Contenido comercial apto para todos los públicos: sin afirmaciones ` +
       `médicas, sin menores, sin contenido sensible y sin texto sobreimpreso.`;
 
+    // Estilo de un vídeo de referencia: gancho, luz, cámara y cómo se muestra el producto, nunca la persona.
+    if (!sourceVideo && styleReference) {
+      prompt = `${prompt}\n\n${STYLE_REFERENCE_BLOCK}\nVídeo de referencia: ${styleReference}`;
+    }
+
+    // Normas de TikTok Shop, siempre al final para que pesen sobre todo lo anterior.
+    prompt = `${prompt}\n\n${POLICY_BLOCK}`;
+
     const tokens = tokensForVideo(resolution, duration);
 
     // Cobro previo del consumo; si algo falla después se devuelve.
