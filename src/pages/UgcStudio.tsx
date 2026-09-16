@@ -96,15 +96,17 @@ const Chip = ({
   children,
   ...rest
 }: { active: boolean } & React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-  <button
+  <Button
     type="button"
+    variant="outline"
+    size="sm"
     {...rest}
-    className={`rounded-full border px-3 py-1 text-xs transition-colors disabled:opacity-40 ${
-      active ? "border-primary/60 bg-primary/15 text-foreground" : "border-white/10 text-muted-foreground hover:text-foreground"
+    className={`h-8 rounded-md px-3 text-xs transition-colors disabled:opacity-40 ${
+      active ? "border-primary/50 bg-primary/10 text-foreground" : "border-border bg-transparent text-muted-foreground hover:text-foreground"
     }`}
   >
     {children}
-  </button>
+  </Button>
 );
 
 const UgcStudio = () => {
@@ -541,8 +543,8 @@ const UgcStudio = () => {
         )}
 
         {tab === "generar" && (
-          <section className="grid gap-6 xl:grid-cols-[minmax(0,440px)_1fr] xl:gap-8">
-            <div className="studio-card overflow-hidden">
+          <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px] xl:gap-8">
+            <div className="studio-card overflow-hidden xl:order-2">
               <div className="space-y-7 p-5 lg:p-6">
                 {(projects.length > 0 || products.length > 0) && (
                   <div className="space-y-5">
@@ -861,7 +863,7 @@ const UgcStudio = () => {
               </div>
 
               {/* Barra de acción fija al pie de la tarjeta */}
-              <div className="sticky bottom-0 border-t border-white/[0.07] bg-[hsl(240_10%_6%)]/95 p-4 backdrop-blur-xl lg:p-5">
+              <div className="sticky bottom-0 border-t border-border bg-card/95 p-4 backdrop-blur-xl lg:p-5">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Coste de este vídeo</span>
                   <span className="font-semibold tabular-nums">
@@ -871,7 +873,7 @@ const UgcStudio = () => {
                 <Button
                   onClick={generate}
                   disabled={busy || lowBalance || policyBlocked}
-                  className="mt-3 h-11 w-full rounded-full text-sm font-semibold"
+                  className="mt-3 h-11 w-full rounded-md text-sm font-semibold"
                 >
                   {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                   {busy ? "Enviando…" : "Generar vídeo"}
@@ -886,7 +888,7 @@ const UgcStudio = () => {
               </div>
             </div>
 
-            <div className="min-w-0">
+            <div className="min-w-0 xl:order-1">
               <div className="flex items-baseline justify-between">
                 <h2 className="font-display text-lg font-bold tracking-tight">Tus vídeos</h2>
                 <span className="text-xs text-muted-foreground tabular-nums">{videos.length}</span>

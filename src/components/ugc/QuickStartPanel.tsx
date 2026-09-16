@@ -66,9 +66,10 @@ const QuickStartPanel = ({ onVideo, onCarousel, onProductsChanged }: Props) => {
   };
 
   return (
-    <section className="grid gap-8 lg:grid-cols-[minmax(0,420px)_1fr]">
+    <section className="grid min-h-[540px] gap-6 lg:grid-cols-[minmax(0,380px)_1fr]">
       <div className="studio-card p-5 lg:p-6">
-        <h2 className="font-display text-lg font-bold tracking-tight">Sube tu captura</h2>
+        <p className="studio-group-title">Entrada de producto</p>
+        <h2 className="mt-3 font-display text-3xl leading-none">Sube tu captura</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           Una captura de la ficha del producto en TikTok Shop es suficiente. Leemos el nombre, el precio y los argumentos
           de venta, guardamos el producto y escribimos el guion y el texto para publicar.
@@ -96,8 +97,10 @@ const QuickStartPanel = ({ onVideo, onCarousel, onProductsChanged }: Props) => {
 
       <div>
         {!result ? (
-          <div className="rounded-3xl border border-dashed border-white/10 bg-background/30 p-10 text-center text-sm text-muted-foreground">
-            Aquí aparecerá el producto, el guion y el texto para publicar en cuanto subas la captura.
+          <div className="flex min-h-[340px] flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card/35 p-10 text-center">
+            <span className="grid h-12 w-12 place-items-center rounded-md border border-primary/25 bg-primary/10 text-primary"><Sparkles className="h-5 w-5" /></span>
+            <p className="mt-5 font-display text-2xl text-foreground">Tu mesa de producción</p>
+            <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">Aquí aparecerán el producto, el guion y el texto para publicar en cuanto subas la captura.</p>
           </div>
         ) : (
           <div className="space-y-6 studio-card p-5 lg:p-6">
