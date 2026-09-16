@@ -428,6 +428,14 @@ const UgcStudio = () => {
       toast({ title: "Falta la descripción", description: "Usa el asistente o escribe qué debe pasar.", variant: "destructive" });
       return;
     }
+    if (policyBlocked) {
+      toast({
+        title: "El guion incumple las normas de TikTok Shop",
+        description: "Corrige lo marcado en rojo antes de generar: así no arriesgas la cuenta ni gastas tokens.",
+        variant: "destructive",
+      });
+      return;
+    }
     setBusy(true);
     const { data, error } = await supabase.functions.invoke("generate-ugc-video", {
       body: {
@@ -439,8 +447,9 @@ const UgcStudio = () => {
         aspectRatio,
         projectId,
         productId,
-        ...(reference ? { sourceUrl: reference.url } : {}),
+        ...(reference ? { sourceUrl: reference.url, styleReference: copyStyle ? reference.summary : null } : {}),
         ...(image ? { image: { data: image.data, mimeType: image.mimeType } } : {}),
+        images: images.map(({ data, mimeType }) => ({ data, mimeType })),
       },
     });
     setBusy(false);
@@ -734,6 +743,7 @@ const UgcStudio = () => {
                         </Button>
                       </div>
                     )}
+                    <PolicyCheck issues={policyIssues} ready={prompt.trim().length > 20} />
                   </div>
                 </div>
 
