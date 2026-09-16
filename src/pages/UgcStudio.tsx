@@ -265,7 +265,7 @@ const UgcStudio = () => {
     return () => clearTimeout(timer);
   }, [videos, toast, loadBalance]);
 
-  async function pickImage(file: File) {
+  async function pickImage(file: File, mode: "append" | "primary" = "append") {
     if (file.size > 8 * 1024 * 1024) {
       toast({ title: "Imagen demasiado grande", description: "Usa una foto de menos de 8 MB.", variant: "destructive" });
       return;
@@ -274,12 +274,23 @@ const UgcStudio = () => {
     let binary = "";
     const bytes = new Uint8Array(buffer);
     for (let i = 0; i < bytes.length; i += 1) binary += String.fromCharCode(bytes[i]);
-    setImage({ data: btoa(binary), mimeType: file.type, preview: URL.createObjectURL(file) });
+    const next: RefImage = { data: btoa(binary), mimeType: file.type, preview: URL.createObjectURL(file) };
+    setImages((prev) => (mode === "primary" ? [next, ...prev] : [...prev, next]).slice(0, MAX_REFS));
+  }
+
+  // Añade varias imágenes de referencia de una vez (cara, producto, ángulos, escenario).
+  async function pickImages(files: File[]) {
+    const room = MAX_REFS - images.length;
+    if (room <= 0) {
+      toast({ title: `Máximo ${MAX_REFS} imágenes`, description: "Quita alguna para añadir otra.", variant: "destructive" });
+      return;
+    }
+    for (const file of files.slice(0, room)) await pickImage(file);
   }
 
   // Usa un personaje guardado como imagen de partida y pide mantener su cara, cuerpo y voz.
   async function useCharacter(file: File, name: string, id: string) {
-    await pickImage(file);
+    await pickImage(file, "primary");
     setCharacterId(id);
     setPrompt((prev) => {
       const base = prev.replace(IDENTITY_NOTE, "").trim();
