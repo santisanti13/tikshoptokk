@@ -868,14 +868,20 @@ const UgcStudio = () => {
                     {cost} tokens · {formatEur(eurFromTokens(cost))}
                   </span>
                 </div>
-                <Button onClick={generate} disabled={busy || lowBalance} className="mt-3 h-11 w-full rounded-full text-sm font-semibold">
+                <Button
+                  onClick={generate}
+                  disabled={busy || lowBalance || policyBlocked}
+                  className="mt-3 h-11 w-full rounded-full text-sm font-semibold"
+                >
                   {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                   {busy ? "Enviando…" : "Generar vídeo"}
                 </Button>
                 <p className="mt-2.5 text-center text-[11px] leading-relaxed text-muted-foreground">
-                  {lowBalance
-                    ? "No te quedan tokens suficientes. Recarga desde Plan y tokens."
-                    : "Cada vídeo tarda 1–3 minutos. Si falla, te devolvemos los tokens."}
+                  {policyBlocked
+                    ? "Corrige lo marcado en rojo en el guion: no generamos piezas que puedan sancionar tu cuenta."
+                    : lowBalance
+                      ? "No te quedan tokens suficientes. Recarga desde Plan y tokens."
+                      : "Cada vídeo tarda 1–3 minutos. Si falla, te devolvemos los tokens."}
                 </p>
               </div>
             </div>
