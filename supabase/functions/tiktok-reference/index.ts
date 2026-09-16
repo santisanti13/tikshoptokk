@@ -121,8 +121,8 @@ Deno.serve(async (req) => {
     const looksLikeProduct =
       /\/(view\/product|product|shop)\//i.test(parsed.pathname) || /^shop\./i.test(parsed.hostname);
     const found = looksLikeProduct
-      ? ((await fromDirectFetch(url)) ?? (await fromFirecrawl(url)) ?? (await fromOembed(url)))
-      : ((await fromOembed(url)) ?? (await fromDirectFetch(url)) ?? (await fromFirecrawl(url)));
+      ? ((await fromDirectFetch(url)) ?? (await fromOembed(url)))
+      : ((await fromOembed(url)) ?? (await fromDirectFetch(url)));
 
     if (!found) {
       // TikTok protege las fichas de producto con captcha: guardamos el enlace y
