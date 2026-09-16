@@ -1,4 +1,5 @@
 // Ficha para publicar: título, descripción con hashtags y nombre de tarjeta.
+import { AIGC_DISCLOSURE_HASHTAG } from "./ugcPolicy.ts";
 
 export type Caption = {
   title: string;
