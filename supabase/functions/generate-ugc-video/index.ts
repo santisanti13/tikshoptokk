@@ -3,6 +3,7 @@ import { tokensForVideo } from "../_shared/ugcPricing.ts";
 import { getPreset } from "../_shared/ugcPresets.ts";
 import { blindSpotsBlock } from "../_shared/ugcBlindSpots.ts";
 import { complianceBlock } from "../_shared/ugcCompliance.ts";
+import { POLICY_BLOCK, STYLE_REFERENCE_BLOCK, checkPolicy, hasBlocking } from "../_shared/ugcPolicy.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -110,6 +111,19 @@ Deno.serve(async (req) => {
     let prompt = String(body?.prompt ?? "").trim();
     if (prompt.length < 5) return json({ error: "Describe el vídeo con un poco más de detalle." }, 400);
 
+    // Normas de TikTok Shop: no se genera (ni se cobra) nada que pueda sancionar la cuenta.
+    const issues = checkPolicy(prompt);
+    if (hasBlocking(issues)) {
+      const blocking = issues.filter((i) => i.level === "block");
+      return json(
+        {
+          error: `El guion incumple las normas de TikTok Shop: ${blocking.map((i) => i.title.toLowerCase()).join("; ")}. ${blocking[0].fix}`,
+          policyIssues: blocking,
+        },
+        400,
+      );
+    }
+
     let resolution = ["360p", "720p", "1080p"].includes(body?.resolution) ? body.resolution : "720p";
     const durationRaw = Number(body?.duration ?? 8);
     const duration = Math.min(Math.max(Math.round(durationRaw) || 8, 3), 10);
@@ -117,6 +131,8 @@ Deno.serve(async (req) => {
     const projectId = typeof body?.projectId === "string" ? body.projectId : null;
     const productId = typeof body?.productId === "string" ? body.productId : null;
     const referenceUrl = typeof body?.sourceUrl === "string" && /tiktok\.com/i.test(body.sourceUrl) ? body.sourceUrl : null;
+    // Referencia de estilo de un vídeo de TikTok: forma sí, personas nunca.
+    const styleReference = typeof body?.styleReference === "string" ? body.styleReference.trim().slice(0, 600) : "";
 
     // Continuación: alarga un vídeo ya generado añadiéndole segundos nuevos.
     const extendFromId = typeof body?.extendFromVideoId === "string" ? body.extendFromVideoId : null;
@@ -187,11 +203,25 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Imagen de partida: la que suben en el momento o la de la biblioteca de productos.
+    // Imágenes de referencia que manda el estudio: la primera es el punto de partida.
     // En una continuación no se usa imagen: el punto de partida es el vídeo anterior.
-    let image = sourceVideo ? undefined : (body?.image as { data?: string; mimeType?: string } | undefined);
-    // Vistas del 3D del producto: referencias extra para que no cambie de forma.
+    const sent = Array.isArray(body?.images)
+      ? (body.images as { data?: string; mimeType?: string }[])
+          .filter((i) => typeof i?.data === "string" && typeof i?.mimeType === "string")
+          .slice(0, 4)
+      : [];
+    let image = sourceVideo
+      ? undefined
+      : ((body?.image as { data?: string; mimeType?: string } | undefined) ?? sent[0]);
+    // Referencias extra: el resto de imágenes del usuario y las vistas del 3D del producto.
     const extraImages: { data: string; mimeType: string }[] = [];
+    const userRefs = sourceVideo ? 0 : sent.length - 1;
+    if (userRefs > 0) {
+      for (const ref of sent.slice(1)) extraImages.push({ data: ref.data!, mimeType: ref.mimeType! });
+      prompt =
+        `${prompt}\n\nHay ${userRefs} imagen(es) de referencia adicionales del mismo producto, personaje o escenario: ` +
+        `respeta la forma, el color, el acabado y los detalles que muestran. No las copies como plano ni reproduzcas su fondo.`;
+    }
 
     if (productId) {
       const { data: product } = await userClient
@@ -217,18 +247,21 @@ Deno.serve(async (req) => {
           }
         }
 
-        // Máximo 3 vistas del 3D: son suficientes y mantienen el cuerpo ligero.
-        const renders = Array.isArray(product.render_paths) ? (product.render_paths as string[]).slice(0, 3) : [];
+        // Vistas del 3D, sin pasar de 5 referencias en total para no inflar el cuerpo.
+        const room = Math.max(0, 5 - extraImages.length);
+        const renders = Array.isArray(product.render_paths) ? (product.render_paths as string[]).slice(0, room) : [];
         if (!sourceVideo && renders.length > 0) {
+          let added = 0;
           for (const path of renders) {
             const file = await admin.storage.from("ugc-products").download(path);
             if (!file.data) continue;
             const bytes = new Uint8Array(await file.data.arrayBuffer());
             extraImages.push({ data: toBase64(bytes), mimeType: file.data.type || "image/jpeg" });
+            added += 1;
           }
-          if (extraImages.length > 0) {
+          if (added > 0) {
             prompt =
-              `${prompt}\n\nLas últimas ${extraImages.length} imágenes son vistas del mismo producto desde otros ángulos ` +
+              `${prompt}\n\nLas últimas ${added} imágenes son vistas del mismo producto desde otros ángulos ` +
               `(render de su modelo 3D, sobre fondo gris): la forma, las proporciones, el color y el acabado del producto ` +
               `deben coincidir exactamente con ellas en todo el vídeo. No copies el fondo gris ni el estilo de render.`;
           }
@@ -253,6 +286,14 @@ Deno.serve(async (req) => {
       `${prompt}\n\nPersonaje: figurante ficticio y anónimo creado para este anuncio, sin parecido con ninguna persona real, ` +
       `pública o famosa, y con consentimiento para aparecer. Contenido comercial apto para todos los públicos: sin afirmaciones ` +
       `médicas, sin menores, sin contenido sensible y sin texto sobreimpreso.`;
+
+    // Estilo de un vídeo de referencia: gancho, luz, cámara y cómo se muestra el producto, nunca la persona.
+    if (!sourceVideo && styleReference) {
+      prompt = `${prompt}\n\n${STYLE_REFERENCE_BLOCK}\nVídeo de referencia: ${styleReference}`;
+    }
+
+    // Normas de TikTok Shop, siempre al final para que pesen sobre todo lo anterior.
+    prompt = `${prompt}\n\n${POLICY_BLOCK}`;
 
     const tokens = tokensForVideo(resolution, duration);
 

@@ -22,9 +22,14 @@ import CaptionCard, { type Caption } from "@/components/ugc/CaptionCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { eurFromTokens, formatEur, tokensForVideo } from "@/lib/ugcPricing";
 import { UGC_PRESETS, getPreset } from "@/lib/ugcPresets";
+import { checkPolicy, hasBlocking } from "@/lib/ugcPolicy";
+import PolicyCheck from "@/components/ugc/PolicyCheck";
 
 const RESOLUTIONS = ["360p", "720p", "1080p"] as const;
 const DURATIONS = [4, 6, 8, 10] as const;
+const MAX_REFS = 4;
+
+type RefImage = { data: string; mimeType: string; preview: string };
 
 // Título y descripción de cada sección del estudio.
 const SECTION_META: Record<string, { title: string; subtitle: string }> = {
@@ -117,12 +122,15 @@ const UgcStudio = () => {
   const [aspectRatio, setAspectRatio] = useState<"9:16" | "16:9">("9:16");
   const [projectId, setProjectId] = useState<string | null>(null);
   const [productId, setProductId] = useState<string | null>(null);
-  const [image, setImage] = useState<{ data: string; mimeType: string; preview: string } | null>(null);
+  // Hasta cuatro imágenes de referencia: la primera es el punto de partida.
+  const [images, setImages] = useState<RefImage[]>([]);
   const [busy, setBusy] = useState(false);
   const [keepingId, setKeepingId] = useState<string | null>(null);
   const [extendFrom, setExtendFrom] = useState<VideoRow | null>(null);
   // Referencia traída de un enlace de TikTok (vídeo o producto de TikTok Shop).
   const [reference, setReference] = useState<{ url: string; summary: string; kind: string } | null>(null);
+  // Copiar del vídeo de referencia el gancho, la luz, la cámara y cómo se muestra el producto (nunca personas).
+  const [copyStyle, setCopyStyle] = useState(true);
   // Contexto (estilo + proyecto + producto) con el que se escribió el guion actual.
   const [promptContext, setPromptContext] = useState<string | null>(null);
 
@@ -145,6 +153,9 @@ const UgcStudio = () => {
   const cost = tokensForVideo(effectiveResolution, duration);
   const contextKey = `${presetId}|${projectId ?? ""}|${productId ?? ""}`;
   const promptDrifted = prompt.trim().length > 20 && promptContext !== null && promptContext !== contextKey;
+  const image = images[0] ?? null;
+  const policyIssues = checkPolicy(prompt);
+  const policyBlocked = hasBlocking(policyIssues);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -254,7 +265,7 @@ const UgcStudio = () => {
     return () => clearTimeout(timer);
   }, [videos, toast, loadBalance]);
 
-  async function pickImage(file: File) {
+  async function pickImage(file: File, mode: "append" | "primary" = "append") {
     if (file.size > 8 * 1024 * 1024) {
       toast({ title: "Imagen demasiado grande", description: "Usa una foto de menos de 8 MB.", variant: "destructive" });
       return;
@@ -263,12 +274,23 @@ const UgcStudio = () => {
     let binary = "";
     const bytes = new Uint8Array(buffer);
     for (let i = 0; i < bytes.length; i += 1) binary += String.fromCharCode(bytes[i]);
-    setImage({ data: btoa(binary), mimeType: file.type, preview: URL.createObjectURL(file) });
+    const next: RefImage = { data: btoa(binary), mimeType: file.type, preview: URL.createObjectURL(file) };
+    setImages((prev) => (mode === "primary" ? [next, ...prev] : [...prev, next]).slice(0, MAX_REFS));
+  }
+
+  // Añade varias imágenes de referencia de una vez (cara, producto, ángulos, escenario).
+  async function pickImages(files: File[]) {
+    const room = MAX_REFS - images.length;
+    if (room <= 0) {
+      toast({ title: `Máximo ${MAX_REFS} imágenes`, description: "Quita alguna para añadir otra.", variant: "destructive" });
+      return;
+    }
+    for (const file of files.slice(0, room)) await pickImage(file);
   }
 
   // Usa un personaje guardado como imagen de partida y pide mantener su cara, cuerpo y voz.
   async function useCharacter(file: File, name: string, id: string) {
-    await pickImage(file);
+    await pickImage(file, "primary");
     setCharacterId(id);
     setPrompt((prev) => {
       const base = prev.replace(IDENTITY_NOTE, "").trim();
@@ -320,7 +342,7 @@ const UgcStudio = () => {
     setKeepingId(v.id);
     try {
       const frame = await captureFrame(url);
-      setImage(frame);
+      setImages([frame]);
       setPrompt((prev) => {
         const base = (prev.trim() || v.prompt).replace(IDENTITY_NOTE, "").trim();
         return `${base}\n\n${IDENTITY_NOTE}`;
@@ -347,7 +369,7 @@ const UgcStudio = () => {
   // Prepara una continuación: el vídeo elegido será el punto de partida.
   function extendVideo(v: VideoRow) {
     setExtendFrom(v);
-    setImage(null);
+    setImages([]);
     setCharacterId(null);
     setResolution(v.resolution);
     setAspectRatio(v.aspect_ratio === "16:9" ? "16:9" : "9:16");
@@ -406,6 +428,14 @@ const UgcStudio = () => {
       toast({ title: "Falta la descripción", description: "Usa el asistente o escribe qué debe pasar.", variant: "destructive" });
       return;
     }
+    if (policyBlocked) {
+      toast({
+        title: "El guion incumple las normas de TikTok Shop",
+        description: "Corrige lo marcado en rojo antes de generar: así no arriesgas la cuenta ni gastas tokens.",
+        variant: "destructive",
+      });
+      return;
+    }
     setBusy(true);
     const { data, error } = await supabase.functions.invoke("generate-ugc-video", {
       body: {
@@ -417,8 +447,9 @@ const UgcStudio = () => {
         aspectRatio,
         projectId,
         productId,
-        ...(reference ? { sourceUrl: reference.url } : {}),
+        ...(reference ? { sourceUrl: reference.url, styleReference: copyStyle ? reference.summary : null } : {}),
         ...(image ? { image: { data: image.data, mimeType: image.mimeType } } : {}),
+        images: images.map(({ data, mimeType }) => ({ data, mimeType })),
       },
     });
     setBusy(false);
@@ -577,34 +608,58 @@ const UgcStudio = () => {
                     <Label>Referencia desde TikTok (opcional)</Label>
                     <TikTokLinkInput
                       placeholder="Enlace de vídeo o de producto de TikTok Shop"
-                      hint="Vale un vídeo de TikTok o la página de un producto de TikTok Shop: usamos su portada como imagen de partida y su texto como referencia del guion."
+                      hint="De un vídeo copiamos el gancho, la luz, la cámara y cómo se muestra el producto; nunca la cara ni la voz de quien sale. De un producto traemos su ficha y su foto."
                       onLoaded={(ref: TikTokReference) => {
                         const summary = [ref.title, ref.author ? `Cuenta: ${ref.author}.` : "", ref.price ? `Precio: ${ref.price}.` : ""]
                           .filter(Boolean)
                           .join(" ");
                         setReference({ url: ref.url, summary: summary || ref.url, kind: ref.kind });
-                        if (ref.image) {
-                          setImage({
-                            data: ref.image.data,
-                            mimeType: ref.image.mimeType,
-                            preview: `data:${ref.image.mimeType};base64,${ref.image.data}`,
-                          });
+                        setCopyStyle(true);
+                        // La portada de un vídeo suele ser la cara del creador: solo usamos
+                        // como imagen de partida la foto de una ficha de producto.
+                        if (ref.image && ref.kind === "product") {
+                          setImages((prev) =>
+                            [
+                              {
+                                data: ref.image!.data,
+                                mimeType: ref.image!.mimeType,
+                                preview: `data:${ref.image!.mimeType};base64,${ref.image!.data}`,
+                              },
+                              ...prev,
+                            ].slice(0, MAX_REFS),
+                          );
                         }
                         if (!idea.trim() && ref.title) setIdea(ref.title.slice(0, 120));
                         if (!ref.blocked) {
                           toast({
-                            title: ref.kind === "product" ? "Producto de TikTok Shop cargado" : "Vídeo de TikTok cargado",
-                            description: "Lo usamos como referencia del guion y como imagen de partida.",
+                            title: ref.kind === "product" ? "Producto de TikTok Shop cargado" : "Vídeo de referencia cargado",
+                            description:
+                              ref.kind === "product"
+                                ? "Lo usamos como referencia del guion y como imagen de partida."
+                                : "Copiaremos su estilo y cómo enseña el producto, nunca a la persona que sale.",
                           });
                         }
                       }}
                     />
                     {reference && (
-                      <div className="flex items-start justify-between gap-2 rounded-xl border border-white/[0.07] bg-background/40 px-3 py-2">
-                        <p className="text-xs text-muted-foreground line-clamp-2">{reference.summary}</p>
-                        <Button variant="ghost" size="sm" className="h-7 shrink-0 px-2 text-[11px]" onClick={() => setReference(null)}>
-                          <X className="mr-1 h-3 w-3" /> Quitar
-                        </Button>
+                      <div className="space-y-2 rounded-xl border border-white/[0.07] bg-background/40 px-3 py-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-xs text-muted-foreground line-clamp-2">{reference.summary}</p>
+                          <Button variant="ghost" size="sm" className="h-7 shrink-0 px-2 text-[11px]" onClick={() => setReference(null)}>
+                            <X className="mr-1 h-3 w-3" /> Quitar
+                          </Button>
+                        </div>
+                        {reference.kind === "video" && (
+                          <div className="space-y-2 border-t border-white/[0.07] pt-2">
+                            <Chip active={copyStyle} onClick={() => setCopyStyle((v) => !v)}>
+                              {copyStyle ? "Copiando estilo del vídeo" : "Solo como idea del guion"}
+                            </Chip>
+                            <p className="studio-hint">
+                              Copiamos gancho, ritmo, encuadre, luz y la forma de mostrar el producto. Nunca la cara, el cuerpo,
+                              la ropa ni la voz de quien aparece: tu protagonista sigue siendo el tuyo.
+                            </p>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -688,6 +743,7 @@ const UgcStudio = () => {
                         </Button>
                       </div>
                     )}
+                    <PolicyCheck issues={policyIssues} ready={prompt.trim().length > 20} />
                   </div>
                 </div>
 
@@ -751,32 +807,47 @@ const UgcStudio = () => {
 
                 <div className={extendFrom ? "hidden" : "space-y-5"}>
                   <div className="studio-divider" />
-                  <p className="studio-group-title">Personaje</p>
+                  <p className="studio-group-title">Personaje y referencias</p>
                   <div className="space-y-2">
-                    <Label>Imagen de referencia (opcional)</Label>
-                    {image ? (
-                      <div className="flex items-center gap-3">
-                        <img src={image.preview} alt="Imagen de referencia" className="h-20 w-20 rounded-xl object-cover" />
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setImage(null);
-                            setCharacterId(null);
-                          }}
-                        >
-                          <X className="mr-1 h-4 w-4" /> Quitar
-                        </Button>
+                    <Label>Imágenes de referencia (hasta {MAX_REFS})</Label>
+                    {images.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {images.map((img, index) => (
+                          <div key={`${img.preview}-${index}`} className="relative">
+                            <img
+                              src={img.preview}
+                              alt={index === 0 ? "Imagen de partida" : `Referencia ${index + 1}`}
+                              className={`h-20 w-20 rounded-xl object-cover ${index === 0 ? "ring-2 ring-primary/60" : ""}`}
+                            />
+                            <span className="absolute bottom-1 left-1 rounded-full bg-background/85 px-1.5 text-[10px]">
+                              {index === 0 ? "Partida" : `Ref ${index + 1}`}
+                            </span>
+                            <button
+                              type="button"
+                              aria-label="Quitar imagen"
+                              onClick={() => {
+                                setImages((prev) => prev.filter((_, i) => i !== index));
+                                if (index === 0) setCharacterId(null);
+                              }}
+                              className="absolute -right-1.5 -top-1.5 rounded-full border border-white/15 bg-background p-1"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
                       </div>
-                    ) : (
+                    )}
+                    {images.length < MAX_REFS && (
                       <ImageDropzone
-                        title="Arrastra tu imagen de referencia"
-                        hint="cara, producto o fotograma · o haz clic para elegirla"
-                        onFiles={(files) => pickImage(files[0])}
+                        multiple
+                        title={images.length === 0 ? "Arrastra tus imágenes de referencia" : "Añadir otra referencia"}
+                        hint="cara, producto, ángulos o escenario · puedes soltar varias a la vez"
+                        onFiles={pickImages}
                       />
                     )}
                     <p className="studio-hint">
-                      El vídeo partirá de esta imagen, junto con el guion y el proyecto o producto que elijas.
+                      La primera es el punto de partida del vídeo; las demás son referencias de apoyo (otros ángulos del
+                      producto, detalles o el sitio donde se graba).
                     </p>
                   </div>
 
@@ -797,14 +868,20 @@ const UgcStudio = () => {
                     {cost} tokens · {formatEur(eurFromTokens(cost))}
                   </span>
                 </div>
-                <Button onClick={generate} disabled={busy || lowBalance} className="mt-3 h-11 w-full rounded-full text-sm font-semibold">
+                <Button
+                  onClick={generate}
+                  disabled={busy || lowBalance || policyBlocked}
+                  className="mt-3 h-11 w-full rounded-full text-sm font-semibold"
+                >
                   {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                   {busy ? "Enviando…" : "Generar vídeo"}
                 </Button>
                 <p className="mt-2.5 text-center text-[11px] leading-relaxed text-muted-foreground">
-                  {lowBalance
-                    ? "No te quedan tokens suficientes. Recarga desde Plan y tokens."
-                    : "Cada vídeo tarda 1–3 minutos. Si falla, te devolvemos los tokens."}
+                  {policyBlocked
+                    ? "Corrige lo marcado en rojo en el guion: no generamos piezas que puedan sancionar tu cuenta."
+                    : lowBalance
+                      ? "No te quedan tokens suficientes. Recarga desde Plan y tokens."
+                      : "Cada vídeo tarda 1–3 minutos. Si falla, te devolvemos los tokens."}
                 </p>
               </div>
             </div>
