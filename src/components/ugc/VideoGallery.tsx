@@ -44,7 +44,7 @@ const VideoGallery = ({
 }: Props) => {
   if (videos.length === 0) {
     return (
-      <div className="rounded-3xl border border-dashed border-white/10 bg-card/40 p-10 text-center">
+      <div className="flex min-h-[360px] flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card/40 p-10 text-center">
         <Play className="mx-auto h-6 w-6 text-muted-foreground" />
         <p className="mt-3 text-sm text-muted-foreground">
           Aquí aparecerán tus vídeos. Genera el primero desde el panel de la izquierda.
@@ -62,7 +62,7 @@ const VideoGallery = ({
             key={v.id}
             className="group overflow-hidden studio-card backdrop-blur-xl transition-colors hover:border-primary/40"
           >
-            <div className={`relative w-full bg-black ${vertical ? "aspect-[9/16]" : "aspect-video"}`}>
+            <div className={`relative w-full bg-background ${vertical ? "aspect-[9/16]" : "aspect-video"}`}>
               {v.status === "completed" && urls[v.id] ? (
                 <video
                   src={urls[v.id]}

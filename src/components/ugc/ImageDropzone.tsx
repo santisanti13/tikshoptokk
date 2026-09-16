@@ -41,8 +41,8 @@ const ImageDropzone = ({ onFiles, multiple = false, title, hint, disabled, class
           setOver(false);
           if (!disabled) handle(e.dataTransfer.files);
         }}
-        className={`flex w-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed px-4 py-6 text-center transition-colors disabled:opacity-40 ${
-          over ? "border-primary bg-primary/10" : "border-white/15 bg-background/40 hover:border-primary/50"
+        className={`flex w-full flex-col items-center justify-center gap-2 rounded-md border border-dashed px-4 py-8 text-center transition-colors disabled:opacity-40 ${
+          over ? "border-primary bg-primary/10" : "border-border bg-background/40 hover:border-primary/50"
         }`}
       >
         <ImagePlus className={`h-5 w-5 ${over ? "text-primary" : "text-muted-foreground"}`} />
