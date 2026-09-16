@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { getPreset } from "../_shared/ugcPresets.ts";
+import { POLICY_BLOCK, STYLE_REFERENCE_BLOCK } from "../_shared/ugcPolicy.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -23,6 +24,8 @@ Reglas obligatorias:
 - Si hay diálogo, escríbelo con dos puntos tras el hablante y sin comillas.
 - Si el vídeo parte de una foto de producto, describe solo el movimiento y no repitas el aspecto del producto.
 - Añade "Plano continuo, sin cortes de escena." al final.
+- Nunca describas a una persona real, famosa o identificable, ni copies la cara, el cuerpo o la voz de un vídeo de referencia.
+- ${POLICY_BLOCK}
 - Devuelve SOLO el prompt final, sin títulos ni explicaciones, entre 60 y 130 palabras.`;
 
 const REWRITE = `Además, recibes un GUION DE REFERENCIA ya escrito.
