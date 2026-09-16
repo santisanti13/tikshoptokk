@@ -342,7 +342,7 @@ const UgcStudio = () => {
     setKeepingId(v.id);
     try {
       const frame = await captureFrame(url);
-      setImage(frame);
+      setImages([frame]);
       setPrompt((prev) => {
         const base = (prev.trim() || v.prompt).replace(IDENTITY_NOTE, "").trim();
         return `${base}\n\n${IDENTITY_NOTE}`;
@@ -369,7 +369,7 @@ const UgcStudio = () => {
   // Prepara una continuación: el vídeo elegido será el punto de partida.
   function extendVideo(v: VideoRow) {
     setExtendFrom(v);
-    setImage(null);
+    setImages([]);
     setCharacterId(null);
     setResolution(v.resolution);
     setAspectRatio(v.aspect_ratio === "16:9" ? "16:9" : "9:16");
