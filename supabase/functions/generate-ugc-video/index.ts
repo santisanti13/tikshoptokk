@@ -3,7 +3,7 @@ import { tokensForVideo } from "../_shared/ugcPricing.ts";
 import { getPreset } from "../_shared/ugcPresets.ts";
 import { blindSpotsBlock } from "../_shared/ugcBlindSpots.ts";
 import { complianceBlock } from "../_shared/ugcCompliance.ts";
-import { POLICY_BLOCK, STYLE_REFERENCE_BLOCK, checkPolicy, hasBlocking } from "../_shared/ugcPolicy.ts";
+import { POLICY_BLOCK, STYLE_REFERENCE_BLOCK, checkPolicy, hasBlocking, policyFixBlock } from "../_shared/ugcPolicy.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -296,6 +296,8 @@ Deno.serve(async (req) => {
 
     // Normas de TikTok Shop, siempre al final para que pesen sobre todo lo anterior.
     prompt = `${prompt}\n\n${POLICY_BLOCK}`;
+    const fixes = policyFixBlock(issues);
+    if (fixes) prompt = `${prompt}\n\n${fixes}`;
 
     const tokens = tokensForVideo(resolution, duration);
 
