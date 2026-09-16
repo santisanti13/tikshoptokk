@@ -878,7 +878,7 @@ const UgcStudio = () => {
                 </Button>
                 <p className="mt-2.5 text-center text-[11px] leading-relaxed text-muted-foreground">
                   {policyBlocked
-                    ? "Corrige lo marcado en rojo en el guion: no generamos piezas que puedan sancionar tu cuenta."
+                    ? "Ese producto o esa persona no se pueden promocionar en TikTok Shop. Cambia lo marcado en rojo."
                     : lowBalance
                       ? "No te quedan tokens suficientes. Recarga desde Plan y tokens."
                       : "Cada vídeo tarda 1–3 minutos. Si falla, te devolvemos los tokens."}
