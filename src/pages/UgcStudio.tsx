@@ -797,32 +797,47 @@ const UgcStudio = () => {
 
                 <div className={extendFrom ? "hidden" : "space-y-5"}>
                   <div className="studio-divider" />
-                  <p className="studio-group-title">Personaje</p>
+                  <p className="studio-group-title">Personaje y referencias</p>
                   <div className="space-y-2">
-                    <Label>Imagen de referencia (opcional)</Label>
-                    {image ? (
-                      <div className="flex items-center gap-3">
-                        <img src={image.preview} alt="Imagen de referencia" className="h-20 w-20 rounded-xl object-cover" />
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setImage(null);
-                            setCharacterId(null);
-                          }}
-                        >
-                          <X className="mr-1 h-4 w-4" /> Quitar
-                        </Button>
+                    <Label>Imágenes de referencia (hasta {MAX_REFS})</Label>
+                    {images.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {images.map((img, index) => (
+                          <div key={`${img.preview}-${index}`} className="relative">
+                            <img
+                              src={img.preview}
+                              alt={index === 0 ? "Imagen de partida" : `Referencia ${index + 1}`}
+                              className={`h-20 w-20 rounded-xl object-cover ${index === 0 ? "ring-2 ring-primary/60" : ""}`}
+                            />
+                            <span className="absolute bottom-1 left-1 rounded-full bg-background/85 px-1.5 text-[10px]">
+                              {index === 0 ? "Partida" : `Ref ${index + 1}`}
+                            </span>
+                            <button
+                              type="button"
+                              aria-label="Quitar imagen"
+                              onClick={() => {
+                                setImages((prev) => prev.filter((_, i) => i !== index));
+                                if (index === 0) setCharacterId(null);
+                              }}
+                              className="absolute -right-1.5 -top-1.5 rounded-full border border-white/15 bg-background p-1"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
                       </div>
-                    ) : (
+                    )}
+                    {images.length < MAX_REFS && (
                       <ImageDropzone
-                        title="Arrastra tu imagen de referencia"
-                        hint="cara, producto o fotograma · o haz clic para elegirla"
-                        onFiles={(files) => pickImage(files[0])}
+                        multiple
+                        title={images.length === 0 ? "Arrastra tus imágenes de referencia" : "Añadir otra referencia"}
+                        hint="cara, producto, ángulos o escenario · puedes soltar varias a la vez"
+                        onFiles={pickImages}
                       />
                     )}
                     <p className="studio-hint">
-                      El vídeo partirá de esta imagen, junto con el guion y el proyecto o producto que elijas.
+                      La primera es el punto de partida del vídeo; las demás son referencias de apoyo (otros ángulos del
+                      producto, detalles o el sitio donde se graba).
                     </p>
                   </div>
 
