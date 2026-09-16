@@ -1,5 +1,5 @@
 import { AlertTriangle, ShieldAlert, ShieldCheck } from "lucide-react";
-import type { PolicyIssue } from "@/lib/ugcPolicy";
+import { AIGC_DISCLOSURE_NOTE, type PolicyIssue } from "@/lib/ugcPolicy";
 
 type Props = { issues: PolicyIssue[]; ready: boolean };
 
