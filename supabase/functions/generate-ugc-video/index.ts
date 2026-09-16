@@ -203,11 +203,25 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Imagen de partida: la que suben en el momento o la de la biblioteca de productos.
+    // Imágenes de referencia que manda el estudio: la primera es el punto de partida.
     // En una continuación no se usa imagen: el punto de partida es el vídeo anterior.
-    let image = sourceVideo ? undefined : (body?.image as { data?: string; mimeType?: string } | undefined);
-    // Vistas del 3D del producto: referencias extra para que no cambie de forma.
+    const sent = Array.isArray(body?.images)
+      ? (body.images as { data?: string; mimeType?: string }[])
+          .filter((i) => typeof i?.data === "string" && typeof i?.mimeType === "string")
+          .slice(0, 4)
+      : [];
+    let image = sourceVideo
+      ? undefined
+      : ((body?.image as { data?: string; mimeType?: string } | undefined) ?? sent[0]);
+    // Referencias extra: el resto de imágenes del usuario y las vistas del 3D del producto.
     const extraImages: { data: string; mimeType: string }[] = [];
+    const userRefs = sourceVideo ? 0 : sent.length - 1;
+    if (userRefs > 0) {
+      for (const ref of sent.slice(1)) extraImages.push({ data: ref.data!, mimeType: ref.mimeType! });
+      prompt =
+        `${prompt}\n\nHay ${userRefs} imagen(es) de referencia adicionales del mismo producto, personaje o escenario: ` +
+        `respeta la forma, el color, el acabado y los detalles que muestran. No las copies como plano ni reproduzcas su fondo.`;
+    }
 
     if (productId) {
       const { data: product } = await userClient
