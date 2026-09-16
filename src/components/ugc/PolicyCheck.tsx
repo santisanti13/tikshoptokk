@@ -3,7 +3,11 @@ import type { PolicyIssue } from "@/lib/ugcPolicy";
 
 type Props = { issues: PolicyIssue[]; ready: boolean };
 
-/** Revisión de normas de TikTok Shop del guion, antes de gastar tokens. */
+/**
+ * Revisión de normas de TikTok Shop del guion.
+ * En ámbar son avisos: el vídeo se genera igual y lo corregimos al escribir la escena.
+ * En rojo solo lo que TikTok prohíbe de raíz (categorías vetadas, suplantar a alguien real).
+ */
 const PolicyCheck = ({ issues, ready }: Props) => {
   if (!ready) return null;
 
@@ -16,9 +20,6 @@ const PolicyCheck = ({ issues, ready }: Props) => {
         </p>
       </div>
     );
-  }
-
-  if (true) {
   }
 
   return (
@@ -39,7 +40,7 @@ const PolicyCheck = ({ issues, ready }: Props) => {
             )}
             <div className="min-w-0">
               <p className="text-xs font-medium">
-                {blocking ? "Hay que corregirlo: " : "Revísalo: "}
+                {blocking ? "No permitido en TikTok Shop: " : "Lo suavizamos al generar: "}
                 {issue.title}
               </p>
               <p className="mt-0.5 text-xs text-muted-foreground">{issue.fix}</p>
@@ -47,6 +48,11 @@ const PolicyCheck = ({ issues, ready }: Props) => {
           </div>
         );
       })}
+      {!issues.some((i) => i.level === "block") && (
+        <p className="studio-hint">
+          Son avisos, no un bloqueo: el vídeo se genera igual y el guion sale ya corregido en esos puntos.
+        </p>
+      )}
     </div>
   );
 };
