@@ -599,34 +599,58 @@ const UgcStudio = () => {
                     <Label>Referencia desde TikTok (opcional)</Label>
                     <TikTokLinkInput
                       placeholder="Enlace de vídeo o de producto de TikTok Shop"
-                      hint="Vale un vídeo de TikTok o la página de un producto de TikTok Shop: usamos su portada como imagen de partida y su texto como referencia del guion."
+                      hint="De un vídeo copiamos el gancho, la luz, la cámara y cómo se muestra el producto; nunca la cara ni la voz de quien sale. De un producto traemos su ficha y su foto."
                       onLoaded={(ref: TikTokReference) => {
                         const summary = [ref.title, ref.author ? `Cuenta: ${ref.author}.` : "", ref.price ? `Precio: ${ref.price}.` : ""]
                           .filter(Boolean)
                           .join(" ");
                         setReference({ url: ref.url, summary: summary || ref.url, kind: ref.kind });
-                        if (ref.image) {
-                          setImage({
-                            data: ref.image.data,
-                            mimeType: ref.image.mimeType,
-                            preview: `data:${ref.image.mimeType};base64,${ref.image.data}`,
-                          });
+                        setCopyStyle(true);
+                        // La portada de un vídeo suele ser la cara del creador: solo usamos
+                        // como imagen de partida la foto de una ficha de producto.
+                        if (ref.image && ref.kind === "product") {
+                          setImages((prev) =>
+                            [
+                              {
+                                data: ref.image!.data,
+                                mimeType: ref.image!.mimeType,
+                                preview: `data:${ref.image!.mimeType};base64,${ref.image!.data}`,
+                              },
+                              ...prev,
+                            ].slice(0, MAX_REFS),
+                          );
                         }
                         if (!idea.trim() && ref.title) setIdea(ref.title.slice(0, 120));
                         if (!ref.blocked) {
                           toast({
-                            title: ref.kind === "product" ? "Producto de TikTok Shop cargado" : "Vídeo de TikTok cargado",
-                            description: "Lo usamos como referencia del guion y como imagen de partida.",
+                            title: ref.kind === "product" ? "Producto de TikTok Shop cargado" : "Vídeo de referencia cargado",
+                            description:
+                              ref.kind === "product"
+                                ? "Lo usamos como referencia del guion y como imagen de partida."
+                                : "Copiaremos su estilo y cómo enseña el producto, nunca a la persona que sale.",
                           });
                         }
                       }}
                     />
                     {reference && (
-                      <div className="flex items-start justify-between gap-2 rounded-xl border border-white/[0.07] bg-background/40 px-3 py-2">
-                        <p className="text-xs text-muted-foreground line-clamp-2">{reference.summary}</p>
-                        <Button variant="ghost" size="sm" className="h-7 shrink-0 px-2 text-[11px]" onClick={() => setReference(null)}>
-                          <X className="mr-1 h-3 w-3" /> Quitar
-                        </Button>
+                      <div className="space-y-2 rounded-xl border border-white/[0.07] bg-background/40 px-3 py-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-xs text-muted-foreground line-clamp-2">{reference.summary}</p>
+                          <Button variant="ghost" size="sm" className="h-7 shrink-0 px-2 text-[11px]" onClick={() => setReference(null)}>
+                            <X className="mr-1 h-3 w-3" /> Quitar
+                          </Button>
+                        </div>
+                        {reference.kind === "video" && (
+                          <div className="space-y-2 border-t border-white/[0.07] pt-2">
+                            <Chip active={copyStyle} onClick={() => setCopyStyle((v) => !v)}>
+                              {copyStyle ? "Copiando estilo del vídeo" : "Solo como idea del guion"}
+                            </Chip>
+                            <p className="studio-hint">
+                              Copiamos gancho, ritmo, encuadre, luz y la forma de mostrar el producto. Nunca la cara, el cuerpo,
+                              la ropa ni la voz de quien aparece: tu protagonista sigue siendo el tuyo.
+                            </p>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
