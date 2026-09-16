@@ -22,9 +22,14 @@ import CaptionCard, { type Caption } from "@/components/ugc/CaptionCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { eurFromTokens, formatEur, tokensForVideo } from "@/lib/ugcPricing";
 import { UGC_PRESETS, getPreset } from "@/lib/ugcPresets";
+import { checkPolicy, hasBlocking } from "@/lib/ugcPolicy";
+import PolicyCheck from "@/components/ugc/PolicyCheck";
 
 const RESOLUTIONS = ["360p", "720p", "1080p"] as const;
 const DURATIONS = [4, 6, 8, 10] as const;
+const MAX_REFS = 4;
+
+type RefImage = { data: string; mimeType: string; preview: string };
 
 // Título y descripción de cada sección del estudio.
 const SECTION_META: Record<string, { title: string; subtitle: string }> = {
@@ -117,12 +122,15 @@ const UgcStudio = () => {
   const [aspectRatio, setAspectRatio] = useState<"9:16" | "16:9">("9:16");
   const [projectId, setProjectId] = useState<string | null>(null);
   const [productId, setProductId] = useState<string | null>(null);
-  const [image, setImage] = useState<{ data: string; mimeType: string; preview: string } | null>(null);
+  // Hasta cuatro imágenes de referencia: la primera es el punto de partida.
+  const [images, setImages] = useState<RefImage[]>([]);
   const [busy, setBusy] = useState(false);
   const [keepingId, setKeepingId] = useState<string | null>(null);
   const [extendFrom, setExtendFrom] = useState<VideoRow | null>(null);
   // Referencia traída de un enlace de TikTok (vídeo o producto de TikTok Shop).
   const [reference, setReference] = useState<{ url: string; summary: string; kind: string } | null>(null);
+  // Copiar del vídeo de referencia el gancho, la luz, la cámara y cómo se muestra el producto (nunca personas).
+  const [copyStyle, setCopyStyle] = useState(true);
   // Contexto (estilo + proyecto + producto) con el que se escribió el guion actual.
   const [promptContext, setPromptContext] = useState<string | null>(null);
 
@@ -145,6 +153,9 @@ const UgcStudio = () => {
   const cost = tokensForVideo(effectiveResolution, duration);
   const contextKey = `${presetId}|${projectId ?? ""}|${productId ?? ""}`;
   const promptDrifted = prompt.trim().length > 20 && promptContext !== null && promptContext !== contextKey;
+  const image = images[0] ?? null;
+  const policyIssues = checkPolicy(prompt);
+  const policyBlocked = hasBlocking(policyIssues);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
