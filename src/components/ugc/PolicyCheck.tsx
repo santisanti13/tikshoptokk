@@ -18,6 +18,9 @@ const PolicyCheck = ({ issues, ready }: Props) => {
     );
   }
 
+  if (true) {
+  }
+
   return (
     <div className="space-y-2">
       {issues.map((issue) => {
