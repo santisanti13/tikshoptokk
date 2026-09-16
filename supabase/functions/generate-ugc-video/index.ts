@@ -111,13 +111,15 @@ Deno.serve(async (req) => {
     let prompt = String(body?.prompt ?? "").trim();
     if (prompt.length < 5) return json({ error: "Describe el vídeo con un poco más de detalle." }, 400);
 
-    // Normas de TikTok Shop: no se genera (ni se cobra) nada que pueda sancionar la cuenta.
+    // Normas de TikTok Shop. Solo se para lo que TikTok prohíbe de raíz
+    // (categorías vetadas y suplantar a una persona real); el resto son avisos
+    // que se corrigen dentro del propio guion, para no bloquear la generación.
     const issues = checkPolicy(prompt);
     if (hasBlocking(issues)) {
       const blocking = issues.filter((i) => i.level === "block");
       return json(
         {
-          error: `El guion incumple las normas de TikTok Shop: ${blocking.map((i) => i.title.toLowerCase()).join("; ")}. ${blocking[0].fix}`,
+          error: `Esto no se puede promocionar en TikTok Shop: ${blocking.map((i) => i.title.toLowerCase()).join("; ")}. ${blocking[0].fix}`,
           policyIssues: blocking,
         },
         400,
