@@ -112,7 +112,9 @@ const ViralProductsTable = () => {
       .maybeSingle();
 
     const rows = (data?.rows as Record<string, unknown>[] | undefined) ?? [];
-    if (rows.length) {
+    // Segunda comprobación: la captura tiene que traer datos de producto de verdad.
+    const usable = rows.length > 0 && mapSnapshot(rows).some((p) => p.name !== "—" && (p.price !== "—" || p.sales !== "—"));
+    if (usable) {
       setProducts(mapSnapshot(rows));
       setIsLive(true);
       setLastChecked(data?.captured_on ? new Date(data.captured_on) : new Date());
