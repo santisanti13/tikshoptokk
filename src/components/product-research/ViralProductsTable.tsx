@@ -96,18 +96,25 @@ const ViralProductsTable = () => {
     setWaitlistOpen(true);
   };
 
-  /** Carga la última captura real guardada (FastMoss). */
+  /**
+   * Carga la última captura real guardada de RANKING DE PRODUCTOS.
+   * Las capturas de vídeos o tiendas no valen aquí: no traen precio, categoría
+   * ni ventas, y llenarían la tabla de guiones vacíos etiquetados como datos reales.
+   */
   const loadSnapshot = async (announce = false) => {
     const { data } = await supabase
       .from("market_snapshots")
       .select("captured_on, rows, source")
       .eq("country", "ES")
+      .eq("ranking_type", "products")
       .order("captured_on", { ascending: false })
       .limit(1)
       .maybeSingle();
 
     const rows = (data?.rows as Record<string, unknown>[] | undefined) ?? [];
-    if (rows.length) {
+    // Segunda comprobación: la captura tiene que traer datos de producto de verdad.
+    const usable = rows.length > 0 && mapSnapshot(rows).some((p) => p.name !== "—" && (p.price !== "—" || p.sales !== "—"));
+    if (usable) {
       setProducts(mapSnapshot(rows));
       setIsLive(true);
       setLastChecked(data?.captured_on ? new Date(data.captured_on) : new Date());

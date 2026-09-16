@@ -51,8 +51,11 @@ const TikTokLinkInput = ({ onLoaded, label, placeholder, hint }: Props) => {
     onLoaded(ref);
     if (ref.blocked) {
       toast({
-        title: "Enlace del producto guardado",
-        description: "TikTok no deja leer la ficha desde fuera. Pega la captura de la ficha (Ctrl+V) o suéltala aquí y la leemos entera.",
+        title: ref.kind === "product" ? "Enlace del producto guardado" : "Enlace del vídeo guardado",
+        description:
+          ref.kind === "product"
+            ? "TikTok no deja leer la ficha desde fuera. Pega la captura de la ficha (Ctrl+V) o suéltala aquí y la leemos entera."
+            : "TikTok no deja leer el vídeo desde fuera. Haz una captura de un fotograma y suéltala aquí para copiar su estilo.",
       });
     }
     setUrl("");

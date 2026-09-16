@@ -91,33 +91,9 @@ async function fromDirectFetch(url: string) {
   }
 }
 
-/** Ficha de un producto de TikTok Shop leyendo la página con Firecrawl. */
-async function fromFirecrawl(url: string) {
-  const key = Deno.env.get("FIRECRAWL_API_KEY");
-  if (!key) return null;
-  const res = await fetch("https://api.firecrawl.dev/v1/scrape", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ url, formats: ["markdown"], onlyMainContent: true, timeout: 25000 }),
-  });
-  if (!res.ok) {
-    console.error("firecrawl scrape failed", res.status, await res.text());
-    return null;
-  }
-  const payload = await res.json().catch(() => null);
-  const meta = payload?.data?.metadata ?? {};
-  const markdown = String(payload?.data?.markdown ?? "").replace(/\s+/g, " ").trim();
-  const priceMatch = markdown.match(/(\d{1,4}[.,]\d{2})\s*(€|EUR)/i) ?? markdown.match(/(€|EUR)\s*(\d{1,4}[.,]\d{2})/i);
-  if (!meta.title && !markdown) return null;
-  return {
-    kind: "product" as const,
-    title: meta.title ?? null,
-    description: (meta.description ?? markdown).slice(0, 600) || null,
-    author: null as string | null,
-    price: priceMatch ? priceMatch[0] : null,
-    thumbnail: meta.ogImage ?? meta["og:image"] ?? null,
-  };
-}
+// El servicio de lectura de páginas rechaza los dominios de TikTok (403 fijo,
+// no es un límite), así que no se intenta: solo lectura directa y oEmbed, y si
+// TikTok bloquea, el usuario completa la ficha con una captura.
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -145,30 +121,24 @@ Deno.serve(async (req) => {
     const looksLikeProduct =
       /\/(view\/product|product|shop)\//i.test(parsed.pathname) || /^shop\./i.test(parsed.hostname);
     const found = looksLikeProduct
-      ? ((await fromDirectFetch(url)) ?? (await fromFirecrawl(url)) ?? (await fromOembed(url)))
-      : ((await fromOembed(url)) ?? (await fromDirectFetch(url)) ?? (await fromFirecrawl(url)));
+      ? ((await fromDirectFetch(url)) ?? (await fromOembed(url)))
+      : ((await fromOembed(url)) ?? (await fromDirectFetch(url)));
 
     if (!found) {
-      // TikTok protege las fichas de producto con captcha: guardamos el enlace y
+      // TikTok protege sus páginas con captcha: guardamos el enlace igualmente y
       // el usuario completa la ficha con una captura, que sí sabemos leer.
-      if (looksLikeProduct) {
-        return json({
-          reference: {
-            url,
-            kind: "product" as const,
-            blocked: true,
-            title: null,
-            description: null,
-            author: null,
-            price: null,
-            image: null,
-          },
-        });
-      }
-      return json(
-        { error: "TikTok no ha dejado leer ese enlace. Sube la foto y escribe la ficha a mano." },
-        422,
-      );
+      return json({
+        reference: {
+          url,
+          kind: looksLikeProduct ? ("product" as const) : ("video" as const),
+          blocked: true,
+          title: null,
+          description: null,
+          author: null,
+          price: null,
+          image: null,
+        },
+      });
     }
 
     const image = await downloadImage(found.thumbnail);
