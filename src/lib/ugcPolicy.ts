@@ -1,5 +1,8 @@
 // Control de normas de TikTok Shop antes de generar.
-// Se usa igual en el estudio (aviso en pantalla) y en el servidor (bloqueo real).
+// Se usa igual en el estudio (aviso en pantalla) y en el servidor.
+// Solo se bloquea lo que TikTok prohíbe de raíz (categorías vetadas y suplantar
+// a una persona real). Todo lo demás avisa y se corrige en el propio guion:
+// generar vídeos siempre tiene que ser posible.
 
 export type PolicyIssue = {
   id: string;
@@ -13,7 +16,7 @@ type Rule = PolicyIssue & { match: RegExp };
 const RULES: Rule[] = [
   {
     id: "medico",
-    level: "block",
+    level: "warn",
     match:
       /\bcur(a|ar|ación|an)\b|\btrata\b|tratamiento (de|para)|\benfermedad|cáncer|diabetes|hipertens|ansiedad|depresión|insomnio|elimina (el|la|las|los) (dolor|grasa|arrugas|acné)|pierde \d+\s*(kg|kilos)|adelgaza \d+|milagro|resultados garantizados|garantiza(do|mos)?\b/i,
     title: "Promesa médica o resultado garantizado",
@@ -29,7 +32,7 @@ const RULES: Rule[] = [
   },
   {
     id: "fuera-de-plataforma",
-    level: "block",
+    level: "warn",
     match:
       /whatsapp|telegram|escríbeme al dm|dm para comprar|link en (la )?bio|compra en mi web|mi página web|paypal|bizum|transferencia bancaria|fuera de tiktok/i,
     title: "Lleva la compra fuera de TikTok",
@@ -91,6 +94,16 @@ export function checkPolicy(text: string | null | undefined): PolicyIssue[] {
   const value = (text ?? "").trim();
   if (!value) return [];
   return RULES.filter((r) => r.match.test(value)).map(({ match: _m, ...issue }) => issue);
+}
+
+/** Instrucción correctiva para el modelo con los avisos detectados. */
+export function policyFixBlock(issues: PolicyIssue[]): string {
+  const warnings = issues.filter((i) => i.level === "warn");
+  if (warnings.length === 0) return "";
+  return (
+    "Corrige estos puntos al montar la escena y el audio, sin cambiar la idea: " +
+    warnings.map((i) => `${i.title.toLowerCase()} → ${i.fix}`).join(" ")
+  );
 }
 
 export const hasBlocking = (issues: PolicyIssue[]) => issues.some((i) => i.level === "block");
