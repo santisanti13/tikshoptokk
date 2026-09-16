@@ -247,18 +247,21 @@ Deno.serve(async (req) => {
           }
         }
 
-        // Máximo 3 vistas del 3D: son suficientes y mantienen el cuerpo ligero.
-        const renders = Array.isArray(product.render_paths) ? (product.render_paths as string[]).slice(0, 3) : [];
+        // Vistas del 3D, sin pasar de 5 referencias en total para no inflar el cuerpo.
+        const room = Math.max(0, 5 - extraImages.length);
+        const renders = Array.isArray(product.render_paths) ? (product.render_paths as string[]).slice(0, room) : [];
         if (!sourceVideo && renders.length > 0) {
+          let added = 0;
           for (const path of renders) {
             const file = await admin.storage.from("ugc-products").download(path);
             if (!file.data) continue;
             const bytes = new Uint8Array(await file.data.arrayBuffer());
             extraImages.push({ data: toBase64(bytes), mimeType: file.data.type || "image/jpeg" });
+            added += 1;
           }
-          if (extraImages.length > 0) {
+          if (added > 0) {
             prompt =
-              `${prompt}\n\nLas últimas ${extraImages.length} imágenes son vistas del mismo producto desde otros ángulos ` +
+              `${prompt}\n\nLas últimas ${added} imágenes son vistas del mismo producto desde otros ángulos ` +
               `(render de su modelo 3D, sobre fondo gris): la forma, las proporciones, el color y el acabado del producto ` +
               `deben coincidir exactamente con ellas en todo el vídeo. No copies el fondo gris ni el estilo de render.`;
           }
