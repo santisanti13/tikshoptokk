@@ -134,7 +134,7 @@ const UgcStudio = () => {
   // Contexto (estilo + proyecto + producto) con el que se escribió el guion actual.
   const [promptContext, setPromptContext] = useState<string | null>(null);
 
-  const [projects, setProjects] = useState<UgcProject[]>([]);
+  const [projects, setProjects] = useState<UgcAvatar[]>([]);
   const [products, setProducts] = useState<UgcProduct[]>([]);
   const [videos, setVideos] = useState<VideoRow[]>([]);
   const [urls, setUrls] = useState<Record<string, string>>({});
@@ -205,7 +205,7 @@ const UgcStudio = () => {
 
   const loadProjects = useCallback(async () => {
     const { data } = await supabase.from("ugc_projects").select("id, name, character_brief, tone, brand_notes, reference_image_path").order("created_at", { ascending: false });
-    setProjects((data ?? []) as UgcProject[]);
+    setProjects((data ?? []) as UgcAvatar[]);
   }, []);
 
   const loadProducts = useCallback(async () => {
@@ -300,7 +300,7 @@ const UgcStudio = () => {
   }
 
   // Al elegir un proyecto con imagen de referencia, la usamos como punto de partida si no hay otra.
-  async function selectProject(p: UgcProject | null) {
+  async function selectProject(p: UgcAvatar | null) {
     setProjectId(p?.id ?? null);
     if (!p?.reference_image_path || image) return;
     const { data } = await supabase.storage.from("ugc-products").createSignedUrl(p.reference_image_path, 3600);
