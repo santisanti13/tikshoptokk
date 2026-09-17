@@ -40,16 +40,12 @@ const SECTION_META: Record<string, { title: string; subtitle: string }> = {
     subtitle: "Arrastra la ficha del producto de TikTok Shop y te devolvemos producto, guion y texto para publicar.",
   },
   generar: {
-    title: "Crear vídeo",
-    subtitle: "Elige estilo, personaje y formato. El asistente escribe el guion y tú solo revisas antes de generar.",
+    title: "Crear",
+    subtitle: "Cuatro pasos: producto → referencia e idea → avatar → vídeo o carrusel.",
   },
-  carruseles: {
-    title: "Carruseles",
-    subtitle: "Seis estilos de carrusel con el texto ya puesto sobre cada lámina, listos para descargar.",
-  },
-  proyectos: {
-    title: "Proyectos",
-    subtitle: "Guarda personaje, tono y notas de marca para que todas tus piezas mantengan la misma línea.",
+  avatares: {
+    title: "Avatares",
+    subtitle: "La persona que sale en tus vídeos: cara, voz, tono y notas de marca, para que todo parezca de la misma cuenta.",
   },
   productos: {
     title: "Productos",
