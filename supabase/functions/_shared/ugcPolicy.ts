@@ -28,7 +28,7 @@ const RULES: Rule[] = [
     id: "categoria-prohibida",
     level: "block",
     match:
-      /\barma\b|munición|tabaco|vape|vapeo|cigarr|nicotina|alcohol|cerveza|vodka|whisky|casino|apuesta|cripto|bitcoin|dinero rápido|ganar dinero desde casa|cannabis|\bcbd\b|medicamento|receta médica|adelgazante milagroso|producto sanitario/i,
+      /\barma de fuego\b|munición|tabaco|vape|vapeo|cigarr|bebida alcohólica|cerveza|vodka|whisky|casino|apuesta|cripto|bitcoin|dinero rápido|ganar dinero desde casa|cannabis|\bcbd\b|medicamento|receta médica|adelgazante milagroso/i,
     title: "Categoría no permitida en TikTok Shop",
     fix: "Ese tipo de producto o promesa no se puede promocionar. Cambia el producto o el enfoque del guion.",
   },
@@ -51,10 +51,19 @@ const RULES: Rule[] = [
   {
     id: "suplanta-sanitario",
     level: "block",
+    // Solo bloquea si el protagonista se presenta COMO sanitario, no la simple mención.
     match:
-      /\b(médic[oa]|doctor[a]?|dr\.|dra\.|dermatólog|nutricionist|dietist|farmacéutic|enfermer|odontólog|dentista|psicólog|fisioterapeut)\b|bata blanca|experto en salud|especialista en salud|coach de salud/i,
+      /(?:soy|actúa como|actua como|haz de|hazme de|interpreta a|personaje|protagonista|avatar|figurante|vestid[oa] de|disfraz de|uniforme de)[^.!?]{0,40}\b(médic[oa]s?|doctor(?:a|es|as)?|dermatólog\w*|nutricionist\w*|dietist\w*|farmacéutic\w*|enfermer\w*|odontólog\w*|dentistas?|psicólog\w*|fisioterapeut\w*)\b|bata blanca/i,
     title: "Personaje que aparenta ser sanitario",
     fix: "TikTok prohíbe avatares de IA que se hagan pasar por médicos o expertos en salud. Cambia al protagonista por un cliente normal que cuenta su rutina.",
+  },
+  {
+    id: "mencion-sanitario",
+    level: "warn",
+    match:
+      /\b(dermatólog\w*|nutricionist\w*|dietist\w*|farmacéutic\w*|odontólog\w*|dentista|psicólog\w*|fisioterapeut\w*|médic[oa]s?)\b|experto en salud|especialista en salud|coach de salud/i,
+    title: "Mención a profesionales sanitarios",
+    fix: "Puedes mencionarlo si es cierto y aparece en la ficha, pero el protagonista no puede parecer un sanitario ni dar consejo médico.",
   },
   {
     id: "suplanta-autoridad",
