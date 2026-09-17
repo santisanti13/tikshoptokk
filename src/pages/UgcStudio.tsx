@@ -593,7 +593,7 @@ const UgcStudio = () => {
         onTab={setTab}
         balance={balance}
         plan={plan}
-        counts={{ proyectos: projects.length, productos: products.length }}
+        counts={{ avatares: projects.length, productos: products.length }}
         title={meta.title}
         subtitle={meta.subtitle}
       >
