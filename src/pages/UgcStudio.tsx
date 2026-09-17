@@ -12,8 +12,10 @@ import { Loader2, Sparkles, X, Coins, Wand2 } from "lucide-react";
 import ImageDropzone from "@/components/ugc/ImageDropzone";
 import TikTokLinkInput, { type TikTokReference } from "@/components/ugc/TikTokLinkInput";
 import CharactersStrip, { type UgcCharacter } from "@/components/ugc/CharactersStrip";
-import ProjectsPanel, { type UgcProject } from "@/components/ugc/ProjectsPanel";
+import AvatarsPanel, { type UgcAvatar } from "@/components/ugc/AvatarsPanel";
 import ProductsPanel, { type UgcProduct } from "@/components/ugc/ProductsPanel";
+import ProductShopLink, { isShopProductLink } from "@/components/ugc/ProductShopLink";
+import StepsBar, { type FlowStep } from "@/components/ugc/StepsBar";
 import VideoGallery, { type VideoRow } from "@/components/ugc/VideoGallery";
 import TariffsPanel from "@/components/ugc/TariffsPanel";
 import QuickStartPanel, { type QuickStartResult } from "@/components/ugc/QuickStartPanel";
@@ -38,16 +40,12 @@ const SECTION_META: Record<string, { title: string; subtitle: string }> = {
     subtitle: "Arrastra la ficha del producto de TikTok Shop y te devolvemos producto, guion y texto para publicar.",
   },
   generar: {
-    title: "Crear vídeo",
-    subtitle: "Elige estilo, personaje y formato. El asistente escribe el guion y tú solo revisas antes de generar.",
+    title: "Crear",
+    subtitle: "Cuatro pasos: producto → referencia e idea → avatar → vídeo o carrusel.",
   },
-  carruseles: {
-    title: "Carruseles",
-    subtitle: "Seis estilos de carrusel con el texto ya puesto sobre cada lámina, listos para descargar.",
-  },
-  proyectos: {
-    title: "Proyectos",
-    subtitle: "Guarda personaje, tono y notas de marca para que todas tus piezas mantengan la misma línea.",
+  avatares: {
+    title: "Avatares",
+    subtitle: "La persona que sale en tus vídeos: cara, voz, tono y notas de marca, para que todo parezca de la misma cuenta.",
   },
   productos: {
     title: "Productos",
@@ -136,7 +134,7 @@ const UgcStudio = () => {
   // Contexto (estilo + proyecto + producto) con el que se escribió el guion actual.
   const [promptContext, setPromptContext] = useState<string | null>(null);
 
-  const [projects, setProjects] = useState<UgcProject[]>([]);
+  const [projects, setProjects] = useState<UgcAvatar[]>([]);
   const [products, setProducts] = useState<UgcProduct[]>([]);
   const [videos, setVideos] = useState<VideoRow[]>([]);
   const [urls, setUrls] = useState<Record<string, string>>({});
@@ -146,6 +144,14 @@ const UgcStudio = () => {
   const [tab, setTab] = useState("captura");
   const [captioningId, setCaptioningId] = useState<string | null>(null);
   const [activeCaption, setActiveCaption] = useState<Caption | null>(null);
+
+  // Flujo de creación: producto → referencia e idea → avatar → pieza.
+  const [step, setStep] = useState<"producto" | "referencia" | "avatar" | "pieza">("producto");
+  const [piece, setPiece] = useState<"video" | "carousel">("video");
+  const [productThumb, setProductThumb] = useState<string | null>(null);
+  const [noPerson, setNoPerson] = useState(false);
+
+  
 
   
 
@@ -158,6 +164,65 @@ const UgcStudio = () => {
   const image = images[0] ?? null;
   const policyIssues = checkPolicy(prompt);
   const policyBlocked = hasBlocking(policyIssues);
+  const selectedProduct = products.find((p) => p.id === productId) ?? null;
+  const selectedAvatar = projects.find((p) => p.id === projectId) ?? null;
+
+  // Foto del producto elegido, para verla dentro del paso 1.
+  useEffect(() => {
+    setProductThumb(null);
+    if (!selectedProduct?.image_path) return;
+    let alive = true;
+    supabase.storage
+      .from("ugc-products")
+      .createSignedUrl(selectedProduct.image_path, 3600)
+      .then(({ data }) => {
+        if (alive && data?.signedUrl) setProductThumb(data.signedUrl);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [selectedProduct?.image_path]);
+
+  // Los cuatro pasos del flujo, con lo ya elegido en cada uno.
+  const flowSteps: FlowStep[] = [
+    {
+      id: "producto",
+      n: 1,
+      title: "Producto",
+      hint: "El artículo real de tu tienda",
+      summary: selectedProduct ? selectedProduct.name : null,
+      done: Boolean(productId),
+    },
+    {
+      id: "referencia",
+      n: 2,
+      title: "Referencia e idea",
+      hint: "Título, vídeo de referencia y guion",
+      summary: reference
+        ? reference.kind === "video"
+          ? "Vídeo de referencia (solo estilo)"
+          : "Ficha de tienda"
+        : idea.trim() || null,
+      done: prompt.trim().length > 20,
+    },
+    {
+      id: "avatar",
+      n: 3,
+      title: "Avatar",
+      hint: "Quién sale en el vídeo",
+      summary: selectedAvatar?.name ?? (noPerson ? "Sin persona" : null),
+      done: Boolean(projectId) || noPerson || images.length > 0,
+    },
+    {
+      id: "pieza",
+      n: 4,
+      title: "Vídeo o carrusel",
+      hint: "Formato, duración y calidad",
+      summary: piece === "carousel" ? "Carrusel de imágenes" : `Vídeo ${aspectRatio} · ${duration}s · ${effectiveResolution}`,
+      done: false,
+    },
+  ];
+
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -207,7 +272,7 @@ const UgcStudio = () => {
 
   const loadProjects = useCallback(async () => {
     const { data } = await supabase.from("ugc_projects").select("id, name, character_brief, tone, brand_notes, reference_image_path").order("created_at", { ascending: false });
-    setProjects((data ?? []) as UgcProject[]);
+    setProjects((data ?? []) as UgcAvatar[]);
   }, []);
 
   const loadProducts = useCallback(async () => {
@@ -302,7 +367,7 @@ const UgcStudio = () => {
   }
 
   // Al elegir un proyecto con imagen de referencia, la usamos como punto de partida si no hay otra.
-  async function selectProject(p: UgcProject | null) {
+  async function selectProject(p: UgcAvatar | null) {
     setProjectId(p?.id ?? null);
     if (!p?.reference_image_path || image) return;
     const { data } = await supabase.storage.from("ugc-products").createSignedUrl(p.reference_image_path, 3600);
@@ -489,19 +554,17 @@ const UgcStudio = () => {
     setActiveCaption(data.caption as Caption);
   }
 
-  // Pasa de la captura al panel de generación (o de carruseles) con todo relleno.
+  // Pasa de la captura al flujo de creación con producto, guion y ficha ya puestos.
   function applyQuickStart(result: QuickStartResult, target: "video" | "carousel") {
     setProductId(result.product.id);
     loadProducts();
-    if (target === "carousel") {
-      setTab("carruseles");
-      return;
-    }
+    setPiece(target === "carousel" ? "carousel" : "video");
     setPresetId(result.presetId);
     setAspectRatio(result.aspectRatio);
     setPrompt(result.prompt);
     setPromptContext(`${result.presetId}|${projectId ?? ""}|${result.product.id}`);
     setActiveCaption(result.caption);
+    setStep(target === "carousel" ? "pieza" : "referencia");
     setTab("generar");
   }
 
@@ -530,7 +593,7 @@ const UgcStudio = () => {
         onTab={setTab}
         balance={balance}
         plan={plan}
-        counts={{ proyectos: projects.length, productos: products.length }}
+        counts={{ avatares: projects.length, productos: products.length }}
         title={meta.title}
         subtitle={meta.subtitle}
       >
@@ -543,383 +606,558 @@ const UgcStudio = () => {
         )}
 
         {tab === "generar" && (
-          <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px] xl:gap-8">
-            <div className="studio-card overflow-hidden xl:order-2">
-              <div className="space-y-7 p-5 lg:p-6">
-                {(projects.length > 0 || products.length > 0) && (
-                  <div className="space-y-5">
-                    <p className="studio-group-title">Contexto</p>
-                    {projects.length > 0 && (
-                      <div className="space-y-2">
-                        <Label>Proyecto</Label>
-                        <div className="flex flex-wrap gap-2">
-                          <Chip active={projectId === null} onClick={() => selectProject(null)}>
-                            Sin proyecto
-                          </Chip>
-                          {projects.map((p) => (
-                            <Chip key={p.id} active={projectId === p.id} onClick={() => selectProject(p)}>
-                              {p.name}
-                            </Chip>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {products.length > 0 && (
-                      <div className="space-y-2">
-                        <Label>Producto</Label>
-                        <div className="flex flex-wrap gap-2">
-                          <Chip active={productId === null} onClick={() => setProductId(null)}>
-                            Ninguno
-                          </Chip>
-                          {products.map((p) => (
-                            <Chip key={p.id} active={productId === p.id} onClick={() => setProductId(p.id)}>
-                              {p.name}
-                            </Chip>
-                          ))}
-                        </div>
-                        <p className="studio-hint">La foto guardada se reencuadra al formato que elijas.</p>
-                      </div>
-                    )}
+          <section className="space-y-6">
+            <StepsBar steps={flowSteps} activeId={step} onStep={(id) => setStep(id as typeof step)} />
+
+            {step === "pieza" && piece === "carousel" ? (
+              <div className="space-y-5">
+                <div className="studio-card p-4 lg:p-5">
+                  <p className="studio-group-title">Qué pieza quieres</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Chip active={false} onClick={() => setPiece("video")}>
+                      Vídeo
+                    </Chip>
+                    <Chip active onClick={() => setPiece("carousel")}>
+                      Carrusel de imágenes
+                    </Chip>
                   </div>
-                )}
-
-                <div className="studio-divider" />
-
-                <div className="space-y-5">
-                  <p className="studio-group-title">Estilo y referencias</p>
-                  <div className="space-y-2">
-                    <Label>Estilo del vídeo</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {UGC_PRESETS.map((p) => (
-                        <Chip
-                          key={p.id}
-                          active={presetId === p.id}
-                          onClick={() => {
-                            setPresetId(p.id);
-                            if (p.aspectRatio) setAspectRatio(p.aspectRatio);
-                          }}
-                        >
-                          {p.label}
-                        </Chip>
-                      ))}
-                    </div>
-                    <p className="studio-hint">{getPreset(presetId)?.hint}</p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Referencia desde TikTok (opcional)</Label>
-                    <TikTokLinkInput
-                      placeholder="Enlace de vídeo o de producto de TikTok Shop"
-                      hint="De un vídeo copiamos el gancho, la luz, la cámara y cómo se muestra el producto; nunca la cara ni la voz de quien sale. De un producto traemos su ficha y su foto."
-                      onLoaded={(ref: TikTokReference) => {
-                        const summary = [ref.title, ref.author ? `Cuenta: ${ref.author}.` : "", ref.price ? `Precio: ${ref.price}.` : ""]
-                          .filter(Boolean)
-                          .join(" ");
-                        setReference({ url: ref.url, summary: summary || ref.url, kind: ref.kind });
-                        setCopyStyle(true);
-                        // La portada de un vídeo suele ser la cara del creador: solo usamos
-                        // como imagen de partida la foto de una ficha de producto.
-                        if (ref.image && ref.kind === "product") {
-                          setImages((prev) =>
-                            [
-                              {
-                                data: ref.image!.data,
-                                mimeType: ref.image!.mimeType,
-                                preview: `data:${ref.image!.mimeType};base64,${ref.image!.data}`,
-                              },
-                              ...prev,
-                            ].slice(0, MAX_REFS),
-                          );
-                        }
-                        if (!idea.trim() && ref.title) setIdea(ref.title.slice(0, 120));
-                        if (!ref.blocked) {
-                          toast({
-                            title: ref.kind === "product" ? "Producto de TikTok Shop cargado" : "Vídeo de referencia cargado",
-                            description:
-                              ref.kind === "product"
-                                ? "Lo usamos como referencia del guion y como imagen de partida."
-                                : "Copiaremos su estilo y cómo enseña el producto, nunca a la persona que sale.",
-                          });
-                        }
-                      }}
-                    />
-                    {reference && (
-                      <div className="space-y-2 rounded-xl border border-white/[0.07] bg-background/40 px-3 py-2">
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="text-xs text-muted-foreground line-clamp-2">{reference.summary}</p>
-                          <Button variant="ghost" size="sm" className="h-7 shrink-0 px-2 text-[11px]" onClick={() => setReference(null)}>
-                            <X className="mr-1 h-3 w-3" /> Quitar
-                          </Button>
+                  <p className="studio-hint mt-2">
+                    El carrusel usa el producto elegido en el paso 1 y escribe su propio texto por lámina.
+                  </p>
+                </div>
+                <CarouselPanel
+                  products={products}
+                  productId={productId}
+                  onProductId={setProductId}
+                  balance={balance}
+                  onBalance={setBalance}
+                />
+              </div>
+            ) : (
+              <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px] xl:gap-8">
+                <div className="studio-card overflow-hidden xl:order-2">
+                  <div className="space-y-7 p-5 lg:p-6">
+                    {/* ---------- Paso 1: producto ---------- */}
+                    {step === "producto" && (
+                      <div className="space-y-5">
+                        <div>
+                          <p className="studio-group-title">Paso 1 · El producto que vendes</p>
+                          <p className="studio-hint mt-2">
+                            Elige el producto real de tu tienda. De él salen el nombre, la forma, el uso y los datos
+                            cerrados, para que el vídeo no muestre nada que no sea verdad y no te sancionen.
+                          </p>
                         </div>
-                        {reference.kind === "video" && (
-                          <div className="space-y-2 border-t border-white/[0.07] pt-2">
-                            <Chip active={copyStyle} onClick={() => setCopyStyle((v) => !v)}>
-                              {copyStyle ? "Copiando estilo del vídeo" : "Solo como idea del guion"}
+
+                        <div className="space-y-2">
+                          <Label>Tus productos</Label>
+                          <div className="flex flex-wrap gap-2">
+                            {products.map((p) => (
+                              <Chip key={p.id} active={productId === p.id} onClick={() => setProductId(p.id)}>
+                                {p.name}
+                              </Chip>
+                            ))}
+                            <Chip active={productId === null} onClick={() => setProductId(null)}>
+                              Sin producto
                             </Chip>
+                          </div>
+                          {products.length === 0 && (
                             <p className="studio-hint">
-                              Copiamos gancho, ritmo, encuadre, luz y la forma de mostrar el producto. Nunca la cara, el cuerpo,
-                              la ropa ni la voz de quien aparece: tu protagonista sigue siendo el tuyo.
+                              Todavía no tienes productos guardados. Añádelos en Productos o sube una captura de la ficha.
                             </p>
+                          )}
+                        </div>
+
+                        {selectedProduct && (
+                          <div className="space-y-3 rounded-xl border border-white/[0.07] bg-background/40 p-4">
+                            <div className="flex gap-3">
+                              {productThumb && (
+                                <img
+                                  src={productThumb}
+                                  alt={selectedProduct.name}
+                                  className="h-20 w-20 shrink-0 rounded-xl object-cover"
+                                />
+                              )}
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-medium">{selectedProduct.name}</p>
+                                <p className="mt-1 line-clamp-3 text-xs text-muted-foreground">
+                                  {selectedProduct.description || "Sin descripción: añádela para que el guion sea fiel."}
+                                </p>
+                              </div>
+                            </div>
+                            {!selectedProduct.blind_spots && (
+                              <p className="rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-[11px] text-muted-foreground">
+                                Sin datos cerrados (material, interior, tamaño, cómo se abre). La IA puede inventárselos:
+                                complétalos en Productos.
+                              </p>
+                            )}
+                            {isShopProductLink(selectedProduct.source_url) ? (
+                              <ProductShopLink url={selectedProduct.source_url!} compact />
+                            ) : (
+                              <div className="space-y-2 border-t border-white/[0.07] pt-3">
+                                <TikTokLinkInput
+                                  mode="product"
+                                  onLoaded={(ref) => {
+                                    setReference({ url: ref.url, summary: ref.title ?? ref.url, kind: "product" });
+                                    if (ref.image) {
+                                      setImages((prev) =>
+                                        [
+                                          {
+                                            data: ref.image!.data,
+                                            mimeType: ref.image!.mimeType,
+                                            preview: `data:${ref.image!.mimeType};base64,${ref.image!.data}`,
+                                          },
+                                          ...prev,
+                                        ].slice(0, MAX_REFS),
+                                      );
+                                    }
+                                  }}
+                                />
+                              </div>
+                            )}
                           </div>
                         )}
+
+                        <div className="flex flex-wrap gap-2">
+                          <Button variant="outline" className="rounded-full" onClick={() => setTab("productos")}>
+                            Gestionar productos
+                          </Button>
+                          <Button className="rounded-full" onClick={() => setStep("referencia")}>
+                            Siguiente: referencia e idea
+                          </Button>
+                        </div>
                       </div>
                     )}
-                  </div>
-                </div>
 
-                <div className="studio-divider" />
+                    {/* ---------- Paso 2: referencia e idea ---------- */}
+                    {step === "referencia" && (
+                      <div className="space-y-7">
+                        <div>
+                          <p className="studio-group-title">Paso 2 · Referencia e idea</p>
+                          <p className="studio-hint mt-2">
+                            Aquí decides cómo se cuenta. Puedes partir de un título tuyo, de un vídeo que funcione, o de
+                            los dos.
+                          </p>
+                        </div>
 
-                <div className="space-y-5">
-                  <p className="studio-group-title">Guion</p>
-                  <div className="space-y-2">
-                    <Label htmlFor="idea">Tu idea en una frase</Label>
-                    <div className="flex flex-col gap-2 sm:flex-row">
-                      <Input
-                        id="idea"
-                        value={idea}
-                        onChange={(e) => setIdea(e.target.value)}
-                        placeholder="Chica probando el sérum antes de salir"
-                      />
-                      <Button
-                        variant="outline"
-                        className="shrink-0 rounded-full"
-                        onClick={() => writeWithAssistant(false)}
-                        disabled={assisting}
-                      >
-                        {assisting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
-                        <span className="ml-2">Escribir guion</span>
-                      </Button>
-                    </div>
-                  </div>
+                        <div className="space-y-2">
+                          <Label>Estilo del vídeo</Label>
+                          <div className="flex flex-wrap gap-2">
+                            {UGC_PRESETS.map((p) => (
+                              <Chip
+                                key={p.id}
+                                active={presetId === p.id}
+                                onClick={() => {
+                                  setPresetId(p.id);
+                                  if (p.aspectRatio) setAspectRatio(p.aspectRatio);
+                                }}
+                              >
+                                {p.label}
+                              </Chip>
+                            ))}
+                          </div>
+                          <p className="studio-hint">{getPreset(presetId)?.hint}</p>
+                        </div>
 
-                  {extendFrom && (
-                    <div className="rounded-xl border border-primary/30 bg-primary/10 p-4 text-sm">
-                      <p className="font-medium">Continuación de un vídeo</p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Seguimos el vídeo de {extendFrom.duration_seconds}s ({extendFrom.resolution} ·{" "}
-                        {extendFrom.aspect_ratio ?? "9:16"}) y le añadimos los segundos que elijas, hasta{" "}
-                        {MAX_TOTAL_SECONDS}s en total. Solo pagas los nuevos.
-                      </p>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="mt-2 h-8 rounded-full px-3 text-xs"
-                        onClick={() => setExtendFrom(null)}
-                      >
-                        <X className="mr-1 h-3.5 w-3.5" /> Cancelar continuación
-                      </Button>
-                    </div>
-                  )}
-
-                  <div className="space-y-2">
-                    <Label htmlFor="prompt">{extendFrom ? "Qué pasa a continuación" : "Guion del vídeo"}</Label>
-                    <Textarea
-                      id="prompt"
-                      rows={7}
-                      placeholder={
-                        extendFrom
-                          ? "Sigue hablando y enseña el interior del maletín mientras camina hacia la ventana…"
-                          : "El asistente lo rellena por ti, o escríbelo tú: encuadre, luz, tono, qué dice…"
-                      }
-                      value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
-                    />
-                    {promptDrifted && (
-                      <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-400/30 bg-amber-400/10 px-3 py-2">
-                        <p className="text-xs text-muted-foreground">
-                          Has cambiado el estilo, el proyecto o el producto: el guion todavía es el anterior.
-                        </p>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-8 rounded-full px-3 text-[11px]"
-                          onClick={() => writeWithAssistant(true)}
-                          disabled={assisting}
-                        >
-                          {assisting ? (
-                            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                          ) : (
-                            <Wand2 className="mr-1.5 h-3.5 w-3.5" />
+                        <div className="space-y-2">
+                          <TikTokLinkInput
+                            mode="video"
+                            onLoaded={(ref: TikTokReference) => {
+                              const summary = [
+                                ref.title,
+                                ref.author ? `Cuenta: ${ref.author}.` : "",
+                                ref.price ? `Precio: ${ref.price}.` : "",
+                              ]
+                                .filter(Boolean)
+                                .join(" ");
+                              setReference({ url: ref.url, summary: summary || ref.url, kind: ref.kind });
+                              setCopyStyle(true);
+                              if (ref.image && ref.kind === "product") {
+                                setImages((prev) =>
+                                  [
+                                    {
+                                      data: ref.image!.data,
+                                      mimeType: ref.image!.mimeType,
+                                      preview: `data:${ref.image!.mimeType};base64,${ref.image!.data}`,
+                                    },
+                                    ...prev,
+                                  ].slice(0, MAX_REFS),
+                                );
+                              }
+                              if (!idea.trim() && ref.title) setIdea(ref.title.slice(0, 120));
+                              if (!ref.blocked) {
+                                toast({
+                                  title: ref.kind === "product" ? "Ficha del producto cargada" : "Vídeo de referencia cargado",
+                                  description:
+                                    ref.kind === "product"
+                                      ? "La usamos como datos del producto y como imagen de partida."
+                                      : "Copiaremos su gancho, ritmo, luz y cómo enseña el producto, nunca a la persona que sale.",
+                                });
+                              }
+                            }}
+                          />
+                          {reference && (
+                            <div className="space-y-2 rounded-xl border border-white/[0.07] bg-background/40 px-3 py-2">
+                              <div className="flex items-start justify-between gap-2">
+                                <p className="text-xs text-muted-foreground line-clamp-2">
+                                  <span className="mr-1 font-medium text-foreground">
+                                    {reference.kind === "product" ? "Ficha de tienda:" : "Vídeo de referencia:"}
+                                  </span>
+                                  {reference.summary}
+                                </p>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 shrink-0 px-2 text-[11px]"
+                                  onClick={() => setReference(null)}
+                                >
+                                  <X className="mr-1 h-3 w-3" /> Quitar
+                                </Button>
+                              </div>
+                              {reference.kind === "video" && (
+                                <div className="space-y-2 border-t border-white/[0.07] pt-2">
+                                  <Chip active={copyStyle} onClick={() => setCopyStyle((v) => !v)}>
+                                    {copyStyle ? "Copiando estilo del vídeo" : "Solo como idea del guion"}
+                                  </Chip>
+                                  <p className="studio-hint">
+                                    Copiamos gancho, ritmo, encuadre, luz y la forma de mostrar el producto. Nunca la cara,
+                                    el cuerpo, la ropa ni la voz de quien aparece: tu protagonista sigue siendo el tuyo.
+                                  </p>
+                                </div>
+                              )}
+                            </div>
                           )}
-                          Reescribir guion
+                        </div>
+
+                        <div className="studio-divider" />
+
+                        <div className="space-y-2">
+                          <Label htmlFor="idea">Tu idea o título en una frase</Label>
+                          <div className="flex flex-col gap-2 sm:flex-row">
+                            <Input
+                              id="idea"
+                              value={idea}
+                              onChange={(e) => setIdea(e.target.value)}
+                              placeholder="Chica probando el sérum antes de salir"
+                            />
+                            <Button
+                              variant="outline"
+                              className="shrink-0 rounded-full"
+                              onClick={() => writeWithAssistant(false)}
+                              disabled={assisting}
+                            >
+                              {assisting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
+                              <span className="ml-2">Escribir guion</span>
+                            </Button>
+                          </div>
+                        </div>
+
+                        {extendFrom && (
+                          <div className="rounded-xl border border-primary/30 bg-primary/10 p-4 text-sm">
+                            <p className="font-medium">Continuación de un vídeo</p>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              Seguimos el vídeo de {extendFrom.duration_seconds}s ({extendFrom.resolution} ·{" "}
+                              {extendFrom.aspect_ratio ?? "9:16"}) y le añadimos los segundos que elijas, hasta{" "}
+                              {MAX_TOTAL_SECONDS}s en total. Solo pagas los nuevos.
+                            </p>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="mt-2 h-8 rounded-full px-3 text-xs"
+                              onClick={() => setExtendFrom(null)}
+                            >
+                              <X className="mr-1 h-3.5 w-3.5" /> Cancelar continuación
+                            </Button>
+                          </div>
+                        )}
+
+                        <div className="space-y-2">
+                          <Label htmlFor="prompt">{extendFrom ? "Qué pasa a continuación" : "Guion del vídeo"}</Label>
+                          <Textarea
+                            id="prompt"
+                            rows={7}
+                            placeholder={
+                              extendFrom
+                                ? "Sigue hablando y enseña el interior del maletín mientras camina hacia la ventana…"
+                                : "El asistente lo rellena por ti, o escríbelo tú: encuadre, luz, tono, qué dice…"
+                            }
+                            value={prompt}
+                            onChange={(e) => setPrompt(e.target.value)}
+                          />
+                          {promptDrifted && (
+                            <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-400/30 bg-amber-400/10 px-3 py-2">
+                              <p className="text-xs text-muted-foreground">
+                                Has cambiado el estilo, el avatar o el producto: el guion todavía es el anterior.
+                              </p>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-8 rounded-full px-3 text-[11px]"
+                                onClick={() => writeWithAssistant(true)}
+                                disabled={assisting}
+                              >
+                                {assisting ? (
+                                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                  <Wand2 className="mr-1.5 h-3.5 w-3.5" />
+                                )}
+                                Reescribir guion
+                              </Button>
+                            </div>
+                          )}
+                          <PolicyCheck issues={policyIssues} ready={prompt.trim().length > 20} />
+                        </div>
+
+                        <Button className="rounded-full" onClick={() => setStep("avatar")}>
+                          Siguiente: avatar
                         </Button>
                       </div>
                     )}
-                    <PolicyCheck issues={policyIssues} ready={prompt.trim().length > 20} />
-                  </div>
-                </div>
 
-                <div className="studio-divider" />
+                    {/* ---------- Paso 3: avatar ---------- */}
+                    {step === "avatar" && (
+                      <div className="space-y-6">
+                        <div>
+                          <p className="studio-group-title">Paso 3 · Quién sale en el vídeo</p>
+                          <p className="studio-hint mt-2">
+                            El avatar es la persona de tus vídeos: su cara, su look, su voz y su tono. Usa siempre el mismo
+                            para que parezca la misma cuenta.
+                          </p>
+                        </div>
 
-                <div className="space-y-5">
-                  <p className="studio-group-title">Formato de salida</p>
-                  <div className="grid gap-5 sm:grid-cols-3">
-                    <div className="space-y-2">
-                      <Label>Formato</Label>
-                      <div className="flex gap-2">
-                        {(["9:16", "16:9"] as const).map((r) => (
-                          <Chip
-                            key={r}
-                            active={aspectRatio === r}
-                            disabled={Boolean(extendFrom)}
-                            onClick={() => setAspectRatio(r)}
-                          >
-                            {r}
-                          </Chip>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>{extendFrom ? "Segundos nuevos" : "Duración"}</Label>
-                      <div className="flex flex-wrap gap-2">
-                        {DURATIONS.map((d) => (
-                          <Chip
-                            key={d}
-                            active={duration === d}
-                            disabled={Boolean(extendFrom) && d > remainingSeconds}
-                            onClick={() => setDuration(d)}
-                          >
-                            {extendFrom ? `+${d}s` : `${d}s`}
-                          </Chip>
-                        ))}
-                      </div>
-                      {extendFrom && (
-                        <p className="studio-hint">
-                          Total: {Number(extendFrom.duration_seconds) + duration}s de {MAX_TOTAL_SECONDS}s máximo
-                        </p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Calidad</Label>
-                      <div className="flex flex-wrap gap-2">
-                        {RESOLUTIONS.map((r) => (
-                          <Chip
-                            key={r}
-                            active={effectiveResolution === r}
-                            disabled={Boolean(extendFrom)}
-                            onClick={() => setResolution(r)}
-                          >
-                            {r}
-                          </Chip>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className={extendFrom ? "hidden" : "space-y-5"}>
-                  <div className="studio-divider" />
-                  <p className="studio-group-title">Personaje y referencias</p>
-                  <div className="space-y-2">
-                    <Label>Imágenes de referencia (hasta {MAX_REFS})</Label>
-                    {images.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {images.map((img, index) => (
-                          <div key={`${img.preview}-${index}`} className="relative">
-                            <img
-                              src={img.preview}
-                              alt={index === 0 ? "Imagen de partida" : `Referencia ${index + 1}`}
-                              className={`h-20 w-20 rounded-xl object-cover ${index === 0 ? "ring-2 ring-primary/60" : ""}`}
-                            />
-                            <span className="absolute bottom-1 left-1 rounded-full bg-background/85 px-1.5 text-[10px]">
-                              {index === 0 ? "Partida" : `Ref ${index + 1}`}
-                            </span>
-                            <button
-                              type="button"
-                              aria-label="Quitar imagen"
+                        <div className="space-y-2">
+                          <Label>Avatar</Label>
+                          <div className="flex flex-wrap gap-2">
+                            <Chip
+                              active={projectId === null && noPerson}
                               onClick={() => {
-                                setImages((prev) => prev.filter((_, i) => i !== index));
-                                if (index === 0) setCharacterId(null);
+                                setNoPerson(true);
+                                selectProject(null);
                               }}
-                              className="absolute -right-1.5 -top-1.5 rounded-full border border-white/15 bg-background p-1"
                             >
-                              <X className="h-3 w-3" />
-                            </button>
+                              Sin persona (solo producto)
+                            </Chip>
+                            {projects.map((p) => (
+                              <Chip
+                                key={p.id}
+                                active={projectId === p.id}
+                                onClick={() => {
+                                  setNoPerson(false);
+                                  selectProject(p);
+                                }}
+                              >
+                                {p.name}
+                              </Chip>
+                            ))}
                           </div>
-                        ))}
+                          <Button variant="outline" size="sm" className="rounded-full" onClick={() => setTab("avatares")}>
+                            Crear o editar avatares
+                          </Button>
+                        </div>
+
+                        <div className={extendFrom ? "hidden" : "space-y-5"}>
+                          <div className="studio-divider" />
+                          <div className="space-y-2">
+                            <Label>Imágenes de referencia (hasta {MAX_REFS})</Label>
+                            {images.length > 0 && (
+                              <div className="flex flex-wrap gap-2">
+                                {images.map((img, index) => (
+                                  <div key={`${img.preview}-${index}`} className="relative">
+                                    <img
+                                      src={img.preview}
+                                      alt={index === 0 ? "Imagen de partida" : `Referencia ${index + 1}`}
+                                      className={`h-20 w-20 rounded-xl object-cover ${index === 0 ? "ring-2 ring-primary/60" : ""}`}
+                                    />
+                                    <span className="absolute bottom-1 left-1 rounded-full bg-background/85 px-1.5 text-[10px]">
+                                      {index === 0 ? "Partida" : `Ref ${index + 1}`}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      aria-label="Quitar imagen"
+                                      onClick={() => {
+                                        setImages((prev) => prev.filter((_, i) => i !== index));
+                                        if (index === 0) setCharacterId(null);
+                                      }}
+                                      className="absolute -right-1.5 -top-1.5 rounded-full border border-white/15 bg-background p-1"
+                                    >
+                                      <X className="h-3 w-3" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            {images.length < MAX_REFS && (
+                              <ImageDropzone
+                                multiple
+                                title={images.length === 0 ? "Arrastra tus imágenes de referencia" : "Añadir otra referencia"}
+                                hint="cara, producto, ángulos o escenario · puedes soltar varias a la vez"
+                                onFiles={pickImages}
+                              />
+                            )}
+                            <p className="studio-hint">
+                              La primera es el punto de partida del vídeo; las demás son referencias de apoyo (otros
+                              ángulos del producto, detalles o el sitio donde se graba).
+                            </p>
+                          </div>
+
+                          <CharactersStrip
+                            characters={characters}
+                            onChanged={loadCharacters}
+                            activeId={characterId}
+                            onUse={(file, character) => useCharacter(file, character.name, character.id)}
+                          />
+                        </div>
+
+                        <Button className="rounded-full" onClick={() => setStep("pieza")}>
+                          Siguiente: elegir pieza
+                        </Button>
                       </div>
                     )}
-                    {images.length < MAX_REFS && (
-                      <ImageDropzone
-                        multiple
-                        title={images.length === 0 ? "Arrastra tus imágenes de referencia" : "Añadir otra referencia"}
-                        hint="cara, producto, ángulos o escenario · puedes soltar varias a la vez"
-                        onFiles={pickImages}
-                      />
+
+                    {/* ---------- Paso 4: pieza ---------- */}
+                    {step === "pieza" && (
+                      <div className="space-y-7">
+                        <div>
+                          <p className="studio-group-title">Paso 4 · Qué pieza quieres</p>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <Chip active onClick={() => setPiece("video")}>
+                              Vídeo
+                            </Chip>
+                            <Chip active={false} onClick={() => setPiece("carousel")}>
+                              Carrusel de imágenes
+                            </Chip>
+                          </div>
+                        </div>
+
+                        <div className="space-y-5">
+                          <p className="studio-group-title">Formato de salida</p>
+                          <div className="grid gap-5 sm:grid-cols-3">
+                            <div className="space-y-2">
+                              <Label>Formato</Label>
+                              <div className="flex gap-2">
+                                {(["9:16", "16:9"] as const).map((r) => (
+                                  <Chip
+                                    key={r}
+                                    active={aspectRatio === r}
+                                    disabled={Boolean(extendFrom)}
+                                    onClick={() => setAspectRatio(r)}
+                                  >
+                                    {r}
+                                  </Chip>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <Label>{extendFrom ? "Segundos nuevos" : "Duración"}</Label>
+                              <div className="flex flex-wrap gap-2">
+                                {DURATIONS.map((d) => (
+                                  <Chip
+                                    key={d}
+                                    active={duration === d}
+                                    disabled={Boolean(extendFrom) && d > remainingSeconds}
+                                    onClick={() => setDuration(d)}
+                                  >
+                                    {extendFrom ? `+${d}s` : `${d}s`}
+                                  </Chip>
+                                ))}
+                              </div>
+                              {extendFrom && (
+                                <p className="studio-hint">
+                                  Total: {Number(extendFrom.duration_seconds) + duration}s de {MAX_TOTAL_SECONDS}s máximo
+                                </p>
+                              )}
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Calidad</Label>
+                              <div className="flex flex-wrap gap-2">
+                                {RESOLUTIONS.map((r) => (
+                                  <Chip
+                                    key={r}
+                                    active={effectiveResolution === r}
+                                    disabled={Boolean(extendFrom)}
+                                    onClick={() => setResolution(r)}
+                                  >
+                                    {r}
+                                  </Chip>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="rounded-xl border border-white/[0.07] bg-background/40 p-4 text-xs text-muted-foreground">
+                          <p>
+                            <span className="font-medium text-foreground">Producto:</span>{" "}
+                            {selectedProduct?.name ?? "sin producto"}
+                          </p>
+                          <p className="mt-1">
+                            <span className="font-medium text-foreground">Avatar:</span>{" "}
+                            {selectedAvatar?.name ?? "sin persona"}
+                          </p>
+                          <p className="mt-1">
+                            <span className="font-medium text-foreground">Referencia:</span>{" "}
+                            {reference
+                              ? reference.kind === "product"
+                                ? "ficha de tienda"
+                                : "vídeo de TikTok (solo estilo)"
+                              : "ninguna"}
+                          </p>
+                        </div>
+                      </div>
                     )}
-                    <p className="studio-hint">
-                      La primera es el punto de partida del vídeo; las demás son referencias de apoyo (otros ángulos del
-                      producto, detalles o el sitio donde se graba).
-                    </p>
                   </div>
 
-                  <CharactersStrip
-                    characters={characters}
-                    onChanged={loadCharacters}
-                    activeId={characterId}
-                    onUse={(file, character) => useCharacter(file, character.name, character.id)}
-                  />
+                  {/* Barra de acción fija al pie de la tarjeta */}
+                  {step === "pieza" && (
+                    <div className="sticky bottom-0 border-t border-border bg-card/95 p-4 backdrop-blur-xl lg:p-5">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Coste de este vídeo</span>
+                        <span className="font-semibold tabular-nums">
+                          {cost} tokens · {formatEur(eurFromTokens(cost))}
+                        </span>
+                      </div>
+                      <Button
+                        onClick={generate}
+                        disabled={busy || lowBalance || policyBlocked}
+                        className="mt-3 h-11 w-full rounded-md text-sm font-semibold"
+                      >
+                        {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                        {busy ? "Enviando…" : "Generar vídeo"}
+                      </Button>
+                      <p className="mt-2.5 text-center text-[11px] leading-relaxed text-muted-foreground">
+                        {policyBlocked
+                          ? "Ese producto o esa persona no se pueden promocionar en TikTok Shop. Cambia lo marcado en rojo."
+                          : lowBalance
+                            ? "No te quedan tokens suficientes. Recarga desde Plan y tokens."
+                            : "Cada vídeo tarda 1–3 minutos. Si falla, te devolvemos los tokens."}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="min-w-0 xl:order-1">
+                  <div className="flex items-baseline justify-between">
+                    <h2 className="font-display text-lg font-bold tracking-tight">Tus vídeos</h2>
+                    <span className="text-xs text-muted-foreground tabular-nums">{videos.length}</span>
+                  </div>
+                  <div className="mt-4">
+                    <VideoGallery
+                      videos={videos}
+                      urls={urls}
+                      onReuse={reuseVideo}
+                      onKeepIdentity={keepIdentity}
+                      onExtend={extendVideo}
+                      onCaption={writeCaption}
+                      keepingId={keepingId}
+                      captioningId={captioningId}
+                    />
+                  </div>
                 </div>
               </div>
-
-              {/* Barra de acción fija al pie de la tarjeta */}
-              <div className="sticky bottom-0 border-t border-border bg-card/95 p-4 backdrop-blur-xl lg:p-5">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Coste de este vídeo</span>
-                  <span className="font-semibold tabular-nums">
-                    {cost} tokens · {formatEur(eurFromTokens(cost))}
-                  </span>
-                </div>
-                <Button
-                  onClick={generate}
-                  disabled={busy || lowBalance || policyBlocked}
-                  className="mt-3 h-11 w-full rounded-md text-sm font-semibold"
-                >
-                  {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                  {busy ? "Enviando…" : "Generar vídeo"}
-                </Button>
-                <p className="mt-2.5 text-center text-[11px] leading-relaxed text-muted-foreground">
-                  {policyBlocked
-                    ? "Ese producto o esa persona no se pueden promocionar en TikTok Shop. Cambia lo marcado en rojo."
-                    : lowBalance
-                      ? "No te quedan tokens suficientes. Recarga desde Plan y tokens."
-                      : "Cada vídeo tarda 1–3 minutos. Si falla, te devolvemos los tokens."}
-                </p>
-              </div>
-            </div>
-
-            <div className="min-w-0 xl:order-1">
-              <div className="flex items-baseline justify-between">
-                <h2 className="font-display text-lg font-bold tracking-tight">Tus vídeos</h2>
-                <span className="text-xs text-muted-foreground tabular-nums">{videos.length}</span>
-              </div>
-              <div className="mt-4">
-                <VideoGallery
-                  videos={videos}
-                  urls={urls}
-                  onReuse={reuseVideo}
-                  onKeepIdentity={keepIdentity}
-                  onExtend={extendVideo}
-                  onCaption={writeCaption}
-                  keepingId={keepingId}
-                  captioningId={captioningId}
-                />
-              </div>
-            </div>
+            )}
           </section>
         )}
 
-        {tab === "carruseles" && (
-          <CarouselPanel
-            products={products}
-            productId={productId}
-            onProductId={setProductId}
-            balance={balance}
-            onBalance={setBalance}
-          />
-        )}
-
-        {tab === "proyectos" && <ProjectsPanel projects={projects} onChanged={loadProjects} />}
+        {tab === "avatares" && <AvatarsPanel avatars={projects} onChanged={loadProjects} />}
 
         {tab === "productos" && <ProductsPanel products={products} onChanged={loadProducts} />}
 
