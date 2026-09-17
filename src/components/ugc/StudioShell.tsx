@@ -27,10 +27,9 @@ export type StudioSection = {
 
 export const STUDIO_SECTIONS: Omit<StudioSection, "count">[] = [
   { id: "captura", label: "Sube tu captura", short: "Captura", icon: Upload },
-  { id: "generar", label: "Vídeo", short: "Vídeo", icon: Clapperboard },
-  { id: "carruseles", label: "Carruseles", short: "Carrusel", icon: Images },
-  { id: "proyectos", label: "Proyectos", short: "Proyectos", icon: FolderKanban },
+  { id: "generar", label: "Crear", short: "Crear", icon: Clapperboard },
   { id: "productos", label: "Productos", short: "Productos", icon: Package },
+  { id: "avatares", label: "Avatares", short: "Avatares", icon: UserRound },
   { id: "tarifas", label: "Plan y tokens", short: "Plan", icon: CreditCard },
 ];
 
