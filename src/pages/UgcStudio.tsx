@@ -487,19 +487,17 @@ const UgcStudio = () => {
     setActiveCaption(data.caption as Caption);
   }
 
-  // Pasa de la captura al panel de generación (o de carruseles) con todo relleno.
+  // Pasa de la captura al flujo de creación con producto, guion y ficha ya puestos.
   function applyQuickStart(result: QuickStartResult, target: "video" | "carousel") {
     setProductId(result.product.id);
     loadProducts();
-    if (target === "carousel") {
-      setTab("carruseles");
-      return;
-    }
+    setPiece(target === "carousel" ? "carousel" : "video");
     setPresetId(result.presetId);
     setAspectRatio(result.aspectRatio);
     setPrompt(result.prompt);
     setPromptContext(`${result.presetId}|${projectId ?? ""}|${result.product.id}`);
     setActiveCaption(result.caption);
+    setStep(target === "carousel" ? "pieza" : "referencia");
     setTab("generar");
   }
 
