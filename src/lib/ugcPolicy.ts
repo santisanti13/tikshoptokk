@@ -28,7 +28,7 @@ const RULES: Rule[] = [
     id: "categoria-prohibida",
     level: "block",
     match:
-      /\barma\b|munición|tabaco|vape|vapeo|cigarr|nicotina|alcohol|cerveza|vodka|whisky|casino|apuesta|cripto|bitcoin|dinero rápido|ganar dinero desde casa|cannabis|\bcbd\b|medicamento|receta médica|adelgazante milagroso|producto sanitario/i,
+      /\barma de fuego\b|munición|tabaco|vape|vapeo|cigarr|bebida alcohólica|cerveza|vodka|whisky|casino|apuesta|cripto|bitcoin|dinero rápido|ganar dinero desde casa|cannabis|\bcbd\b|medicamento|receta médica|adelgazante milagroso/i,
     title: "Categoría no permitida en TikTok Shop",
     fix: "Ese tipo de producto o promesa no se puede promocionar. Cambia el producto o el enfoque del guion.",
   },
