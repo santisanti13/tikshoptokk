@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import QRCode from "qrcode";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -22,10 +22,6 @@ const ProductShopLink = ({ url, compact }: Props) => {
   const isMobile = useIsMobile();
   const [qr, setQr] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!qr) return;
-    // nada: el QR se genera al pedirlo
-  }, [qr]);
 
   async function showQr() {
     try {
