@@ -183,6 +183,47 @@ const UgcStudio = () => {
     };
   }, [selectedProduct?.image_path]);
 
+  // Los cuatro pasos del flujo, con lo ya elegido en cada uno.
+  const flowSteps: FlowStep[] = [
+    {
+      id: "producto",
+      n: 1,
+      title: "Producto",
+      hint: "El artículo real de tu tienda",
+      summary: selectedProduct ? selectedProduct.name : null,
+      done: Boolean(productId),
+    },
+    {
+      id: "referencia",
+      n: 2,
+      title: "Referencia e idea",
+      hint: "Título, vídeo de referencia y guion",
+      summary: reference
+        ? reference.kind === "video"
+          ? "Vídeo de referencia (solo estilo)"
+          : "Ficha de tienda"
+        : idea.trim() || null,
+      done: prompt.trim().length > 20,
+    },
+    {
+      id: "avatar",
+      n: 3,
+      title: "Avatar",
+      hint: "Quién sale en el vídeo",
+      summary: selectedAvatar?.name ?? (noPerson ? "Sin persona" : null),
+      done: Boolean(projectId) || noPerson || images.length > 0,
+    },
+    {
+      id: "pieza",
+      n: 4,
+      title: "Vídeo o carrusel",
+      hint: "Formato, duración y calidad",
+      summary: piece === "carousel" ? "Carrusel de imágenes" : `Vídeo ${aspectRatio} · ${duration}s · ${effectiveResolution}`,
+      done: false,
+    },
+  ];
+
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (!data.session) {
