@@ -145,6 +145,14 @@ const UgcStudio = () => {
   const [captioningId, setCaptioningId] = useState<string | null>(null);
   const [activeCaption, setActiveCaption] = useState<Caption | null>(null);
 
+  // Flujo de creación: producto → referencia e idea → avatar → pieza.
+  const [step, setStep] = useState<"producto" | "referencia" | "avatar" | "pieza">("producto");
+  const [piece, setPiece] = useState<"video" | "carousel">("video");
+  const [productThumb, setProductThumb] = useState<string | null>(null);
+  const [noPerson, setNoPerson] = useState(false);
+
+  
+
   
 
   const MAX_TOTAL_SECONDS = 50;
