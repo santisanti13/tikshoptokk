@@ -164,6 +164,24 @@ const UgcStudio = () => {
   const image = images[0] ?? null;
   const policyIssues = checkPolicy(prompt);
   const policyBlocked = hasBlocking(policyIssues);
+  const selectedProduct = products.find((p) => p.id === productId) ?? null;
+  const selectedAvatar = projects.find((p) => p.id === projectId) ?? null;
+
+  // Foto del producto elegido, para verla dentro del paso 1.
+  useEffect(() => {
+    setProductThumb(null);
+    if (!selectedProduct?.image_path) return;
+    let alive = true;
+    supabase.storage
+      .from("ugc-products")
+      .createSignedUrl(selectedProduct.image_path, 3600)
+      .then(({ data }) => {
+        if (alive && data?.signedUrl) setProductThumb(data.signedUrl);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [selectedProduct?.image_path]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
