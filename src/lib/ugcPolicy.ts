@@ -53,7 +53,7 @@ const RULES: Rule[] = [
     level: "block",
     // Solo bloquea si el protagonista se presenta COMO sanitario, no la simple mención.
     match:
-      /(?:soy|actúa como|actua como|haz de|hazme de|interpreta a|personaje|protagonista|avatar|figurante|vestid[oa] de|disfraz de|uniforme de)[^.!?]{0,40}\b(médic[oa]|doctor[a]?|dermatólog|nutricionist|dietist|farmacéutic|enfermer|odontólog|dentista|psicólog|fisioterapeut)\b|bata blanca/i,
+      /(?:soy|actúa como|actua como|haz de|hazme de|interpreta a|personaje|protagonista|avatar|figurante|vestid[oa] de|disfraz de|uniforme de)[^.!?]{0,40}\b(médic[oa]s?|doctor(?:a|es|as)?|dermatólog\w*|nutricionist\w*|dietist\w*|farmacéutic\w*|enfermer\w*|odontólog\w*|dentistas?|psicólog\w*|fisioterapeut\w*)\b|bata blanca/i,
     title: "Personaje que aparenta ser sanitario",
     fix: "TikTok prohíbe avatares de IA que se hagan pasar por médicos o expertos en salud. Cambia al protagonista por un cliente normal que cuenta su rutina.",
   },
