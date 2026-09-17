@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   Upload,
   Clapperboard,
-  Images,
-  FolderKanban,
+  UserRound,
   Package,
   CreditCard,
   ChevronLeft,
