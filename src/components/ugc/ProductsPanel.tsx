@@ -164,10 +164,9 @@ const ProductsPanel = ({ products, onChanged }: Props) => {
         </p>
         <div className="mt-5 space-y-4">
           <div className="space-y-2">
-            <Label>Traer desde TikTok Shop</Label>
             <TikTokLinkInput
-              placeholder="https://shop.tiktok.com/view/product/… o enlace de vídeo"
-              hint="Vale la página del producto de TikTok Shop o un vídeo. Rellenamos nombre, ficha, precio y foto."
+              mode="product"
+              hint="Desde el móvil, abre la ficha en la app de TikTok y copia el enlace (Compartir → Copiar enlace). Rellenamos nombre, ficha, precio y foto."
               onLoaded={(ref) => {
                 if (ref.title) setName((prev) => prev || ref.title!.slice(0, 80));
                 if (ref.description) {
