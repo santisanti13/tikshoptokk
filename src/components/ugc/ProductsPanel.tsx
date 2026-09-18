@@ -164,7 +164,6 @@ const ProductsPanel = ({ products, onChanged }: Props) => {
         </p>
         <div className="mt-5 space-y-4">
           <div className="space-y-2">
-            <Label>Traer desde TikTok Shop</Label>
             <TikTokLinkInput
               mode="product"
               placeholder="https://shop.tiktok.com/view/product/… o enlace de vídeo"
