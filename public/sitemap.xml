@@ -75,12 +75,6 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://tikshoptok.com/blog/pulso-tiktok-shop-espana-27-septiembre-2026</loc>
-    <lastmod>2026-09-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://tikshoptok.com/blog/pulso-tiktok-shop-espana-19-septiembre-2026</loc>
     <lastmod>2026-09-19</lastmod>
     <changefreq>weekly</changefreq>
@@ -111,6 +105,12 @@
   <url>
     <loc>https://tikshoptok.com/blog/pulso-tiktok-shop-espana-25-septiembre-2026</loc>
     <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tikshoptok.com/blog/pulso-tiktok-shop-espana-27-septiembre-2026</loc>
+    <lastmod>2026-09-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
