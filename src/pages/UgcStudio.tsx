@@ -1234,6 +1234,15 @@ const UgcStudio = () => {
               <h2 className="font-display text-lg font-bold tracking-tight">Tus vídeos</h2>
               <span className="text-xs text-muted-foreground tabular-nums">{videos.length}</span>
             </div>
+            {videos.some((v) => v.status !== "completed" && v.status !== "failed") && (
+              <div className="flex items-center gap-3 rounded-2xl border border-primary/30 bg-primary/5 px-4 py-3">
+                <Loader2 className="h-5 w-5 shrink-0 animate-spin text-primary" />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium">Generando tu vídeo…</p>
+                  <p className="text-xs text-muted-foreground">Suele tardar entre 1 y 3 minutos. Aparecerá aquí en cuanto esté listo.</p>
+                </div>
+              </div>
+            )}
             <VideoGallery
               videos={videos}
               urls={urls}
