@@ -46,17 +46,6 @@ const StepsBar = ({ steps, activeId, onStep }: Props) => (
             {steps.find((step) => step.id === activeId)?.hint}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            const activeIndex = steps.findIndex((step) => step.id === activeId);
-            const completed = steps.filter((step, index) => step.done && index < activeIndex);
-            if (completed.length > 0) onStep(completed[completed.length - 1].id);
-          }}
-          className="hidden"
-          tabIndex={-1}
-          aria-hidden="true"
-        />
       </div>
     </div>
 

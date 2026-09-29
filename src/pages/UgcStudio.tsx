@@ -99,7 +99,7 @@ const Chip = ({
     variant="outline"
     size="sm"
     {...rest}
-    className={`h-8 rounded-md px-3 text-xs transition-colors disabled:opacity-40 ${
+    className={`h-8 max-w-full overflow-hidden text-ellipsis whitespace-nowrap rounded-md px-3 text-xs transition-colors disabled:opacity-40 ${
       active ? "border-primary/50 bg-primary/10 text-foreground" : "border-border bg-transparent text-muted-foreground hover:text-foreground"
     }`}
   >
@@ -1145,7 +1145,7 @@ const UgcStudio = () => {
                   )}
                 </div>
 
-                <div className="min-w-0 xl:order-1">
+                <div className="hidden min-w-0 xl:order-1 xl:block">
                   <div className="flex items-baseline justify-between">
                     <h2 className="font-display text-lg font-bold tracking-tight">Tus vídeos</h2>
                     <span className="text-xs text-muted-foreground tabular-nums">{videos.length}</span>
