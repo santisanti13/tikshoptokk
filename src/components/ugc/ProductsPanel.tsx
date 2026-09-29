@@ -92,6 +92,32 @@ const ProductsPanel = ({ products, onChanged }: Props) => {
     }
   }
 
+  function resetForm() {
+    setEditingId(null);
+    setName("");
+    setDescription("");
+    setBlindSpots("");
+    setSourceUrl(null);
+    setFile(null);
+    setPreview(null);
+    setModelFile(null);
+    setRenders([]);
+  }
+
+  // Editar una ficha ya creada: rellenamos el formulario con lo guardado.
+  function startEdit(product: UgcProduct) {
+    setEditingId(product.id);
+    setName(product.name);
+    setDescription(product.description ?? "");
+    setBlindSpots(product.blind_spots ?? "");
+    setSourceUrl(product.source_url ?? null);
+    setFile(null);
+    setModelFile(null);
+    setRenders([]);
+    setPreview(thumbs[product.id] ?? null);
+    document.getElementById("pr-name")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
   async function save() {
     if (name.trim().length < 2) {
       toast({ title: "Ponle un nombre al producto", variant: "destructive" });
@@ -115,34 +141,47 @@ const ProductsPanel = ({ products, onChanged }: Props) => {
       const renderPaths: string[] = [];
       for (const view of renders.slice(0, 5)) renderPaths.push(await upload(view, "jpg"));
 
-      const { error } = await supabase.from("ugc_products").insert({
-        user_id: userId,
+      const fields = {
         name: name.trim(),
         description: description.trim() || null,
         blind_spots: blindSpots.trim() || null,
         source_url: sourceUrl,
-        image_path: imagePath,
-        model_path: modelPath,
-        render_paths: renderPaths,
-      });
-      if (error) throw new Error(error.message);
+      };
+
+      if (editingId) {
+        // Solo sustituimos foto o 3D si el usuario ha subido algo nuevo.
+        const patch: Record<string, unknown> = { ...fields };
+        if (imagePath) patch.image_path = imagePath;
+        if (modelPath) patch.model_path = modelPath;
+        if (renderPaths.length) patch.render_paths = renderPaths;
+        const { error } = await supabase.from("ugc_products").update(patch).eq("id", editingId);
+        if (error) throw new Error(error.message);
+      } else {
+        const { error } = await supabase.from("ugc_products").insert({
+          user_id: userId,
+          ...fields,
+          image_path: imagePath,
+          model_path: modelPath,
+          render_paths: renderPaths,
+        });
+        if (error) throw new Error(error.message);
+      }
     } catch (e) {
       setSaving(false);
       toast({ title: "No se pudo guardar", description: e instanceof Error ? e.message : "Inténtalo de nuevo.", variant: "destructive" });
       return;
     }
 
+    const wasEditing = Boolean(editingId);
     setSaving(false);
-    setName("");
-    setDescription("");
-    setBlindSpots("");
-    setSourceUrl(null);
-    setFile(null);
-    setPreview(null);
-    setModelFile(null);
-    setRenders([]);
+    resetForm();
     onChanged();
-    toast({ title: "Producto añadido", description: "Se adaptará al formato que elijas en cada vídeo." });
+    toast({
+      title: wasEditing ? "Producto actualizado" : "Producto añadido",
+      description: wasEditing
+        ? "Los próximos vídeos usarán la ficha nueva."
+        : "Se adaptará al formato que elijas en cada vídeo.",
+    });
   }
 
   async function remove(product: UgcProduct) {
