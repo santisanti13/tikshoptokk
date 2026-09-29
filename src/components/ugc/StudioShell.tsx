@@ -111,7 +111,7 @@ const StudioShell = ({ tab, onTab, balance, plan, counts, title, subtitle, child
     });
 
   return (
-    <div className="studio-theme min-h-screen bg-background text-foreground">
+    <div className="studio-theme min-h-screen overflow-x-hidden bg-background text-foreground">
       <div className="flex w-full">
         {/* Rail lateral (escritorio) */}
         <aside className={`sticky top-0 hidden h-screen shrink-0 flex-col border-r border-border bg-card/60 px-3 py-5 backdrop-blur-xl transition-[width] duration-200 lg:flex ${collapsed ? "w-[76px]" : "w-[248px]"}`}>
@@ -210,7 +210,7 @@ const StudioShell = ({ tab, onTab, balance, plan, counts, title, subtitle, child
           </header>
 
           {/* Encabezado de sección */}
-          <div className="border-b border-border px-4 py-6 lg:px-8 lg:py-7">
+          <div className={`border-b border-border px-4 py-6 lg:px-8 lg:py-7 ${tab === "generar" ? "hidden lg:block" : ""}`}>
             <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div className="max-w-2xl">
                 <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">UGC Creator · TikTok Shop</p>
@@ -225,12 +225,12 @@ const StudioShell = ({ tab, onTab, balance, plan, counts, title, subtitle, child
             </div>
           </div>
 
-          <main className="px-4 pb-32 pt-6 lg:px-8 lg:pb-16 lg:pt-8">{children}</main>
+          <main className={`min-w-0 px-4 pt-6 lg:px-8 lg:pb-16 lg:pt-8 ${tab === "generar" ? "pb-28" : "pb-32"}`}>{children}</main>
         </div>
       </div>
 
       {/* Barra inferior móvil */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 flex items-stretch gap-0.5 border-t border-border bg-background/95 px-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur-xl lg:hidden">
+      <nav className={`fixed inset-x-0 bottom-0 z-40 items-stretch gap-0.5 border-t border-border bg-background/95 px-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur-xl lg:hidden ${tab === "generar" ? "hidden" : "flex"}`}>
         <NavItems variant="bar" />
       </nav>
     </div>

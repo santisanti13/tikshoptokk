@@ -18,7 +18,49 @@ type Props = {
 
 /** Cabecera del flujo: producto → referencia e idea → avatar → pieza. */
 const StepsBar = ({ steps, activeId, onStep }: Props) => (
-  <ol className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+  <>
+    <div className="lg:hidden">
+      <div className="mb-3 flex items-center justify-between gap-4">
+        <div className="flex flex-1 gap-1.5" aria-hidden="true">
+          {steps.map((step) => {
+            const activeIndex = steps.findIndex((item) => item.id === activeId);
+            const reached = step.n <= activeIndex + 1;
+            return (
+              <span
+                key={step.id}
+                className={`h-1 flex-1 rounded-full transition-colors ${reached ? "bg-primary" : "bg-muted"}`}
+              />
+            );
+          })}
+        </div>
+        <span className="shrink-0 text-[10px] font-semibold uppercase text-primary">
+          Paso {String(steps.find((step) => step.id === activeId)?.n ?? 1).padStart(2, "0")} / 04
+        </span>
+      </div>
+      <div className="flex items-end justify-between gap-3">
+        <div className="min-w-0">
+          <p className="font-display text-3xl leading-none">
+            {steps.find((step) => step.id === activeId)?.title}
+          </p>
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+            {steps.find((step) => step.id === activeId)?.hint}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            const activeIndex = steps.findIndex((step) => step.id === activeId);
+            const completed = steps.filter((step, index) => step.done && index < activeIndex);
+            if (completed.length > 0) onStep(completed[completed.length - 1].id);
+          }}
+          className="hidden"
+          tabIndex={-1}
+          aria-hidden="true"
+        />
+      </div>
+    </div>
+
+    <ol className="hidden gap-2 lg:grid lg:grid-cols-2 xl:grid-cols-4">
     {steps.map((step) => {
       const active = step.id === activeId;
       return (
@@ -50,7 +92,8 @@ const StepsBar = ({ steps, activeId, onStep }: Props) => (
         </li>
       );
     })}
-  </ol>
+    </ol>
+  </>
 );
 
 export default StepsBar;
