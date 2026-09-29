@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Plus, Trash2, UserRound } from "lucide-react";
+import { Check, Loader2, Pencil, Plus, Trash2, UserRound, X } from "lucide-react";
 import ImageDropzone from "@/components/ugc/ImageDropzone";
 
 /** Un avatar es la persona que sale en tus vídeos: cara, look, voz y tono. */
