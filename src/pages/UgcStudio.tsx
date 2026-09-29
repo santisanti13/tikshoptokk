@@ -550,6 +550,8 @@ const UgcStudio = () => {
     setVideos((prev) => [data.video as VideoRow, ...prev]);
     setExtendFrom(null);
     if (typeof data.balance === "number") setBalance(data.balance);
+    // En móvil y tableta la galería no está a la vista: llevamos al usuario a "Mis vídeos".
+    if (window.matchMedia("(max-width: 1279px)").matches) setTab("videos");
   }
 
   // Escribe la ficha para publicar (título, descripción con hashtags y tarjeta) de un vídeo ya listo.
