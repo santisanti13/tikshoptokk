@@ -119,9 +119,6 @@ const StudioShell = ({ tab, onTab, balance, plan, counts, title, subtitle, child
         <aside className={`sticky top-0 hidden h-screen shrink-0 flex-col border-r border-border bg-card/60 px-3 py-5 backdrop-blur-xl transition-[width] duration-200 lg:flex ${collapsed ? "w-[76px]" : "w-[248px]"}`}>
           <div className="flex h-11 items-center justify-between gap-2 px-2">
             <Link to="/" className="flex min-w-0 items-center gap-3">
-              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-primary text-primary-foreground">
-                <Sparkles className="h-4 w-4" />
-              </span>
               {!collapsed && (
                 <span className="min-w-0">
                   <span className="block truncate font-display text-xl leading-none">TikShopTok</span>
