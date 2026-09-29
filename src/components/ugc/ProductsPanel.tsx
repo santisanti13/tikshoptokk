@@ -48,6 +48,7 @@ const ProductsPanel = ({ products, onChanged }: Props) => {
   const [rendering, setRendering] = useState(false);
   const [saving, setSaving] = useState(false);
   const [thumbs, setThumbs] = useState<Record<string, string>>({});
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   useEffect(() => {
     products
