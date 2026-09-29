@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Plus, Trash2, UserRound } from "lucide-react";
+import { Check, Loader2, Pencil, Plus, Trash2, UserRound, X } from "lucide-react";
 import ImageDropzone from "@/components/ugc/ImageDropzone";
 
 /** Un avatar es la persona que sale en tus vídeos: cara, look, voz y tono. */
@@ -32,6 +32,7 @@ const AvatarsPanel = ({ avatars, onChanged }: Props) => {
   const [preview, setPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [thumbs, setThumbs] = useState<Record<string, string>>({});
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   useEffect(() => {
     avatars
@@ -42,6 +43,27 @@ const AvatarsPanel = ({ avatars, onChanged }: Props) => {
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [avatars]);
+
+  function resetForm() {
+    setEditingId(null);
+    setForm(empty);
+    setFile(null);
+    setPreview(null);
+  }
+
+  // Editar un avatar ya creado: rellenamos el formulario con lo guardado.
+  function startEdit(avatar: UgcAvatar) {
+    setEditingId(avatar.id);
+    setForm({
+      name: avatar.name,
+      character_brief: avatar.character_brief ?? "",
+      tone: avatar.tone ?? "",
+      brand_notes: avatar.brand_notes ?? "",
+    });
+    setFile(null);
+    setPreview(thumbs[avatar.id] ?? null);
+    document.getElementById("p-name")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
 
   async function save() {
     if (form.name.trim().length < 2) {
@@ -64,24 +86,38 @@ const AvatarsPanel = ({ avatars, onChanged }: Props) => {
       }
     }
 
-    const { error } = await supabase.from("ugc_projects").insert({
-      user_id: userId,
+    const fields = {
       name: form.name.trim(),
       character_brief: form.character_brief.trim() || null,
       tone: form.tone.trim() || null,
       brand_notes: form.brand_notes.trim() || null,
-      reference_image_path: referencePath,
-    });
+    };
+
+    const wasEditing = Boolean(editingId);
+    const { error } = wasEditing
+      ? await supabase
+          .from("ugc_projects")
+          // La foto solo se sustituye si el usuario sube una nueva.
+          .update(referencePath ? { ...fields, reference_image_path: referencePath } : fields)
+          .eq("id", editingId!)
+      : await supabase.from("ugc_projects").insert({
+          user_id: userId,
+          ...fields,
+          reference_image_path: referencePath,
+        });
     setSaving(false);
     if (error) {
       toast({ title: "No se pudo guardar", description: error.message, variant: "destructive" });
       return;
     }
-    setForm(empty);
-    setFile(null);
-    setPreview(null);
+    resetForm();
     onChanged();
-    toast({ title: "Avatar creado", description: "Ya puedes crear vídeos con esta misma persona y su voz." });
+    toast({
+      title: wasEditing ? "Avatar actualizado" : "Avatar creado",
+      description: wasEditing
+        ? "Los próximos vídeos usarán esta versión."
+        : "Ya puedes crear vídeos con esta misma persona y su voz.",
+    });
   }
 
   async function remove(avatar: UgcAvatar) {
@@ -97,9 +133,20 @@ const AvatarsPanel = ({ avatars, onChanged }: Props) => {
   return (
     <div className="grid gap-8 lg:grid-cols-2">
       <div className="studio-card p-5 lg:p-6">
-        <h2 className="font-display text-lg font-bold tracking-tight">Nuevo avatar</h2>
+        <div className="flex items-start justify-between gap-3">
+          <h2 className="font-display text-lg font-bold tracking-tight">
+            {editingId ? "Editar avatar" : "Nuevo avatar"}
+          </h2>
+          {editingId && (
+            <Button variant="ghost" size="sm" onClick={resetForm} className="shrink-0">
+              <X className="mr-1.5 h-3.5 w-3.5" /> Cancelar
+            </Button>
+          )}
+        </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          El avatar es quien aparece y habla en tus vídeos. Al reutilizarlo, todas tus piezas parecen de la misma cuenta.
+          {editingId
+            ? "Cambia el nombre, el look, el tono o la foto. La foto solo se sustituye si subes otra."
+            : "El avatar es quien aparece y habla en tus vídeos. Al reutilizarlo, todas tus piezas parecen de la misma cuenta."}
         </p>
         <div className="mt-5 space-y-4">
           <div className="space-y-2">
@@ -147,7 +194,14 @@ const AvatarsPanel = ({ avatars, onChanged }: Props) => {
             </div>
           </div>
           <Button onClick={save} disabled={saving} className="rounded-full">
-            {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />} Crear avatar
+            {saving ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : editingId ? (
+              <Check className="mr-2 h-4 w-4" />
+            ) : (
+              <Plus className="mr-2 h-4 w-4" />
+            )}
+            {editingId ? "Guardar cambios" : "Crear avatar"}
           </Button>
         </div>
       </div>
@@ -171,9 +225,14 @@ const AvatarsPanel = ({ avatars, onChanged }: Props) => {
                     {p.tone && <p className="mt-1 text-xs text-muted-foreground">Tono: {p.tone}</p>}
                   </div>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => remove(p)} aria-label={`Borrar ${p.name}`}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="flex shrink-0 items-center gap-1">
+                  <Button variant="ghost" size="icon" onClick={() => startEdit(p)} aria-label={`Editar ${p.name}`}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => remove(p)} aria-label={`Borrar ${p.name}`}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           ))}

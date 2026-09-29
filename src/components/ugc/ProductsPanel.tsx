@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Box, Eye, Loader2, Package, Plus, Trash2 } from "lucide-react";
+import { Box, Check, Eye, Loader2, Package, Pencil, Plus, Trash2, X } from "lucide-react";
 import { BLIND_SPOTS } from "@/lib/ugcBlindSpots";
 import { renderModelViews } from "@/lib/render3d";
 
@@ -48,6 +48,7 @@ const ProductsPanel = ({ products, onChanged }: Props) => {
   const [rendering, setRendering] = useState(false);
   const [saving, setSaving] = useState(false);
   const [thumbs, setThumbs] = useState<Record<string, string>>({});
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   useEffect(() => {
     products
@@ -91,6 +92,32 @@ const ProductsPanel = ({ products, onChanged }: Props) => {
     }
   }
 
+  function resetForm() {
+    setEditingId(null);
+    setName("");
+    setDescription("");
+    setBlindSpots("");
+    setSourceUrl(null);
+    setFile(null);
+    setPreview(null);
+    setModelFile(null);
+    setRenders([]);
+  }
+
+  // Editar una ficha ya creada: rellenamos el formulario con lo guardado.
+  function startEdit(product: UgcProduct) {
+    setEditingId(product.id);
+    setName(product.name);
+    setDescription(product.description ?? "");
+    setBlindSpots(product.blind_spots ?? "");
+    setSourceUrl(product.source_url ?? null);
+    setFile(null);
+    setModelFile(null);
+    setRenders([]);
+    setPreview(thumbs[product.id] ?? null);
+    document.getElementById("pr-name")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
   async function save() {
     if (name.trim().length < 2) {
       toast({ title: "Ponle un nombre al producto", variant: "destructive" });
@@ -114,34 +141,47 @@ const ProductsPanel = ({ products, onChanged }: Props) => {
       const renderPaths: string[] = [];
       for (const view of renders.slice(0, 5)) renderPaths.push(await upload(view, "jpg"));
 
-      const { error } = await supabase.from("ugc_products").insert({
-        user_id: userId,
+      const fields = {
         name: name.trim(),
         description: description.trim() || null,
         blind_spots: blindSpots.trim() || null,
         source_url: sourceUrl,
-        image_path: imagePath,
-        model_path: modelPath,
-        render_paths: renderPaths,
-      });
-      if (error) throw new Error(error.message);
+      };
+
+      if (editingId) {
+        // Solo sustituimos foto o 3D si el usuario ha subido algo nuevo.
+        const patch: Record<string, unknown> = { ...fields };
+        if (imagePath) patch.image_path = imagePath;
+        if (modelPath) patch.model_path = modelPath;
+        if (renderPaths.length) patch.render_paths = renderPaths;
+        const { error } = await supabase.from("ugc_products").update(patch).eq("id", editingId);
+        if (error) throw new Error(error.message);
+      } else {
+        const { error } = await supabase.from("ugc_products").insert({
+          user_id: userId,
+          ...fields,
+          image_path: imagePath,
+          model_path: modelPath,
+          render_paths: renderPaths,
+        });
+        if (error) throw new Error(error.message);
+      }
     } catch (e) {
       setSaving(false);
       toast({ title: "No se pudo guardar", description: e instanceof Error ? e.message : "Inténtalo de nuevo.", variant: "destructive" });
       return;
     }
 
+    const wasEditing = Boolean(editingId);
     setSaving(false);
-    setName("");
-    setDescription("");
-    setBlindSpots("");
-    setSourceUrl(null);
-    setFile(null);
-    setPreview(null);
-    setModelFile(null);
-    setRenders([]);
+    resetForm();
     onChanged();
-    toast({ title: "Producto añadido", description: "Se adaptará al formato que elijas en cada vídeo." });
+    toast({
+      title: wasEditing ? "Producto actualizado" : "Producto añadido",
+      description: wasEditing
+        ? "Los próximos vídeos usarán la ficha nueva."
+        : "Se adaptará al formato que elijas en cada vídeo.",
+    });
   }
 
   async function remove(product: UgcProduct) {
@@ -158,9 +198,20 @@ const ProductsPanel = ({ products, onChanged }: Props) => {
   return (
     <div className="grid gap-8 lg:grid-cols-2">
       <div className="studio-card p-5 lg:p-6">
-        <h2 className="font-display text-lg font-bold tracking-tight">Añadir producto</h2>
+        <div className="flex items-start justify-between gap-3">
+          <h2 className="font-display text-lg font-bold tracking-tight">
+            {editingId ? "Editar producto" : "Añadir producto"}
+          </h2>
+          {editingId && (
+            <Button variant="ghost" size="sm" onClick={resetForm} className="shrink-0">
+              <X className="mr-1.5 h-3.5 w-3.5" /> Cancelar
+            </Button>
+          )}
+        </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          Guarda la foto y la ficha una vez; luego se reutiliza en cualquier vídeo y formato.
+          {editingId
+            ? "Cambia lo que necesites. La foto y el 3D solo se sustituyen si subes archivos nuevos."
+            : "Guarda la foto y la ficha una vez; luego se reutiliza en cualquier vídeo y formato."}
         </p>
         <div className="mt-5 space-y-4">
           <div className="space-y-2">
@@ -279,7 +330,14 @@ const ProductsPanel = ({ products, onChanged }: Props) => {
           </div>
 
           <Button onClick={save} disabled={saving || rendering} className="rounded-full">
-            {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />} Guardar producto
+            {saving ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : editingId ? (
+              <Check className="mr-2 h-4 w-4" />
+            ) : (
+              <Plus className="mr-2 h-4 w-4" />
+            )}
+            {editingId ? "Guardar cambios" : "Guardar producto"}
           </Button>
         </div>
       </div>
@@ -324,9 +382,14 @@ const ProductsPanel = ({ products, onChanged }: Props) => {
                     )}
                   </div>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => remove(p)} aria-label={`Borrar ${p.name}`}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="flex shrink-0 items-center gap-1">
+                  <Button variant="ghost" size="icon" onClick={() => startEdit(p)} aria-label={`Editar ${p.name}`}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => remove(p)} aria-label={`Borrar ${p.name}`}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           ))}
