@@ -330,7 +330,14 @@ const ProductsPanel = ({ products, onChanged }: Props) => {
           </div>
 
           <Button onClick={save} disabled={saving || rendering} className="rounded-full">
-            {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />} Guardar producto
+            {saving ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : editingId ? (
+              <Check className="mr-2 h-4 w-4" />
+            ) : (
+              <Plus className="mr-2 h-4 w-4" />
+            )}
+            {editingId ? "Guardar cambios" : "Guardar producto"}
           </Button>
         </div>
       </div>
