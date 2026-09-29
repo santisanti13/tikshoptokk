@@ -32,6 +32,7 @@ const AvatarsPanel = ({ avatars, onChanged }: Props) => {
   const [preview, setPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [thumbs, setThumbs] = useState<Record<string, string>>({});
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   useEffect(() => {
     avatars
