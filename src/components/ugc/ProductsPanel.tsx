@@ -198,9 +198,20 @@ const ProductsPanel = ({ products, onChanged }: Props) => {
   return (
     <div className="grid gap-8 lg:grid-cols-2">
       <div className="studio-card p-5 lg:p-6">
-        <h2 className="font-display text-lg font-bold tracking-tight">Añadir producto</h2>
+        <div className="flex items-start justify-between gap-3">
+          <h2 className="font-display text-lg font-bold tracking-tight">
+            {editingId ? "Editar producto" : "Añadir producto"}
+          </h2>
+          {editingId && (
+            <Button variant="ghost" size="sm" onClick={resetForm} className="shrink-0">
+              <X className="mr-1.5 h-3.5 w-3.5" /> Cancelar
+            </Button>
+          )}
+        </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          Guarda la foto y la ficha una vez; luego se reutiliza en cualquier vídeo y formato.
+          {editingId
+            ? "Cambia lo que necesites. La foto y el 3D solo se sustituyen si subes archivos nuevos."
+            : "Guarda la foto y la ficha una vez; luego se reutiliza en cualquier vídeo y formato."}
         </p>
         <div className="mt-5 space-y-4">
           <div className="space-y-2">
