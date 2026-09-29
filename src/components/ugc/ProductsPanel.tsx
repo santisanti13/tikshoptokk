@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Box, Eye, Loader2, Package, Plus, Trash2 } from "lucide-react";
+import { Box, Check, Eye, Loader2, Package, Pencil, Plus, Trash2, X } from "lucide-react";
 import { BLIND_SPOTS } from "@/lib/ugcBlindSpots";
 import { renderModelViews } from "@/lib/render3d";
 
