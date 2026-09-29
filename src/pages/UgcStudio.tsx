@@ -43,6 +43,10 @@ const SECTION_META: Record<string, { title: string; subtitle: string }> = {
     title: "Crear",
     subtitle: "Cuatro pasos: producto → referencia e idea → avatar → vídeo o carrusel.",
   },
+  videos: {
+    title: "Mis vídeos",
+    subtitle: "Todos los vídeos que has creado: descárgalos, alarga los buenos, reutiliza su guion o pide la ficha para publicar.",
+  },
   avatares: {
     title: "Avatares",
     subtitle: "La persona que sale en tus vídeos: cara, voz, tono y notas de marca, para que todo parezca de la misma cuenta.",
@@ -604,7 +608,7 @@ const UgcStudio = () => {
         onTab={setTab}
         balance={balance}
         plan={plan}
-        counts={{ avatares: projects.length, productos: products.length }}
+        counts={{ videos: videos.length, avatares: projects.length, productos: products.length }}
         title={meta.title}
         subtitle={meta.subtitle}
       >
@@ -1221,6 +1225,25 @@ const UgcStudio = () => {
         {tab === "avatares" && <AvatarsPanel avatars={projects} onChanged={loadProjects} />}
 
         {tab === "productos" && <ProductsPanel products={products} onChanged={loadProducts} />}
+
+        {tab === "videos" && (
+          <section className="min-w-0 space-y-5">
+            <div className="flex items-baseline justify-between">
+              <h2 className="font-display text-lg font-bold tracking-tight">Tus vídeos</h2>
+              <span className="text-xs text-muted-foreground tabular-nums">{videos.length}</span>
+            </div>
+            <VideoGallery
+              videos={videos}
+              urls={urls}
+              onReuse={reuseVideo}
+              onKeepIdentity={keepIdentity}
+              onExtend={extendVideo}
+              onCaption={writeCaption}
+              keepingId={keepingId}
+              captioningId={captioningId}
+            />
+          </section>
+        )}
 
         {tab === "tarifas" && (
           <TariffsPanel
