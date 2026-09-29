@@ -194,7 +194,14 @@ const AvatarsPanel = ({ avatars, onChanged }: Props) => {
             </div>
           </div>
           <Button onClick={save} disabled={saving} className="rounded-full">
-            {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />} Crear avatar
+            {saving ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : editingId ? (
+              <Check className="mr-2 h-4 w-4" />
+            ) : (
+              <Plus className="mr-2 h-4 w-4" />
+            )}
+            {editingId ? "Guardar cambios" : "Crear avatar"}
           </Button>
         </div>
       </div>
