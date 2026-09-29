@@ -44,6 +44,27 @@ const AvatarsPanel = ({ avatars, onChanged }: Props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [avatars]);
 
+  function resetForm() {
+    setEditingId(null);
+    setForm(empty);
+    setFile(null);
+    setPreview(null);
+  }
+
+  // Editar un avatar ya creado: rellenamos el formulario con lo guardado.
+  function startEdit(avatar: UgcAvatar) {
+    setEditingId(avatar.id);
+    setForm({
+      name: avatar.name,
+      character_brief: avatar.character_brief ?? "",
+      tone: avatar.tone ?? "",
+      brand_notes: avatar.brand_notes ?? "",
+    });
+    setFile(null);
+    setPreview(thumbs[avatar.id] ?? null);
+    document.getElementById("p-name")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
   async function save() {
     if (form.name.trim().length < 2) {
       toast({ title: "Ponle un nombre al avatar", variant: "destructive" });
@@ -65,24 +86,38 @@ const AvatarsPanel = ({ avatars, onChanged }: Props) => {
       }
     }
 
-    const { error } = await supabase.from("ugc_projects").insert({
-      user_id: userId,
+    const fields = {
       name: form.name.trim(),
       character_brief: form.character_brief.trim() || null,
       tone: form.tone.trim() || null,
       brand_notes: form.brand_notes.trim() || null,
-      reference_image_path: referencePath,
-    });
+    };
+
+    const wasEditing = Boolean(editingId);
+    const { error } = wasEditing
+      ? await supabase
+          .from("ugc_projects")
+          // La foto solo se sustituye si el usuario sube una nueva.
+          .update(referencePath ? { ...fields, reference_image_path: referencePath } : fields)
+          .eq("id", editingId!)
+      : await supabase.from("ugc_projects").insert({
+          user_id: userId,
+          ...fields,
+          reference_image_path: referencePath,
+        });
     setSaving(false);
     if (error) {
       toast({ title: "No se pudo guardar", description: error.message, variant: "destructive" });
       return;
     }
-    setForm(empty);
-    setFile(null);
-    setPreview(null);
+    resetForm();
     onChanged();
-    toast({ title: "Avatar creado", description: "Ya puedes crear vídeos con esta misma persona y su voz." });
+    toast({
+      title: wasEditing ? "Avatar actualizado" : "Avatar creado",
+      description: wasEditing
+        ? "Los próximos vídeos usarán esta versión."
+        : "Ya puedes crear vídeos con esta misma persona y su voz.",
+    });
   }
 
   async function remove(avatar: UgcAvatar) {
