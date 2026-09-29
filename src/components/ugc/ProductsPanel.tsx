@@ -382,9 +382,14 @@ const ProductsPanel = ({ products, onChanged }: Props) => {
                     )}
                   </div>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => remove(p)} aria-label={`Borrar ${p.name}`}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="flex shrink-0 items-center gap-1">
+                  <Button variant="ghost" size="icon" onClick={() => startEdit(p)} aria-label={`Editar ${p.name}`}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => remove(p)} aria-label={`Borrar ${p.name}`}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           ))}
