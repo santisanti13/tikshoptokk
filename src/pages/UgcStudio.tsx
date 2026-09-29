@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles, X, Coins, Wand2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Sparkles, X, Coins, Wand2 } from "lucide-react";
 import ImageDropzone from "@/components/ugc/ImageDropzone";
 import TikTokLinkInput, { type TikTokReference } from "@/components/ugc/TikTokLinkInput";
 import CharactersStrip, { type UgcCharacter } from "@/components/ugc/CharactersStrip";
@@ -99,7 +99,7 @@ const Chip = ({
     variant="outline"
     size="sm"
     {...rest}
-    className={`h-8 rounded-md px-3 text-xs transition-colors disabled:opacity-40 ${
+    className={`h-8 max-w-full overflow-hidden text-ellipsis whitespace-nowrap rounded-md px-3 text-xs transition-colors disabled:opacity-40 ${
       active ? "border-primary/50 bg-primary/10 text-foreground" : "border-border bg-transparent text-muted-foreground hover:text-foreground"
     }`}
   >
@@ -222,6 +222,17 @@ const UgcStudio = () => {
       done: false,
     },
   ];
+
+  const stepOrder = ["producto", "referencia", "avatar", "pieza"] as const;
+  const activeStepIndex = stepOrder.indexOf(step);
+  const previousStep = activeStepIndex > 0 ? stepOrder[activeStepIndex - 1] : null;
+  const nextStep = activeStepIndex < stepOrder.length - 1 ? stepOrder[activeStepIndex + 1] : null;
+  const nextStepLabel: Record<(typeof stepOrder)[number], string> = {
+    producto: "Referencia e idea",
+    referencia: "Avatar",
+    avatar: "Elegir pieza",
+    pieza: "",
+  };
 
 
   useEffect(() => {
@@ -606,7 +617,7 @@ const UgcStudio = () => {
         )}
 
         {tab === "generar" && (
-          <section className="space-y-6">
+          <section className="min-w-0 space-y-5 lg:space-y-6">
             <StepsBar steps={flowSteps} activeId={step} onStep={(id) => setStep(id as typeof step)} />
 
             {step === "pieza" && piece === "carousel" ? (
@@ -634,9 +645,9 @@ const UgcStudio = () => {
                 />
               </div>
             ) : (
-              <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px] xl:gap-8">
-                <div className="studio-card overflow-hidden xl:order-2">
-                  <div className="space-y-7 p-5 lg:p-6">
+              <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_420px] xl:gap-8">
+                <div className="studio-card min-w-0 overflow-hidden xl:order-2">
+                  <div className="min-w-0 space-y-7 p-4 sm:p-5 lg:p-6">
                     {/* ---------- Paso 1: producto ---------- */}
                     {step === "producto" && (
                       <div className="space-y-5">
@@ -717,7 +728,7 @@ const UgcStudio = () => {
                           </div>
                         )}
 
-                        <div className="flex flex-wrap gap-2">
+                        <div className="hidden flex-wrap gap-2 lg:flex">
                           <Button variant="outline" className="rounded-full" onClick={() => setTab("productos")}>
                             Gestionar productos
                           </Button>
@@ -907,7 +918,7 @@ const UgcStudio = () => {
                           <PolicyCheck issues={policyIssues} ready={prompt.trim().length > 20} />
                         </div>
 
-                        <Button className="rounded-full" onClick={() => setStep("avatar")}>
+                        <Button className="hidden rounded-full lg:inline-flex" onClick={() => setStep("avatar")}>
                           Siguiente: avatar
                         </Button>
                       </div>
@@ -1007,7 +1018,7 @@ const UgcStudio = () => {
                           />
                         </div>
 
-                        <Button className="rounded-full" onClick={() => setStep("pieza")}>
+                        <Button className="hidden rounded-full lg:inline-flex" onClick={() => setStep("pieza")}>
                           Siguiente: elegir pieza
                         </Button>
                       </div>
@@ -1108,7 +1119,7 @@ const UgcStudio = () => {
 
                   {/* Barra de acción fija al pie de la tarjeta */}
                   {step === "pieza" && (
-                    <div className="sticky bottom-0 border-t border-border bg-card/95 p-4 backdrop-blur-xl lg:p-5">
+                    <div className="sticky bottom-0 hidden border-t border-border bg-card/95 p-5 backdrop-blur-xl lg:block">
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-muted-foreground">Coste de este vídeo</span>
                         <span className="font-semibold tabular-nums">
@@ -1134,7 +1145,7 @@ const UgcStudio = () => {
                   )}
                 </div>
 
-                <div className="min-w-0 xl:order-1">
+                <div className="hidden min-w-0 xl:order-1 xl:block">
                   <div className="flex items-baseline justify-between">
                     <h2 className="font-display text-lg font-bold tracking-tight">Tus vídeos</h2>
                     <span className="text-xs text-muted-foreground tabular-nums">{videos.length}</span>
@@ -1154,6 +1165,56 @@ const UgcStudio = () => {
                 </div>
               </div>
             )}
+
+            <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl lg:hidden">
+              {step === "pieza" && piece === "video" ? (
+                <div className="mx-auto max-w-md">
+                  <div className="mb-2 flex items-center justify-between text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setStep("avatar")}
+                      className="inline-flex min-h-8 items-center gap-1 text-muted-foreground"
+                    >
+                      <ArrowLeft className="h-3.5 w-3.5" /> Avatar
+                    </button>
+                    <span className="font-semibold tabular-nums">{cost} tokens · {formatEur(eurFromTokens(cost))}</span>
+                  </div>
+                  <Button
+                    onClick={generate}
+                    disabled={busy || lowBalance || policyBlocked}
+                    className="h-12 w-full rounded-md text-sm font-semibold"
+                  >
+                    {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                    {busy ? "Enviando…" : "Generar vídeo"}
+                  </Button>
+                </div>
+              ) : (
+                <div className="mx-auto flex max-w-md gap-2">
+                  {previousStep && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-12 w-12 shrink-0 rounded-md"
+                      onClick={() => setStep(previousStep)}
+                      aria-label="Volver al paso anterior"
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {nextStep ? (
+                    <Button type="button" className="h-12 flex-1 rounded-md font-semibold" onClick={() => setStep(nextStep)}>
+                      Siguiente: {nextStepLabel[step]}
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <Button type="button" variant="outline" className="h-12 flex-1 rounded-md" onClick={() => setStep("avatar")}>
+                      <ArrowLeft className="mr-2 h-4 w-4" /> Volver al avatar
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
           </section>
         )}
 
