@@ -133,9 +133,20 @@ const AvatarsPanel = ({ avatars, onChanged }: Props) => {
   return (
     <div className="grid gap-8 lg:grid-cols-2">
       <div className="studio-card p-5 lg:p-6">
-        <h2 className="font-display text-lg font-bold tracking-tight">Nuevo avatar</h2>
+        <div className="flex items-start justify-between gap-3">
+          <h2 className="font-display text-lg font-bold tracking-tight">
+            {editingId ? "Editar avatar" : "Nuevo avatar"}
+          </h2>
+          {editingId && (
+            <Button variant="ghost" size="sm" onClick={resetForm} className="shrink-0">
+              <X className="mr-1.5 h-3.5 w-3.5" /> Cancelar
+            </Button>
+          )}
+        </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          El avatar es quien aparece y habla en tus vídeos. Al reutilizarlo, todas tus piezas parecen de la misma cuenta.
+          {editingId
+            ? "Cambia el nombre, el look, el tono o la foto. La foto solo se sustituye si subes otra."
+            : "El avatar es quien aparece y habla en tus vídeos. Al reutilizarlo, todas tus piezas parecen de la misma cuenta."}
         </p>
         <div className="mt-5 space-y-4">
           <div className="space-y-2">
