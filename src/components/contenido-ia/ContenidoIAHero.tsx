@@ -15,6 +15,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import StudioPreview from "./StudioPreview";
 
 const workflow = [
   { icon: Target, step: "01", title: "Estrategia", detail: "Nicho, producto y ángulos" },
@@ -86,16 +87,9 @@ const ContenidoIAHero = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bento-solid bento-hover-cyan flex flex-col justify-center gap-8 p-8 md:col-span-4"
+          className="bento-solid bento-hover-cyan p-8 md:col-span-4"
         >
-          <div className="text-xs font-medium uppercase tracking-[0.25em] text-secondary">Coste por vídeo</div>
-          <div>
-            <div className="font-display text-5xl font-bold tracking-tighter text-secondary md:text-6xl">-90%</div>
-            <div className="mt-1 font-medium">frente a un creador tradicional</div>
-            <div className="mt-6 h-1 w-32 overflow-hidden rounded-full bg-white/10">
-              <div className="h-full w-[90%] bg-secondary" />
-            </div>
-          </div>
+          <StudioPreview />
         </motion.div>
 
         {metrics.map((m, i) => {
