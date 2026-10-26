@@ -137,6 +137,13 @@ const BlogPost = () => {
                   )}
                 </header>
                 {post.body && <PortableTextRenderer blocks={post.body} />}
+                {slug?.startsWith("pulso-tiktok-shop-espana") && (
+                  <p className="mt-10 rounded-2xl border border-white/[0.07] bg-card/60 p-5 text-sm text-muted-foreground">
+                    Consulta siempre el último dato en el{" "}
+                    <Link to="/ranking-tiktok-shop-espana" className="text-primary hover:underline">Ranking TikTok Shop España</Link>{" "}
+                    o aprende <Link to="/guias/como-vender-en-tiktok-shop-espana" className="text-primary hover:underline">cómo vender en TikTok Shop</Link>.
+                  </p>
+                )}
               </div>
             </article>
           ) : (
