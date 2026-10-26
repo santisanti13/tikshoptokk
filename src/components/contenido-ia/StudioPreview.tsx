@@ -1,11 +1,11 @@
-import mikomika from "@/assets/ugc/mikomika-maleta.mp4.asset.json";
-import utopya from "@/assets/ugc/utopya-moda.mp4.asset.json";
-import aldous from "@/assets/ugc/aldous-bio-suplemento.mp4.asset.json";
+import curcuma from "@/assets/ugc/studio-curcuma.mp4.asset.json";
+import bolso from "@/assets/ugc/studio-bolso.mp4.asset.json";
+import chaqueta from "@/assets/ugc/studio-chaqueta.mp4.asset.json";
 
 const sampleVideos = [
-  { src: mikomika.url, status: "Listo", label: "Maleta · MIKOMIKA" },
-  { src: utopya.url, status: "Listo", label: "Vestido · UTOPYA" },
-  { src: aldous.url, status: "Listo", label: "Suplemento · Aldous" },
+  { src: curcuma.url, status: "Listo", label: "Cúrcuma con jengibre" },
+  { src: bolso.url, status: "Listo", label: "Bolso de hombro" },
+  { src: chaqueta.url, status: "Listo", label: "Chaqueta khaki" },
 ];
 
 const StudioPreview = () => {
