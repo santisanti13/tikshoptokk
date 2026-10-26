@@ -37,11 +37,11 @@ const StudioPreview = () => {
               preload="metadata"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+            <span className="absolute left-2 top-2 max-w-[85%] truncate rounded-sm bg-black/50 px-1.5 py-0.5 text-[9px] font-medium text-white/90 backdrop-blur-sm">
+              {video.label}
+            </span>
             <span className="absolute bottom-2 left-2 rounded-sm bg-primary px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary-foreground">
               {video.status}
-            </span>
-            <span className="absolute bottom-2 right-2 max-w-[80%] truncate text-right text-[9px] font-medium text-white/90">
-              {video.label}
             </span>
           </div>
         ))}
