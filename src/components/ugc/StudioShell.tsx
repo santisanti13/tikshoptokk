@@ -190,13 +190,24 @@ const StudioShell = ({ tab, onTab, balance, plan, counts, title, subtitle, child
         <div className="min-w-0 flex-1">
           {/* Barra superior móvil */}
           <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-border bg-background/90 px-4 py-3 backdrop-blur-xl lg:hidden">
-            <Link to="/" className="flex items-center gap-2 text-sm font-semibold">
-              <span className="grid h-7 w-7 place-items-center rounded-md bg-primary text-primary-foreground"><Sparkles className="h-3.5 w-3.5" /></span>
-              <span className="font-display text-lg">TikShopTok</span>
-              <span className="rounded bg-muted px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-primary">
-                Creator
-              </span>
-            </Link>
+            {tab === "generar" ? (
+              <button
+                type="button"
+                onClick={() => onTab("videos")}
+                aria-label="Salir del asistente y volver a Mis vídeos"
+                className="flex items-center gap-1 text-sm font-semibold"
+              >
+                <ChevronLeft className="h-4 w-4" /> Salir
+              </button>
+            ) : (
+              <Link to="/" className="flex items-center gap-2 text-sm font-semibold">
+                <span className="grid h-7 w-7 place-items-center rounded-md bg-primary text-primary-foreground"><Sparkles className="h-3.5 w-3.5" /></span>
+                <span className="font-display text-lg">TikShopTok</span>
+                <span className="rounded bg-muted px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-primary">
+                  Creator
+                </span>
+              </Link>
+            )}
             <Button
               type="button"
               variant="outline"
