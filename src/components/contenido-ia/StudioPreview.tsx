@@ -1,11 +1,11 @@
-import curcuma from "@/assets/ugc/studio-curcuma.mp4.asset.json";
-import bolso from "@/assets/ugc/studio-bolso.mp4.asset.json";
-import chaqueta from "@/assets/ugc/studio-chaqueta.mp4.asset.json";
+import ugc05 from "@/assets/ugc/drive-ugc-05.mp4.asset.json";
+import ugc03 from "@/assets/ugc/drive-ugc-03.mp4.asset.json";
+import ugcNana from "@/assets/ugc/drive-ugc-nana.mp4.asset.json";
 
 const sampleVideos = [
-  { src: curcuma.url, status: "Listo", label: "Cúrcuma con jengibre" },
-  { src: bolso.url, status: "Listo", label: "Bolso de hombro" },
-  { src: chaqueta.url, status: "Listo", label: "Chaqueta khaki" },
+  { src: ugcNana.url, status: "Listo", label: "UGC · Nana" },
+  { src: ugc03.url, status: "Listo", label: "UGC 03" },
+  { src: ugc05.url, status: "Listo", label: "UGC 05" },
 ];
 
 const StudioPreview = () => {
