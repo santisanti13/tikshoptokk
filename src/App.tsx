@@ -1,4 +1,6 @@
 import { Toaster } from "@/components/ui/toaster";
+import RankingTikTokShop from "./pages/RankingTikTokShop";
+import Guia from "./pages/Guia";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -37,6 +39,8 @@ const App = () => (
           <Route path="/productos" element={<Productos />} />
           <Route path="/agencia-tiktok-shop/:ciudad" element={<AgenciaLocal />} />
           <Route path="/blog" element={<Blog />} />
+          <Route path="/ranking-tiktok-shop-espana" element={<RankingTikTokShop />} />
+          <Route path="/guias/:slug" element={<Guia />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
           <Route
             path="/ugc-studio"

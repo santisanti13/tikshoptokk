@@ -15,6 +15,8 @@ const Footer = () => (
           <a href="/#servicios" className="transition-colors hover:text-foreground">Servicios</a>
           <a href="/product-research" className="transition-colors hover:text-foreground">Product Research</a>
           <a href="/blog" className="transition-colors hover:text-foreground">Blog</a>
+          <a href="/ranking-tiktok-shop-espana" className="transition-colors hover:text-foreground">Ranking TikTok Shop</a>
+          <a href="/guias/como-vender-en-tiktok-shop-espana" className="transition-colors hover:text-foreground">Cómo vender en TikTok Shop</a>
           <a href="/#resultados" className="transition-colors hover:text-foreground">Resultados</a>
           <a href="/#contacto" className="transition-colors hover:text-foreground">Contacto</a>
         </div>
