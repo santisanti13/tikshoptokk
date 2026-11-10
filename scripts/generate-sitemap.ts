@@ -31,6 +31,7 @@ async function generate() {
     { path: "/productos", changefreq: "weekly", priority: "0.7" },
     { path: "/blog", changefreq: "weekly", priority: "0.8" },
     { path: "/ranking-tiktok-shop-espana", changefreq: "daily", priority: "0.9" },
+    { path: "/tiktok-go", changefreq: "weekly", priority: "0.8" },
     { path: "/guias/como-vender-en-tiktok-shop-espana", changefreq: "monthly", priority: "0.8" },
     { path: "/guias/comisiones-tiktok-shop", changefreq: "monthly", priority: "0.8" },
     { path: "/guias/como-ser-afiliado-tiktok-shop", changefreq: "monthly", priority: "0.8" },
