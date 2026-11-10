@@ -16,6 +16,7 @@ const links = [
   { label: "Marcas", href: "#marcas" },
   { label: "Estudio de contenido", href: "/contenido-ia" },
   { label: "Product Research", href: "/product-research" },
+  { label: "TikTok Go", href: "/tiktok-go" },
   { label: "Blog", href: "/blog" },
   { label: "Resultados", href: "#resultados" },
 ];

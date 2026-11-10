@@ -8,7 +8,6 @@ import VideoShowcase from "@/components/VideoShowcase";
 import Process from "@/components/Process";
 import Testimonials from "@/components/Testimonials";
 import SaasBridge from "@/components/SaasBridge";
-import TikTokGoTeaser from "@/components/TikTokGoTeaser";
 import HomeFAQ from "@/components/HomeFAQ";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
@@ -29,7 +28,6 @@ const Index = () => (
     <Process />
     <Testimonials />
     <SaasBridge />
-    <TikTokGoTeaser />
     <HomeFAQ />
     <Contact />
     <Footer />
