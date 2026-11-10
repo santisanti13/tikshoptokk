@@ -1,5 +1,6 @@
 import { Toaster } from "@/components/ui/toaster";
 import RankingTikTokShop from "./pages/RankingTikTokShop";
+import TikTokGo from "./pages/TikTokGo";
 import Guia from "./pages/Guia";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/agencia-tiktok-shop/:ciudad" element={<AgenciaLocal />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/ranking-tiktok-shop-espana" element={<RankingTikTokShop />} />
+          <Route path="/tiktok-go" element={<TikTokGo />} />
           <Route path="/guias/:slug" element={<Guia />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
           <Route

@@ -224,6 +224,39 @@ export type Database = {
         }
         Relationships: []
       }
+      tiktok_go_waitlist: {
+        Row: {
+          business_name: string | null
+          city: string | null
+          created_at: string
+          email: string
+          id: string
+          message: string | null
+          name: string
+          profile_type: string
+        }
+        Insert: {
+          business_name?: string | null
+          city?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          message?: string | null
+          name: string
+          profile_type: string
+        }
+        Update: {
+          business_name?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string | null
+          name?: string
+          profile_type?: string
+        }
+        Relationships: []
+      }
       ugc_carousels: {
         Row: {
           caption: Json | null
