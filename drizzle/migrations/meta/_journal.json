@@ -8,6 +8,13 @@
       "when": 1794304886559,
       "tag": "0000_create_tiktok_go_waitlist",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795421478206,
+      "tag": "0001_tighten_waitlist_and_snapshots_policies",
+      "breakpoints": true
     }
   ]
 }
